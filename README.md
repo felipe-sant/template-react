@@ -1,46 +1,86 @@
-# Getting Started with Create React App
+<div align="center">
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# 📄 Template de React 📄
+  
+<img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" /> <br>
 
-## Available Scripts
+</div>
 
-In the project directory, you can run:
 
-### `npm start`
+Este repositório é um template para projetos React, fornecendo uma estrutura básica e as ferramentas necessárias para começar rapidamente.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## 🚀 Começando
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Estas instruções fornecerão uma cópia do projeto em execução na sua máquina local para fins de desenvolvimento e teste.
 
-### `npm test`
+### Pré-requisitos
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Você precisará ter instalado:
 
-### `npm run build`
+- Node.js (versão 14 ou superior)
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- npm (geralmente incluído com o Node.js)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Instalação
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+    
+1 - Clone o repositório:
 
-### `npm run eject`
+    git clone https://github.com/felipe-sant/template-react.git
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+2 - Instale as dependências:
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+    npm install
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Executando o Projeto
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+Para iniciar o servidor de desenvolvimento, use:
 
-## Learn More
+    npm start
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## 📂 Estrutura do Projeto
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+    react-template/
+    ├─── public/
+    │   └─── index.html
+    ├─── src/
+    │   ├─── pages/
+    │   ├─── routers/
+    │   ├─── styles/
+    │   ├─── App.js
+    │   ├─── index.js
+    │   └─── ...
+    ├─── .gitignore
+    ├─── package.json
+    ├─── README.md
+    └─── ...
+
+- public/: Contém o arquivo HTML principal e outros recursos públicos.
+
+- src/: Contém os arquivos de código-fonte do projeto
+
+  - pages/: Páginas principais da aplicação.
+ 
+  - routers/: Contém o arquivo de rotas
+
+  - styles/: Arquivos de estilo.
+  
+- App.tsx: Componente principal do aplicativo.
+
+- index.tsx: Ponto de entrada para o React.
+
+## 📚 Tecnologias Utilizadas
+
+- React
+  
+- React Router
+
+- styled-components (CSS Modules)
+
+## 📝 Licença
+
+Este projeto está licenciado sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+<br>
+
+<hr>
