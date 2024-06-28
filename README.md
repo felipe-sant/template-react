@@ -44,6 +44,7 @@ Para iniciar o servidor de desenvolvimento, use:
     ├─── public/
     │   └─── index.html
     ├─── src/
+    │   ├─── functions/
     │   ├─── pages/
     │   ├─── routers/
     │   ├─── styles/
@@ -55,25 +56,25 @@ Para iniciar o servidor de desenvolvimento, use:
     ├─── README.md
     └─── ...
 
-- public/: Contém o arquivo HTML principal e outros recursos públicos.
+- [public/](public/): Contém o arquivo HTML principal e outros recursos públicos.
 
-- src/: Contém os arquivos de código-fonte do projeto
+- [src/](src/): Contém os arquivos de código-fonte do projeto
 
-  - pages/: Páginas principais da aplicação.
+  - [functions/](src/functions): Contém os arquivos de funções.
+
+  - [pages/](src/pages): Páginas principais da aplicação.
  
-  - routers/: Contém o arquivo de rotas
+  - [routers/](src/routers): Contém o arquivo de rotas.
 
-  - styles/: Arquivos de estilo.
-  
-- App.tsx: Componente principal do aplicativo.
-
-- index.tsx: Ponto de entrada para o React.
+  - [styles/](src/styles): Arquivos de estilo.
 
 ## 📚 Tecnologias Utilizadas
 
 - React
   
 - React Router
+
+- Fetch API
 
 - styled-components (CSS Modules)
 
