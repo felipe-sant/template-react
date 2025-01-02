@@ -1,8 +1,8 @@
 import { Route, BrowserRouter, Routes as Switch } from "react-router-dom";
-import Home from "../pages/home";
-import NotFound from "../pages/notFound";
+import Home from "../pages/Home";
+import NotFound from "../pages/NotFound";
 
-export default function Routers() {
+export default function Router() {
   return (
     <BrowserRouter>
       <Switch>
