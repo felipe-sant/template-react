@@ -1,6 +1,6 @@
 import ErrorMessage from "../../types/ErrorMessage";
 
-async function updateRequest<T, U>(url: string, query: Record<string, string>, body: U): Promise<T | ErrorMessage> {
+async function updateRequest<T, U>(url: string, body: U, query?: Record<string, string>): Promise<T | ErrorMessage> {
     try {
         let fullUrl: string
         query ? fullUrl = `${url}?${(new URLSearchParams(query)).toString()}` : fullUrl = url
