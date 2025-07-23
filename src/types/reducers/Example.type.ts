@@ -1,5 +1,5 @@
 type ExampleType = {
-    name: string
+    // adicione os tipos dos campos aqui.
 }
 
 export default ExampleType

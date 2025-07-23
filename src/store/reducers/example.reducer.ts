@@ -1,21 +1,22 @@
 import { ActionReducerMapBuilder, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import exampleState from "./example.state";
 import ExampleType from "../../types/reducers/Example.type";
+
+const initialState: ExampleType = {
+    // adicione novos campos aqui.
+}
 
 const exampleSlice = createSlice({
     name: "example",
-    initialState: exampleState,
+    initialState,
     reducers: {
-        setName: (state: ExampleType, action: PayloadAction<string>) => {
-            state.name = action.payload
-        }
+        // Adicione reducers aqui
     },
     extraReducers: (builder: ActionReducerMapBuilder<ExampleType>) => {
-
+        // Adicione extra reducers aqui
     }
 })
 
-const exampleReducer = exampleSlice.reducer
+export const { } = exampleSlice.actions
+export default exampleSlice.reducer;
 
-export const { setName } = exampleSlice.actions
-export default exampleReducer
+export { exampleSlice };
