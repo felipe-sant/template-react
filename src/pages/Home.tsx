@@ -1,14 +1,12 @@
-import { useSelector } from "react-redux"
+import useAppDispatch from "../hooks/useAppDispatch"
 import css from "../styles/pages/home.module.css"
-import { AppDispatch, RootState } from "../store/store"
-import { useDispatch } from "react-redux"
 
 function Home() {
-    const dispatch = useDispatch<AppDispatch>()
+    const dispatch = useAppDispatch()
 
     return (
         <main className={css.main}>
-            <h1>Hello World!</h1>
+            <h1>Hello world</h1>
         </main>
     )
 }
