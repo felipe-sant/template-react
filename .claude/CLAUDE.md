@@ -79,6 +79,50 @@ Exceções, quando realmente necessárias: diretivas exigidas por ferramenta (`@
 `eslint-disable`, pragmas de build) e o cabeçalho de licença de terceiros. Nenhuma delas é
 comentário explicativo.
 
+### Imports
+
+Duas regras complementares, ambas com o mesmo objetivo: reduzir a quantidade de JavaScript no
+arquivo buildado. Nenhuma das duas reduz o `node_modules` — o tamanho dele depende só do
+`package.json` e das dependências transitivas instaladas, não da forma como o código importa.
+
+**Import nomeado, nunca import de namespace.** Importe só o que for usado — prefira
+
+```ts
+import { StrictMode } from "react";
+```
+
+a
+
+```ts
+import * as React from "react";
+```
+
+A primeira forma permite tree-shaking: o Rollup (via Vite) descarta do bundle o que não foi
+referenciado. O namespace obriga o bundler a manter o módulo inteiro, porque qualquer propriedade
+pode ser acessada em tempo de execução.
+
+**Subpath import quando o pacote publicar.** Importe pelo caminho específico — prefira
+
+```ts
+import debounce from "lodash/debounce";
+```
+
+a
+
+```ts
+import { debounce } from "lodash";
+```
+
+O ganho aparece em pacotes que publicam um arquivo por função/módulo (`lodash`, `date-fns`) ou por
+grupo (bibliotecas de ícones, ex. `react-icons/fi`), onde importar do índice arrasta o pacote
+inteiro. Limites: nem todo pacote expõe subpaths — muitos restringem o que é acessível pelo campo
+`exports` do `package.json`, e importar um caminho não declarado quebra o build, então confira o
+que o pacote publica em vez de presumir. Não se aplica ao React, que só expõe `react` e
+`react/jsx-runtime`: não existe subpath por hook porque `useState` não é um módulo isolado, é uma
+chamada ao dispatcher interno do runtime. E pacotes ESM com bom tree-shaking (`lodash-es`,
+`date-fns` v3) já resolvem isso pela primeira regra — subpath é a saída para pacotes CJS ou mal
+empacotados.
+
 ## Pontos conhecidos em aberto
 
 - Não há favicon: o `index.html` da raiz não referencia nenhum ícone e não existe `public/`, então
