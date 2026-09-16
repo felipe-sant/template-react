@@ -28,14 +28,21 @@ npx tsc --noEmit # checagem de tipos isolada
 Não existe script de lint — não há ESLint configurado no projeto.
 
 O teste é **co-localizado**: `<arquivo>.test.tsx` ao lado do arquivo testado
-(`src/pages/Home.page.test.tsx`, `src/routers/Router.test.tsx`, `src/components/Button.test.tsx`),
-nunca em `__tests__/` nem com sufixo `.spec.tsx`. O ambiente é `jsdom` e o setup é
+(`src/pages/Home.page.test.tsx`, `src/components/Button.test.tsx`), nunca em `__tests__/` nem com
+sufixo `.spec.tsx`. Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service
+(`src/hooks/useToggle.test.ts`, `src/utils/formatDate.test.ts`). O ambiente é `jsdom` e o setup é
 `src/setupTests.ts`, registrado em `test.setupFiles` do `vite.config.ts` — é ele que importa
 `@testing-library/jest-dom/vitest` (registrando matchers como `toBeInTheDocument()`) e que roda
 `afterEach(cleanup)`, porque sem `globals: true` o Testing Library não liga o cleanup sozinho.
-Os três testes existentes servem de modelo: render direto da página, árvore de rotas (`AppRoutes`)
-sob `MemoryRouter` para verificar a rota `*`, e componente com interação (clique disparando
-`onClick`). A skill `vitest-specialist` documenta o resto.
+Os testes existentes servem de modelo para cada formato: render direto da página
+(`Home.page.test.tsx`), árvore de rotas sob `MemoryRouter` para verificar a rota `*`
+(`Router.test.tsx`), componente com interação (`Button.test.tsx`), hook com `renderHook`
+(`useToggle.test.ts`), função pura (`formatDate.test.ts`), módulo com `fetch` stubado via
+`vi.stubGlobal` (`http.service.test.ts`) e layout com `<Outlet />` preenchido por rota-filha
+(`Main.layout.test.tsx`). A skill `vitest-specialist` documenta o resto.
+
+Ficam sem teste `src/index.tsx`, que só chama `createRoot` num `#root` que não existe fora do
+`index.html`, e `src/types/example.types.ts`, que só declara tipo e não tem runtime.
 
 `vite build` sozinho não checa tipos (usa esbuild, que só transpila); por isso o script `build`
 roda `tsc --noEmit` antes.

@@ -94,7 +94,11 @@ O teste fica **co-localizado**: `<arquivo>.test.tsx` ao lado do arquivo testado
 `jsdom` e o setup é `src/setupTests.ts`, registrado em `test.setupFiles` do `vite.config.ts` — é
 ele que registra os matchers do `jest-dom` (`toBeInTheDocument()` e companhia).
 
-Os três testes que vêm no template servem de modelo: `Home.page.test.tsx` renderiza a página
-direto, `Router.test.tsx` renderiza a árvore de rotas (`AppRoutes`) sob `MemoryRouter` para
-verificar que uma URL inexistente cai no `NotFound`, e `Button.test.tsx` cobre um componente com
-interação (clique disparando `onClick`).
+Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service.
+
+Os testes que vêm no template servem de modelo, um por formato: `Home.page.test.tsx` renderiza a
+página direto, `Router.test.tsx` renderiza a árvore de rotas (`AppRoutes`) sob `MemoryRouter` para
+verificar que uma URL inexistente cai no `NotFound`, `Button.test.tsx` cobre um componente com
+interação (clique disparando `onClick`), `useToggle.test.ts` usa `renderHook` para um hook,
+`formatDate.test.ts` cobre uma função pura, `http.service.test.ts` stuba o `fetch` com
+`vi.stubGlobal` e `Main.layout.test.tsx` preenche o `<Outlet />` com uma rota-filha.
