@@ -41,7 +41,7 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
 - **`src/styles/`** — `global.css` guarda os CSS custom properties (escala de cinza `--g1-color`
   … `--g10-color`, `--roboto-font`) e o reset. Estilos de página ficam em
   `src/styles/pages/<nome>.module.css` (CSS Modules), importados como `import css from "..."`.
-  A tipagem dos módulos vem de `src/declarations.d.ts`.
+  A tipagem dos módulos vem de `src/types/declarations.d.ts`.
 
 Não há camada de estado global, cliente HTTP, alias de import (`@/`) nem variáveis de ambiente
 configuradas. Ao adicionar qualquer uma dessas coisas, considere que a migração para Vite está

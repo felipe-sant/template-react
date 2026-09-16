@@ -11,7 +11,7 @@ tools: Read, Grep, Glob, Bash
 
 ## Itens auditados explicitamente
 
-- **Bloqueante:** uso de `css.<classe>` (CSS Module) sem a classe correspondente existir no arquivo `.module.css` importado. A tipagem em `src/declarations.d.ts` é `{ [key: string]: string }`, então o TypeScript não acusa — confira abrindo o módulo (issue #3).
+- **Bloqueante:** uso de `css.<classe>` (CSS Module) sem a classe correspondente existir no arquivo `.module.css` importado. A tipagem em `src/types/declarations.d.ts` é `{ [key: string]: string }`, então o TypeScript não acusa — confira abrindo o módulo (issue #3).
 - **Bloqueante:** navegação interna com `<a href="...">` em vez de `<Link to="...">`/`useNavigate` do `react-router-dom` (issue #5). Link para domínio externo é legítimo e não deve ser apontado.
 - **Bloqueante:** página nova criada sem rota registrada em `src/routers/Router.tsx`, ou rota registrada apontando para página inexistente.
 - **Bloqueante:** `any` explícito, ou cast (`as`) usado para silenciar um erro de tipo em vez de modelar o tipo corretamente.
