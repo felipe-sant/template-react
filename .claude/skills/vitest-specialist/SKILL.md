@@ -51,19 +51,28 @@ Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service. 
 
 ## 4. `src/setupTests.ts` e o subpath — não "conserte" este import
 
-O arquivo tem **uma linha só**, e ela é registrada em `test.setupFiles` do `vite.config.ts`:
+O arquivo é registrado em `test.setupFiles` do `vite.config.ts` e faz duas coisas:
 
 ```ts
 import "@testing-library/jest-dom/vitest"
+import { cleanup } from "@testing-library/react"
+import { afterEach } from "vitest"
+
+afterEach(cleanup)
 ```
 
-O subpath `/vitest` é obrigatório: ele registra os matchers no `expect` do **Vitest**. O entrypoint raiz (`@testing-library/jest-dom`) augmenta o namespace global `jest`, que o Vitest não usa. Trocar um pelo outro **compila normalmente** e quebra em runtime, com um erro que não menciona o import:
+**O subpath `/vitest` é obrigatório.** Ele registra os matchers no `expect` do Vitest. O entrypoint raiz (`@testing-library/jest-dom`) chama `expect.extend(...)` contando com um `expect` **global**, que não existe aqui porque não há `globals: true`. Trocar o subpath pelo raiz compila e quebra ao carregar o setup:
 
 ```
-Invalid Chai property: toBeInTheDocument
+ReferenceError: expect is not defined
+ ❯ src/setupTests.ts:1:1
 ```
 
-Mesmo erro se o `setupFiles` sumir do `vite.config.ts`. Se você encontrar esse import e ele parecer "errado", ele não está: deixe como está.
+Esse erro ao menos aponta o arquivo. O sintoma de o `setupFiles` ter sumido do `vite.config.ts` é outro, e mais enganoso — `Invalid Chai property: toBeInTheDocument`, apontando para a linha do `expect` no teste, sem nenhuma menção ao setup.
+
+**O `afterEach(cleanup)` também é obrigatório, e não é redundante.** O cleanup automático do Testing Library se registra num `afterEach` global; sem `globals: true` esse global não existe, então o RTL não liga nada sozinho (ele testa `if (typeof afterEach === 'function')`). É esta linha que desmonta o DOM entre um `it` e o seguinte. Apagá-la por parecer supérflua faz todo arquivo com mais de um `render` começar a falhar com `Found multiple elements`.
+
+Se você encontrar este arquivo e algo nele parecer errado, não está: deixe como está.
 
 ## 5. Testar um componente ou página
 
@@ -87,19 +96,23 @@ describe("HomePage", () => {
 
 Import interno com `@/`, nunca `../`. O nome do `describe` é o identificador testado (inglês); a descrição do `it` é uma frase em português, como todo texto lido por gente.
 
-### Mais de um `render` no mesmo arquivo: chame `cleanup`
+### Mais de um `render` no mesmo arquivo
 
-A mesma ausência de `globals: true` desliga o **cleanup automático** do Testing Library: sem um `afterEach` global, ele não tem onde se registrar, e o DOM de um `it` continua montado no seguinte. O sintoma é `Found multiple elements with the role "button"` num teste que só renderizou uma vez. `src/components/Button.test.tsx` resolve na forma padrão:
+Não precisa de nada: o `afterEach(cleanup)` do `src/setupTests.ts` desmonta o DOM entre um `it` e o seguinte, em toda suíte. `src/components/Button.test.tsx` tem dois `render` e nenhum boilerplate de limpeza:
 
 ```tsx
-import { afterEach, describe, expect, it, vi } from "vitest"
-import { cleanup, render, screen } from "@testing-library/react"
+import { describe, expect, it, vi } from "vitest"
+import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import Button from "@/components/Button"
 
-afterEach(cleanup)
-
 describe("Button", () => {
+    it("renderiza o label recebido", () => {
+        render(<Button label="Botão de exemplo" />)
+
+        expect(screen.getByRole("button", { name: "Botão de exemplo" })).toBeInTheDocument()
+    })
+
     it("dispara o onClick ao ser clicado", () => {
         const onClick = vi.fn()
         render(<Button label="Botão de exemplo" onClick={onClick} />)
@@ -111,7 +124,7 @@ describe("Button", () => {
 })
 ```
 
-Arquivo com um `it` só não precisa — os dois testes que vieram da #19 não têm a linha.
+Isso só funciona por causa da linha no setup — ver item 4.
 
 ## 6. Testar algo que depende de rota
 
@@ -165,11 +178,12 @@ Ordem de preferência: **`getByRole` com `name`** > `getByLabelText` / `getByTex
 
 | Sintoma | Causa |
 | --- | --- |
-| `Invalid Chai property: toBeInTheDocument` | o setup não carregou: `setupFiles` fora do `vite.config.ts`, ou o import do `setupTests.ts` trocado pelo entrypoint raiz em vez do subpath `/vitest` (item 4) |
+| `Invalid Chai property: toBeInTheDocument` | o setup não carregou: `setupFiles` saiu do bloco `test` do `vite.config.ts` (item 4) |
+| `ReferenceError: expect is not defined`, apontando `src/setupTests.ts:1` | o import do setup foi trocado pelo entrypoint raiz do `jest-dom` em vez do subpath `/vitest` (item 4) |
 | "No test files found", ou exit 1 sem nenhuma falha visível | nome ou lugar do arquivo fora da convenção — não é coletado, e sem `passWithNoTests` a suíte vazia falha (itens 2 e 3) |
 | `useNavigate() may be used only in the context of a <Router>` | faltou `MemoryRouter` em volta do que usa `<Link>`/`useNavigate` (item 6) |
 | `document is not defined` | `environment: "jsdom"` fora do bloco `test` do `vite.config.ts` |
-| `Found multiple elements with the role ...` | render anterior não foi desmontado: falta `afterEach(cleanup)` no arquivo com mais de um `render` (item 5) |
+| `Found multiple elements with the role ...` | render anterior não foi desmontado: alguém removeu o `afterEach(cleanup)` do `src/setupTests.ts` (item 4) |
 | `describe is not defined` / `vi is not defined` | falta o `import` de `vitest` — não há `globals: true` |
 | `userEvent.setup is not a function` | exemplo de v14 num repositório com a v13 (item 8) |
 
@@ -182,7 +196,7 @@ Ordem de preferência: **`getByRole` com `name`** > `getByLabelText` / `getByTex
 - [ ] Import do arquivo testado com `@/`, nunca `../`
 - [ ] Query por `getByRole` com `name` sempre que possível; `getByTestId` só como último recurso
 - [ ] `MemoryRouter` em volta do que depende de rota; `AppRoutes`, não o `Router` default
-- [ ] `afterEach(cleanup)` se o arquivo renderiza mais de uma vez
+- [ ] Nenhum `afterEach(cleanup)` local — o `src/setupTests.ts` já faz isso em toda suíte
 - [ ] `user-event` na API v13, sem `setup()`
 - [ ] Sem comentário no código; nome de identificador em inglês, descrição do `it` em português
 - [ ] `npm test -- --run` passa, e a contagem de arquivos cresceu com o arquivo novo
