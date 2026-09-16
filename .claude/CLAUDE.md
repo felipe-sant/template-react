@@ -19,13 +19,21 @@ ver "Estilo de código".
 npm run dev      # dev server do Vite (porta padrão 5173)
 npm run build    # checagem de tipos (tsc --noEmit) + build de produção em dist/
 npm run preview  # serve o conteúdo de dist/ já gerado — depende de um npm run build anterior
-npm test         # Vitest (passWithNoTests: true, pois ainda não há teste escrito)
-npm test src/pages/Home.test.tsx   # um arquivo específico
+npm test         # Vitest em watch mode (o script é `vitest`, sem `run`)
+npm test -- --run                            # execução one-shot (CI, agente, terminal não-interativo)
+npm test -- --run src/pages/Home.page.test.tsx   # um arquivo específico
 npx tsc --noEmit # checagem de tipos isolada
 ```
 
-Não existe script de lint — não há ESLint configurado no projeto. Ainda não há nenhum teste
-escrito no repositório: `npm test` passa com 0 arquivos de teste.
+Não existe script de lint — não há ESLint configurado no projeto.
+
+O teste é **co-localizado**: `<arquivo>.test.tsx` ao lado do arquivo testado
+(`src/pages/Home.page.test.tsx`, `src/routers/Router.test.tsx`), nunca em `__tests__/` nem com
+sufixo `.spec.tsx`. O ambiente é `jsdom` e o setup é `src/setupTests.ts`, registrado em
+`test.setupFiles` do `vite.config.ts` — é ele que importa `@testing-library/jest-dom/vitest` e
+registra matchers como `toBeInTheDocument()`. Sem esse setup carregado, o matcher não existe.
+Os dois testes existentes servem de modelo: render direto da página, e árvore de rotas
+(`AppRoutes`) sob `MemoryRouter` para verificar a rota `*`.
 
 `vite build` sozinho não checa tipos (usa esbuild, que só transpila); por isso o script `build`
 roda `tsc --noEmit` antes.
@@ -38,7 +46,9 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   Páginas que precisam de título próprio declaram o próprio `<Helmet>`, que sobrescreve o do App
   (ver `NotFound.page.tsx`).
 - **`src/routers/Router.tsx`** — ponto único de registro de rotas (`BrowserRouter`). `Routes` é
-  importado com alias `Switch`. A rota `*` cai em `NotFound`. Toda página nova entra aqui.
+  importado com alias `Switch`. A rota `*` cai em `NotFound`. Toda página nova entra aqui. O
+  arquivo exporta `AppRoutes` (só as `<Route>`) separado do `Router` (export default, que envolve
+  `AppRoutes` com `BrowserRouter`) — é `AppRoutes` que o teste renderiza sob `MemoryRouter`.
 - **`src/pages/`** — convenção de nome `Nome.page.tsx`, componente `function NomePage()` com
   `export default`.
 - **`src/styles/`** — `global.css` guarda os CSS custom properties (escala de cinza `--g1-color`
@@ -159,7 +169,8 @@ PR segue a estrutura de `.github/PULL_REQUEST_TEMPLATE.md`, não um corpo livre.
   (implementa um `tasks.md` já aprovado, em branch dedicada, com commits atômicos) e `reviewer`
   (audita o resultado contra este arquivo, somente leitura).
 - `.claude/skills/` — conhecimento carregável sob demanda. Hoje só `react-page-scaffold`, o passo
-  a passo de criar página. As skills de componente e de testes ficam para depois de #10 e #19.
+  a passo de criar página. A skill de teste (`vitest-specialist`, issue #21) ainda não existe — a
+  convenção vive na seção "Comandos" deste arquivo e nos dois testes de exemplo.
 - `.docs/` — specs por feature/bug (`.docs/features/<slug>/`, `.docs/bugs/<slug>/`), a partir de
   `.docs/_template/`. As pastas de spec são gitignored: planejamento local, fora do histórico.
   O estado vive no campo `**Status:**` do `spec.md` (`rascunho` → `em-revisao` → `aprovada` →
