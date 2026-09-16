@@ -22,7 +22,7 @@ Toda página deste template é composta por **três peças que precisam existir 
 Nome do arquivo em PascalCase com sufixo `.page.tsx`. Componente `function <Nome>Page()`, com `export default` no final (não `export default function`, para seguir o padrão dos dois exemplos existentes).
 
 ```tsx
-import css from "../styles/pages/exemplo.module.css"
+import css from "@/styles/pages/exemplo.module.css"
 
 function ExemploPage() {
     return (
@@ -50,7 +50,7 @@ Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-col
 Registre a página no `Router`. O `Routes` é importado com o alias `Switch`, e a rota `*` (NotFound) tem que continuar sendo a **última**:
 
 ```tsx
-import Exemplo from "../pages/Exemplo.page";
+import Exemplo from "@/pages/Exemplo.page";
 
 <Switch>
     <Route path="/" element={<Home />} />

@@ -19,6 +19,20 @@ Siga essa tabela ao adicionar código novo.
 | `utils/` | Funções puras e auxiliares. | `<nome>.ts` (camelCase) | export **nomeado** |
 | `styles/` | `global.css` (custom properties + reset) e CSS Modules por pasta. | `<nome>.module.css` (camelCase) | — |
 
+### Imports internos
+
+Use o alias `@/`, que resolve para `src/`:
+
+```ts
+import Button from "@/components/Button"
+import css from "@/styles/pages/home.module.css"
+```
+
+Nunca suba de pasta com `../` — um import assim quebra ao mover o arquivo de lugar. O alias é
+configurado em dois lugares que precisam concordar: `paths` no `tsconfig.json` e `resolve.alias`
+no `vite.config.ts`. Import na mesma pasta ou descendo da própria localização (`./routers/Router`
+em `src/App.tsx`) continua válido.
+
 ### CSS Modules
 
 Os estilos não ficam co-localizados: o CSS Module de uma peça vive em

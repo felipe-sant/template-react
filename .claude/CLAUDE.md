@@ -45,9 +45,13 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   … `--g10-color`, `--roboto-font`) e o reset. Estilos de página ficam em
   `src/styles/pages/<nome>.module.css` (CSS Modules), importados como `import css from "..."`.
   A tipagem dos módulos vem de `src/types/declarations.d.ts`.
+- **Alias de import `@/`** — `@/*` resolve para `src/*`. Configurado em dois lugares que precisam
+  continuar concordando: `paths` no `tsconfig.json` (para o `tsc` e o editor) e `resolve.alias` no
+  `vite.config.ts` (para o dev server e o build). Mexer em um sem o outro deixa o `tsc --noEmit`
+  verde e quebra o build, ou vice-versa. O Vitest herda o alias do mesmo `vite.config.ts`.
 
-Não há camada de estado global, cliente HTTP, alias de import (`@/`) nem variáveis de ambiente
-configuradas. A convenção de variáveis de ambiente é a do Vite: só variáveis com prefixo `VITE_`
+Não há camada de estado global nem cliente HTTP configurados. A convenção de variáveis de
+ambiente é a do Vite: só variáveis com prefixo `VITE_`
 são expostas ao código do cliente, e a leitura é `import.meta.env.VITE_ALGO` — não
 `process.env.REACT_APP_ALGO`, que era a convenção do Create React App e não existe mais aqui.
 
@@ -81,9 +85,16 @@ comentário explicativo.
 
 ### Imports
 
-Duas regras complementares, ambas com o mesmo objetivo: reduzir a quantidade de JavaScript no
-arquivo buildado. Nenhuma das duas reduz o `node_modules` — o tamanho dele depende só do
-`package.json` e das dependências transitivas instaladas, não da forma como o código importa.
+Três regras. A primeira é sobre onde o módulo está; as duas seguintes, sobre reduzir a quantidade
+de JavaScript no arquivo buildado — e nenhuma dessas duas reduz o `node_modules`, cujo tamanho
+depende só do `package.json` e das dependências transitivas instaladas, não da forma como o código
+importa.
+
+**Import interno usa o alias `@/`, nunca `../`.** Um import que sobe de pasta (`../`,
+`../../`) é frágil: quebra ao mover o arquivo de lugar. Use `@/styles/pages/home.module.css` em
+vez de `../styles/pages/home.module.css`. Import para a mesma pasta ou descendo a partir da
+própria localização (`./routers/Router` em `src/App.tsx`) continua válido — o problema é subir,
+não descer. Imports de pacote (`react`, `react-router-dom`) não são afetados.
 
 **Import nomeado, nunca import de namespace.** Importe só o que for usado — prefira
 
