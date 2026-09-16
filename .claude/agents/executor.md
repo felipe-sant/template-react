@@ -19,6 +19,7 @@ tools: Read, Edit, Write, Grep, Glob, Bash, TodoWrite, Agent
 Siga as convenções do `CLAUDE.md` deste repositório. Todo código que você escrever deve nascer já conforme elas — não escreva primeiro fora do padrão para "arrumar depois" na revisão:
 
 - **Páginas** seguem `src/pages/<Nome>.page.tsx` + `src/styles/pages/<nome>.module.css` + registro em `src/routers/Router.tsx`. Antes de criar ou alterar uma página, carregue o skill `react-page-scaffold` (via ferramenta `Skill`, se disponível, ou lendo `.claude/skills/react-page-scaffold/SKILL.md`). Se a convenção real do código contradizer o skill, a convenção real do código sempre vence.
+- **Componentes** seguem `src/components/<Nome>.tsx` (PascalCase, sem sufixo) + `src/styles/components/<nome>.module.css` + teste co-localizado `src/components/<Nome>.test.tsx`. Antes de criar ou alterar um componente, carregue o skill `react-component-scaffold` (via ferramenta `Skill`, se disponível, ou lendo `.claude/skills/react-component-scaffold/SKILL.md`). Se a convenção real do código contradizer o skill, a convenção real do código sempre vence.
 - **Nunca deixe um CSS Module dessincronizado do componente.** Se o JSX usa `css.algo`, a classe `.algo` precisa existir no módulo importado — como a tipagem em `src/types/declarations.d.ts` é `{ [key: string]: string }`, uma classe inexistente vira `undefined` silenciosamente, sem erro de compilação (é exatamente o bug da issue #3).
 - **Navegação interna usa `<Link to="...">`/`useNavigate` do `react-router-dom`**, nunca `<a href="...">` — âncora crua força reload completo e descarta o estado da aplicação (issue #5).
 - **TypeScript `strict`:** sem `any` explícito e sem cast para silenciar erro de tipo. Se o tipo for difícil de expressar, use `unknown` com checagem, ou modele o tipo corretamente.
@@ -38,7 +39,7 @@ Depois de cada tarefa relevante, rode os comandos de verificação que o `packag
 
 **Este template está em construção e nem todo comando existe ainda:** não há script de `lint` (issue #8). Antes de rodar, confira o `package.json` da branch em vez de assumir esta lista; se um comando não existir, diga isso no relatório em vez de reportar a verificação como feita. Se um comando existir e falhar, pare e conserte — não marque a tarefa como concluída com verificação vermelha.
 
-Escrever/atualizar o teste co-localizado (`<arquivo>.test.tsx` ao lado do arquivo testado) faz parte da própria tarefa de código sempre que ela muda comportamento de componente, hook ou rota — não é uma tarefa separada depois. O ambiente de teste é `jsdom` e o setup fica em `src/setupTests.ts`.
+Escrever/atualizar o teste co-localizado (`<arquivo>.test.tsx` ao lado do arquivo testado) faz parte da própria tarefa de código sempre que ela muda comportamento de componente, hook ou rota — não é uma tarefa separada depois. O ambiente de teste é `jsdom` e o setup fica em `src/setupTests.ts`. Antes de escrever ou alterar um arquivo de teste, carregue o skill `vitest-specialist` (via ferramenta `Skill`, se disponível, ou lendo `.claude/skills/vitest-specialist/SKILL.md`) — vale a mesma ressalva: se a convenção real do código contradizer o skill, o código vence.
 
 ## Commits e PR
 

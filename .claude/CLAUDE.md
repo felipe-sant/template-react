@@ -28,12 +28,14 @@ npx tsc --noEmit # checagem de tipos isolada
 Não existe script de lint — não há ESLint configurado no projeto.
 
 O teste é **co-localizado**: `<arquivo>.test.tsx` ao lado do arquivo testado
-(`src/pages/Home.page.test.tsx`, `src/routers/Router.test.tsx`), nunca em `__tests__/` nem com
-sufixo `.spec.tsx`. O ambiente é `jsdom` e o setup é `src/setupTests.ts`, registrado em
-`test.setupFiles` do `vite.config.ts` — é ele que importa `@testing-library/jest-dom/vitest` e
-registra matchers como `toBeInTheDocument()`. Sem esse setup carregado, o matcher não existe.
-Os dois testes existentes servem de modelo: render direto da página, e árvore de rotas
-(`AppRoutes`) sob `MemoryRouter` para verificar a rota `*`.
+(`src/pages/Home.page.test.tsx`, `src/routers/Router.test.tsx`, `src/components/Button.test.tsx`),
+nunca em `__tests__/` nem com sufixo `.spec.tsx`. O ambiente é `jsdom` e o setup é
+`src/setupTests.ts`, registrado em `test.setupFiles` do `vite.config.ts` — é ele que importa
+`@testing-library/jest-dom/vitest` (registrando matchers como `toBeInTheDocument()`) e que roda
+`afterEach(cleanup)`, porque sem `globals: true` o Testing Library não liga o cleanup sozinho.
+Os três testes existentes servem de modelo: render direto da página, árvore de rotas (`AppRoutes`)
+sob `MemoryRouter` para verificar a rota `*`, e componente com interação (clique disparando
+`onClick`). A skill `vitest-specialist` documenta o resto.
 
 `vite build` sozinho não checa tipos (usa esbuild, que só transpila); por isso o script `build`
 roda `tsc --noEmit` antes.
@@ -168,9 +170,11 @@ PR segue a estrutura de `.github/PULL_REQUEST_TEMPLATE.md`, não um corpo livre.
   `sdd` (só planeja, escreve `spec.md`/`tasks.md` em `.docs/`, nunca toca em `src/`), `executor`
   (implementa um `tasks.md` já aprovado, em branch dedicada, com commits atômicos) e `reviewer`
   (audita o resultado contra este arquivo, somente leitura).
-- `.claude/skills/` — conhecimento carregável sob demanda. Hoje só `react-page-scaffold`, o passo
-  a passo de criar página. A skill de teste (`vitest-specialist`, issue #21) ainda não existe — a
-  convenção vive na seção "Comandos" deste arquivo e nos dois testes de exemplo.
+- `.claude/skills/` — conhecimento carregável sob demanda. São três, separadas pela pasta do
+  artefato: `react-page-scaffold` (página em `src/pages/` + CSS Module + registro de rota),
+  `react-component-scaffold` (componente reutilizável em `src/components/` + CSS Module em
+  `src/styles/components/`) e `vitest-specialist` (teste co-localizado com Vitest + Testing
+  Library, `src/setupTests.ts` e o bloco `test` do `vite.config.ts`).
 - `.docs/` — specs por feature/bug (`.docs/features/<slug>/`, `.docs/bugs/<slug>/`), a partir de
   `.docs/_template/`. As pastas de spec são gitignored: planejamento local, fora do histórico.
   O estado vive no campo `**Status:**` do `spec.md` (`rascunho` → `em-revisao` → `aprovada` →
