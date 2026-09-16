@@ -33,11 +33,8 @@ Fase 1 (sequencial)  →  Fase 2 (T2 [P] e T3 [P] em paralelo)  →  Fase 3
 Cada tarefa deve ser pequena o suficiente para o executor marcar como concluída
 sem ambiguidade.
 
-Sobre testes: enquanto a issue #19 (setup de testes) não estiver implementada,
-este repositório não tem suíte utilizável — nesse caso o "Feito quando" de uma
-tarefa de comportamento deve descrever uma validação manual objetiva (ex.: "a
-rota /x renderiza a página Y no navegador") em vez de referenciar um arquivo de
-teste inexistente. Depois de #19, a convenção passa a ser teste co-localizado
+Sobre testes: o repositório tem suíte utilizável (Vitest + jsdom; one-shot em
+`npm test -- --run`). A convenção é teste co-localizado
 (`<arquivo>.test.tsx` ao lado do arquivo testado em `src/`, nunca `__tests__/`
 nem `.spec.tsx`), e o "Feito quando" de toda tarefa que muda comportamento de
 componente/hook/rota deve referenciar o arquivo de teste que cobre o cenário.
