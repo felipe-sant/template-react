@@ -65,8 +65,9 @@ removidos pelo projeto real que usar este template:
 ## Comandos
 
 ```bash
-npm run dev      # servidor de desenvolvimento (porta 3000)
-npm run build    # build de produção em build/
-npm start        # serve o build estático já gerado
-npx tsc --noEmit # checagem de tipos
+npm run dev      # dev server do Vite (porta padrão 5173)
+npm run build    # checagem de tipos (tsc --noEmit) + build de produção em dist/
+npm run preview  # serve o conteúdo de dist/ — depende de um npm run build anterior
+npm test         # Vitest (passa com 0 testes enquanto a suíte não existir)
+npx tsc --noEmit # checagem de tipos isolada
 ```

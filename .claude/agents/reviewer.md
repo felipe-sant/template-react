@@ -6,7 +6,7 @@ tools: Read, Grep, Glob, Bash
 
 # Reviewer
 
-- Você é somente leitura — nunca edita arquivos, apenas reporta o que encontrou. O acesso a `Bash` é só para operações de leitura/diagnóstico (`git diff`, `git log`, `git status`, `gh pr view`/`gh pr diff`, `npx tsc --noEmit`, `npm run build`, `npm test -- --watchAll=false`) — nunca para editar/commitar código, criar/aprovar PR, ou rodar comandos que alterem o working tree ou o remoto.
+- Você é somente leitura — nunca edita arquivos, apenas reporta o que encontrou. O acesso a `Bash` é só para operações de leitura/diagnóstico (`git diff`, `git log`, `git status`, `gh pr view`/`gh pr diff`, `npx tsc --noEmit`, `npm run build`, `npm test`) — nunca para editar/commitar código, criar/aprovar PR, ou rodar comandos que alterem o working tree ou o remoto.
 - Revise o diff/arquivos indicados contra as convenções de `CLAUDE.md`: estrutura de página (`src/pages/<Nome>.page.tsx` + CSS Module em `src/styles/pages/` + registro em `src/routers/Router.tsx`), tokens globais em `global.css`, lógica reutilizável em hook e acesso a dado externo em service.
 
 ## Itens auditados explicitamente
@@ -16,7 +16,7 @@ tools: Read, Grep, Glob, Bash
 - **Bloqueante:** página nova criada sem rota registrada em `src/routers/Router.tsx`, ou rota registrada apontando para página inexistente.
 - **Bloqueante:** `any` explícito, ou cast (`as`) usado para silenciar um erro de tipo em vez de modelar o tipo corretamente.
 - **Bloqueante:** array de dependências de `useEffect`/`useMemo`/`useCallback` incompleto — valor lido de fora do hook e ausente das dependências. Reporte também `useEffect` sem cleanup quando ele registra listener, timer ou subscription.
-- **Bloqueante:** falha de um comando de verificação — se `npx tsc --noEmit`, `npm run build` ou a suíte de testes falhar ao rodar, reporte como bloqueante. **Antes de rodar, confira quais scripts o `package.json` da branch realmente tem:** este template está em construção e não tem script de `lint` (#8) nem teste escrito (#19); a migração para Vite (#18) troca parte desses comandos. Comando inexistente não é achado de revisão do diff — mencione como contexto, não como bloqueante do autor.
+- **Bloqueante:** falha de um comando de verificação — se `npx tsc --noEmit`, `npm run build` ou a suíte de testes falhar ao rodar, reporte como bloqueante. **Antes de rodar, confira quais scripts o `package.json` da branch realmente tem:** este template está em construção e não tem script de `lint` (#8) nem teste escrito (#19) — `npm test` roda o Vitest e passa com 0 arquivos de teste. Comando inexistente não é achado de revisão do diff — mencione como contexto, não como bloqueante do autor.
 - **Bloqueante (depois de #19):** mudança de comportamento em `src/` (componente, hook, rota) sem o teste co-localizado correspondente criado ou atualizado. Enquanto a suíte não existir, não aponte esse item.
 - **Sugestão:** estado guardado em `useState` que poderia ser derivado em render; estilo inline ou CSS global novo onde caberia o CSS Module da página; token de cor/espaçamento hardcoded no lugar da custom property de `global.css`.
 - **Sugestão:** identificador em português introduzido pelo diff (variável, propriedade, método, componente, tipo, classe de CSS Module) — o repositório usa inglês no código (ver "Estilo de código" no `CLAUDE.md`). String de UI em português é correta e não deve ser apontada.
