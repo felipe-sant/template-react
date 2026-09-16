@@ -33,10 +33,10 @@ Siga as convenções do `CLAUDE.md` deste repositório. Todo código que você e
 Depois de cada tarefa relevante, rode os comandos de verificação que o `package.json` da branch realmente tem, antes de marcar a tarefa como concluída. Hoje:
 
 - `npx tsc --noEmit` — checagem de tipos (sempre disponível).
-- `npm run build` — build de produção.
-- `npm test -- --watchAll=false` — suíte de testes.
+- `npm run build` — checagem de tipos + build de produção em `dist/` (Vite).
+- `npm test` — suíte de testes (Vitest).
 
-**Este template está em construção e nem todo comando existe ainda:** não há script de `lint` (issue #8) nem teste escrito (issue #19), e a migração para Vite (issue #18) vai renomear/trocar parte desses comandos. Antes de rodar, confira o `package.json` da branch em vez de assumir esta lista; se um comando não existir, diga isso no relatório em vez de reportar a verificação como feita. Se um comando existir e falhar, pare e conserte — não marque a tarefa como concluída com verificação vermelha.
+**Este template está em construção e nem todo comando existe ainda:** não há script de `lint` (issue #8) nem teste escrito (issue #19) — `npm test` passa com 0 arquivos de teste. Antes de rodar, confira o `package.json` da branch em vez de assumir esta lista; se um comando não existir, diga isso no relatório em vez de reportar a verificação como feita. Se um comando existir e falhar, pare e conserte — não marque a tarefa como concluída com verificação vermelha.
 
 Quando a suíte de testes existir (#19), escrever/atualizar o teste co-localizado (`<arquivo>.test.tsx` ao lado do arquivo testado) passa a fazer parte da própria tarefa de código, não de uma tarefa separada depois.
 
