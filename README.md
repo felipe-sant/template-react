@@ -66,8 +66,8 @@ não em `types/`.
 Os arquivos abaixo existem **apenas para ensinar a convenção** e devem ser substituídos ou
 removidos pelo projeto real que usar este template:
 
-- `src/components/Button.tsx` + `src/styles/components/button.module.css` (consumido em
-  `src/pages/Home.page.tsx`, também como exemplo).
+- `src/components/Button.tsx` + `src/styles/components/button.module.css` +
+  `src/components/Button.test.tsx` (consumido em `src/pages/Home.page.tsx`, também como exemplo).
 - `src/layouts/Main.layout.tsx` + `src/styles/layouts/main.module.css` — ainda **não registrado em
   nenhuma rota**; a rota de layout com `<Outlet />` é escopo da issue #24.
 - `src/hooks/useToggle.ts`
@@ -94,6 +94,7 @@ O teste fica **co-localizado**: `<arquivo>.test.tsx` ao lado do arquivo testado
 `jsdom` e o setup é `src/setupTests.ts`, registrado em `test.setupFiles` do `vite.config.ts` — é
 ele que registra os matchers do `jest-dom` (`toBeInTheDocument()` e companhia).
 
-Os dois testes que vêm no template servem de modelo: `Home.page.test.tsx` renderiza a página
-direto, e `Router.test.tsx` renderiza a árvore de rotas (`AppRoutes`) sob `MemoryRouter` para
-verificar que uma URL inexistente cai no `NotFound`.
+Os três testes que vêm no template servem de modelo: `Home.page.test.tsx` renderiza a página
+direto, `Router.test.tsx` renderiza a árvore de rotas (`AppRoutes`) sob `MemoryRouter` para
+verificar que uma URL inexistente cai no `NotFound`, e `Button.test.tsx` cobre um componente com
+interação (clique disparando `onClick`).

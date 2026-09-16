@@ -28,12 +28,14 @@ npx tsc --noEmit # checagem de tipos isolada
 Não existe script de lint — não há ESLint configurado no projeto.
 
 O teste é **co-localizado**: `<arquivo>.test.tsx` ao lado do arquivo testado
-(`src/pages/Home.page.test.tsx`, `src/routers/Router.test.tsx`), nunca em `__tests__/` nem com
-sufixo `.spec.tsx`. O ambiente é `jsdom` e o setup é `src/setupTests.ts`, registrado em
-`test.setupFiles` do `vite.config.ts` — é ele que importa `@testing-library/jest-dom/vitest` e
-registra matchers como `toBeInTheDocument()`. Sem esse setup carregado, o matcher não existe.
-Os dois testes existentes servem de modelo: render direto da página, e árvore de rotas
-(`AppRoutes`) sob `MemoryRouter` para verificar a rota `*`.
+(`src/pages/Home.page.test.tsx`, `src/routers/Router.test.tsx`, `src/components/Button.test.tsx`),
+nunca em `__tests__/` nem com sufixo `.spec.tsx`. O ambiente é `jsdom` e o setup é
+`src/setupTests.ts`, registrado em `test.setupFiles` do `vite.config.ts` — é ele que importa
+`@testing-library/jest-dom/vitest` (registrando matchers como `toBeInTheDocument()`) e que roda
+`afterEach(cleanup)`, porque sem `globals: true` o Testing Library não liga o cleanup sozinho.
+Os três testes existentes servem de modelo: render direto da página, árvore de rotas (`AppRoutes`)
+sob `MemoryRouter` para verificar a rota `*`, e componente com interação (clique disparando
+`onClick`). A skill `vitest-specialist` documenta o resto.
 
 `vite build` sozinho não checa tipos (usa esbuild, que só transpila); por isso o script `build`
 roda `tsc --noEmit` antes.
