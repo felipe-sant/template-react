@@ -1,7 +1,5 @@
 import css from "../styles/components/button.module.css"
 
-// Componente de exemplo: existe para demonstrar a convenção de `src/components/`.
-// Substitua ou remova no projeto real.
 interface ButtonProps {
     label: string
     onClick?: () => void

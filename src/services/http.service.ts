@@ -1,7 +1,3 @@
-// Service de exemplo: existe para demonstrar a convenção de `src/services/`.
-// Wrapper genérico sobre o `fetch` nativo, sem endpoint real — a URL completa é
-// sempre parâmetro. Substitua ou remova no projeto real.
-
 async function parseResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
         throw new Error(`Requisição falhou com status ${response.status}.`)
