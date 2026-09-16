@@ -5,8 +5,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Contexto
 
 Template base de frontend React + TypeScript, usado como ponto de partida para novos projetos.
-Ainda está em construção e **não** está estruturado de forma definitiva — há uma migração
-planejada de Create React App (`react-scripts`) para **Vite**.
+Ainda está em construção e **não** está estruturado de forma definitiva. A migração de Create
+React App (`react-scripts`) para **Vite** já foi feita: o toolchain de dev server, build e teste
+é Vite + Vitest.
 
 Os textos de UI e o conteúdo de documentação (`README.md`, specs, mensagens de commit, descrição
 de PR) estão em **português**. Mantenha esse padrão. **Identificadores no código são em inglês** —
@@ -15,19 +16,19 @@ ver "Estilo de código".
 ## Comandos
 
 ```bash
-npm run dev      # servidor de desenvolvimento (react-scripts start, porta 3000)
-npm run build    # build de produção em build/
-npm start        # serve o build estático já gerado (serve -s build) — NÃO é o dev server
-npm test         # Jest + React Testing Library em watch mode (react-scripts test)
-npm test -- --watchAll=false                      # roda uma vez (CI)
-npm test -- --watchAll=false src/pages/Home.test.tsx   # um arquivo específico
+npm run dev      # dev server do Vite (porta padrão 5173)
+npm run build    # checagem de tipos (tsc --noEmit) + build de produção em dist/
+npm run preview  # serve o conteúdo de dist/ já gerado — depende de um npm run build anterior
+npm test         # Vitest (passWithNoTests: true, pois ainda não há teste escrito)
+npm test src/pages/Home.test.tsx   # um arquivo específico
 npx tsc --noEmit # checagem de tipos isolada
 ```
 
-Não existe script de lint. O ESLint só roda embutido no `react-scripts` (config `react-app`
-dentro do `package.json`). Ainda não há nenhum teste escrito no repositório.
+Não existe script de lint — não há ESLint configurado no projeto. Ainda não há nenhum teste
+escrito no repositório: `npm test` passa com 0 arquivos de teste.
 
-`npm start` depende de um `npm run build` anterior; sem ele o comando falha.
+`vite build` sozinho não checa tipos (usa esbuild, que só transpila); por isso o script `build`
+roda `tsc --noEmit` antes.
 
 ## Arquitetura
 
@@ -46,8 +47,12 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   A tipagem dos módulos vem de `src/types/declarations.d.ts`.
 
 Não há camada de estado global, cliente HTTP, alias de import (`@/`) nem variáveis de ambiente
-configuradas. Ao adicionar qualquer uma dessas coisas, considere que a migração para Vite está
-prevista e evite acoplar a soluções específicas do `react-scripts`.
+configuradas. A convenção de variáveis de ambiente é a do Vite: só variáveis com prefixo `VITE_`
+são expostas ao código do cliente, e a leitura é `import.meta.env.VITE_ALGO` — não
+`process.env.REACT_APP_ALGO`, que era a convenção do Create React App e não existe mais aqui.
+
+A configuração de build fica em `vite.config.ts` na raiz (plugin React + bloco `test` do Vitest),
+e a entrada da aplicação é o `index.html` da raiz, que carrega `/src/index.tsx` como módulo.
 
 ## Estilo de código
 
@@ -76,8 +81,9 @@ comentário explicativo.
 
 ## Pontos conhecidos em aberto
 
-- `public/` só tem `index.html`, mas ele referencia `manifest.json`, `favicon.ico` e `logo192.png`
-  que não existem — geram 404 em runtime.
+- Não há favicon: o `index.html` da raiz não referencia nenhum ícone e não existe `public/`, então
+  o navegador pede `/favicon.ico` e recebe 404 (issue #2). As referências mortas a
+  `manifest.json`/`logo192.png` já foram removidas junto com o `public/index.html` do CRA.
 - A fonte Roboto é referenciada no CSS mas nunca carregada.
 - `src/styles/pages/home.module.css` está vazio, embora `Home.page.tsx` use `css.main`.
 - `tsconfig.json` ainda tem `target: es5` e TypeScript 4.9 com React 19.
