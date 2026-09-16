@@ -1,1 +1,72 @@
 # Novo projeto
+
+Template base de frontend em React + TypeScript.
+
+## Estrutura de `src/`
+
+Cada pasta tem um papel definido, uma convenção de nome de arquivo e um tipo de export esperado.
+Siga essa tabela ao adicionar código novo.
+
+| Pasta | Guarda | Nome do arquivo | Export |
+| --- | --- | --- | --- |
+| `components/` | Componentes de UI reutilizáveis, sem rota própria. | `<Nome>.tsx` (PascalCase, sem sufixo) | `export default` no final do arquivo |
+| `layouts/` | Estruturas de página compartilhadas (header/footer ao redor de `<Outlet />`). | `<Nome>.layout.tsx` | `export default` no final do arquivo |
+| `pages/` | Telas ligadas a uma rota. | `<Nome>.page.tsx` | `export default` no final do arquivo |
+| `routers/` | Registro das rotas da aplicação. | `Router.tsx` (arquivo único) | `export default` no final do arquivo |
+| `hooks/` | Hooks React reutilizáveis. | `use<Nome>.ts` | export **nomeado** |
+| `services/` | Acesso a dado externo (HTTP e afins). | `<nome>.service.ts` | export **nomeado** |
+| `types/` | Tipos compartilhados entre vários arquivos. | `<nome>.types.ts` / `<nome>.d.ts` | ver abaixo |
+| `utils/` | Funções puras e auxiliares. | `<nome>.ts` (camelCase) | export **nomeado** |
+| `styles/` | `global.css` (custom properties + reset) e CSS Modules por pasta. | `<nome>.module.css` (camelCase) | — |
+
+### CSS Modules
+
+Os estilos não ficam co-localizados: o CSS Module de uma peça vive em
+`src/styles/<pasta>/<nome>.module.css` (ex.: `src/components/Button.tsx` →
+`src/styles/components/button.module.css`) e é importado como `import css from "..."`.
+
+**Toda classe usada como `css.<algo>` no JSX precisa existir no `.module.css` importado.** A
+tipagem em `src/types/declarations.d.ts` é `{ [key: string]: string }`, então uma classe
+inexistente não gera erro de compilação — vira `undefined` e o elemento renderiza sem `class`.
+Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-color`,
+`--roboto-font`) em vez de valores hardcoded.
+
+### Exceção de sufixo: arquivos raiz/singulares
+
+O sufixo de papel (`.page.tsx`, `.layout.tsx`, `.service.ts`, `.types.ts`) existe para distinguir
+vários arquivos do mesmo tipo dentro de uma pasta. Arquivos que são **únicos no seu papel** e cujo
+nome já é o próprio papel ficam isentos: `src/App.tsx`, `src/index.tsx` e `src/routers/Router.tsx`.
+
+### `types/`: `*.types.ts` vs. `*.d.ts`
+
+- `<nome>.types.ts` — tipos de domínio com **export nomeado**, importados explicitamente por
+  outros arquivos (ex.: `example.types.ts`).
+- `<nome>.d.ts` — declaração de ambiente/global, **nunca importada**: o TypeScript a carrega
+  sozinho por estar dentro de `src/` (ex.: `declarations.d.ts`, que tipa `*.module.css`).
+
+Props de um componente específico (ex.: `ButtonProps`) ficam no próprio arquivo do componente,
+não em `types/`.
+
+### Arquivos de exemplo (descartáveis)
+
+Os arquivos abaixo existem **apenas para ensinar a convenção** e devem ser substituídos ou
+removidos pelo projeto real que usar este template:
+
+- `src/components/Button.tsx` + `src/styles/components/button.module.css` (consumido em
+  `src/pages/Home.page.tsx`, também como exemplo).
+- `src/layouts/Main.layout.tsx` + `src/styles/layouts/main.module.css` — ainda **não registrado em
+  nenhuma rota**; a rota de layout com `<Outlet />` é escopo da issue #24.
+- `src/hooks/useToggle.ts`
+- `src/services/http.service.ts`
+- `src/types/example.types.ts`
+- `src/utils/formatDate.ts`
+- As páginas `src/pages/Home.page.tsx` e `src/pages/NotFound.page.tsx`.
+
+## Comandos
+
+```bash
+npm run dev      # servidor de desenvolvimento (porta 3000)
+npm run build    # build de produção em build/
+npm start        # serve o build estático já gerado
+npx tsc --noEmit # checagem de tipos
+```

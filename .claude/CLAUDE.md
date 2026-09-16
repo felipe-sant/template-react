@@ -8,7 +8,9 @@ Template base de frontend React + TypeScript, usado como ponto de partida para n
 Ainda está em construção e **não** está estruturado de forma definitiva — há uma migração
 planejada de Create React App (`react-scripts`) para **Vite**.
 
-Código, comentários e textos de UI estão em **português**. Mantenha esse padrão.
+Os textos de UI e o conteúdo de documentação (`README.md`, specs, mensagens de commit, descrição
+de PR) estão em **português**. Mantenha esse padrão. **Identificadores no código são em inglês** —
+ver "Estilo de código".
 
 ## Comandos
 
@@ -41,11 +43,36 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
 - **`src/styles/`** — `global.css` guarda os CSS custom properties (escala de cinza `--g1-color`
   … `--g10-color`, `--roboto-font`) e o reset. Estilos de página ficam em
   `src/styles/pages/<nome>.module.css` (CSS Modules), importados como `import css from "..."`.
-  A tipagem dos módulos vem de `src/declarations.d.ts`.
+  A tipagem dos módulos vem de `src/types/declarations.d.ts`.
 
 Não há camada de estado global, cliente HTTP, alias de import (`@/`) nem variáveis de ambiente
 configuradas. Ao adicionar qualquer uma dessas coisas, considere que a migração para Vite está
 prevista e evite acoplar a soluções específicas do `react-scripts`.
+
+## Estilo de código
+
+**Todo identificador é em inglês.** Nome de componente, função, método, variável, propriedade,
+atributo, interface/tipo, hook, arquivo e classe de CSS Module — tudo em inglês, sem mistura
+(`name`/`active`, nunca `nome`/`ativo`; `isLoading`, nunca `estaCarregando`).
+
+O que **continua em português** é o texto que o usuário lê: conteúdo de JSX, `label`, `placeholder`,
+`title`/`meta` do `react-helmet`, mensagem de `Error` e string literal de UI em geral. A regra separa
+a linguagem do código da linguagem do produto — `<Button label="Botão de exemplo" />` está correto:
+`Button` e `label` em inglês, o texto visível em português.
+
+**Não escreva comentários no código.** Um bom código se explica sozinho: se um trecho só fica
+compreensível com um comentário, o problema é o trecho — renomeie a variável/função, extraia uma
+função com nome descritivo ou simplifique a lógica, em vez de comentar. Isso vale para `//`, `/* */`
+e `{/* */}` em JSX.
+
+O contexto que não cabe no código vai para onde ele é procurado de verdade: `README.md` (como usar),
+a descrição do PR (por que mudou), o `spec.md` da feature em `.docs/` (decisões de projeto) e a
+mensagem de commit (o que mudou naquele passo). Ao remover um comentário que carregava informação
+útil, mova essa informação para um desses lugares — não a descarte.
+
+Exceções, quando realmente necessárias: diretivas exigidas por ferramenta (`@ts-expect-error`,
+`eslint-disable`, pragmas de build) e o cabeçalho de licença de terceiros. Nenhuma delas é
+comentário explicativo.
 
 ## Pontos conhecidos em aberto
 

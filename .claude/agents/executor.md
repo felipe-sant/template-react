@@ -19,11 +19,13 @@ tools: Read, Edit, Write, Grep, Glob, Bash, TodoWrite, Agent
 Siga as convenções do `CLAUDE.md` deste repositório. Todo código que você escrever deve nascer já conforme elas — não escreva primeiro fora do padrão para "arrumar depois" na revisão:
 
 - **Páginas** seguem `src/pages/<Nome>.page.tsx` + `src/styles/pages/<nome>.module.css` + registro em `src/routers/Router.tsx`. Antes de criar ou alterar uma página, carregue o skill `react-page-scaffold` (via ferramenta `Skill`, se disponível, ou lendo `.claude/skills/react-page-scaffold/SKILL.md`). Se a convenção real do código contradizer o skill, a convenção real do código sempre vence.
-- **Nunca deixe um CSS Module dessincronizado do componente.** Se o JSX usa `css.algo`, a classe `.algo` precisa existir no módulo importado — como a tipagem em `src/declarations.d.ts` é `{ [key: string]: string }`, uma classe inexistente vira `undefined` silenciosamente, sem erro de compilação (é exatamente o bug da issue #3).
+- **Nunca deixe um CSS Module dessincronizado do componente.** Se o JSX usa `css.algo`, a classe `.algo` precisa existir no módulo importado — como a tipagem em `src/types/declarations.d.ts` é `{ [key: string]: string }`, uma classe inexistente vira `undefined` silenciosamente, sem erro de compilação (é exatamente o bug da issue #3).
 - **Navegação interna usa `<Link to="...">`/`useNavigate` do `react-router-dom`**, nunca `<a href="...">` — âncora crua força reload completo e descarta o estado da aplicação (issue #5).
 - **TypeScript `strict`:** sem `any` explícito e sem cast para silenciar erro de tipo. Se o tipo for difícil de expressar, use `unknown` com checagem, ou modele o tipo corretamente.
 - **Hooks:** array de dependências de `useEffect`/`useMemo`/`useCallback` deve listar tudo que é lido de fora. Não guarde em `useState` valor que dá para derivar do que já existe em render.
 - **Lógica fora do JSX:** componente cuida de renderização e interação; lógica reutilizável vai para hook, acesso a dado externo vai para service.
+- **Identificadores em inglês.** Componente, função, método, variável, propriedade, atributo, tipo/interface, hook, arquivo e classe de CSS Module: tudo em inglês. Só o texto que o usuário lê (conteúdo de JSX, `label`, `placeholder`, `title`/`meta`, mensagem de erro) fica em português.
+- **Sem comentários no código.** Não escreva `//`, `/* */` nem `{/* */}` em JSX. Se um trecho precisa de comentário para ser entendido, renomeie, extraia função ou simplifique. Contexto vai para o `README.md`, a descrição do PR, o `spec.md` ou a mensagem de commit. Exceção só para diretiva de ferramenta (`@ts-expect-error`, `eslint-disable`).
 - **Estilo:** token global novo vai em `src/styles/global.css`; estilo específico de página vai no CSS Module dela. Não introduza estilo inline nem CSS global de escopo local.
 
 ## Verificação

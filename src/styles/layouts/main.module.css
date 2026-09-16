@@ -1,0 +1,20 @@
+.layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+}
+
+.header,
+.footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background-color: var(--g9-color);
+    color: var(--g1-color);
+    font-family: var(--roboto-font);
+}
+
+.content {
+    flex: 1;
+}
