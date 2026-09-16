@@ -8,7 +8,9 @@ Template base de frontend React + TypeScript, usado como ponto de partida para n
 Ainda está em construção e **não** está estruturado de forma definitiva — há uma migração
 planejada de Create React App (`react-scripts`) para **Vite**.
 
-Código e textos de UI estão em **português**. Mantenha esse padrão.
+Os textos de UI e o conteúdo de documentação (`README.md`, specs, mensagens de commit, descrição
+de PR) estão em **português**. Mantenha esse padrão. **Identificadores no código são em inglês** —
+ver "Estilo de código".
 
 ## Comandos
 
@@ -48,6 +50,15 @@ configuradas. Ao adicionar qualquer uma dessas coisas, considere que a migraçã
 prevista e evite acoplar a soluções específicas do `react-scripts`.
 
 ## Estilo de código
+
+**Todo identificador é em inglês.** Nome de componente, função, método, variável, propriedade,
+atributo, interface/tipo, hook, arquivo e classe de CSS Module — tudo em inglês, sem mistura
+(`name`/`active`, nunca `nome`/`ativo`; `isLoading`, nunca `estaCarregando`).
+
+O que **continua em português** é o texto que o usuário lê: conteúdo de JSX, `label`, `placeholder`,
+`title`/`meta` do `react-helmet`, mensagem de `Error` e string literal de UI em geral. A regra separa
+a linguagem do código da linguagem do produto — `<Button label="Botão de exemplo" />` está correto:
+`Button` e `label` em inglês, o texto visível em português.
 
 **Não escreva comentários no código.** Um bom código se explica sozinho: se um trecho só fica
 compreensível com um comentário, o problema é o trecho — renomeie a variável/função, extraia uma

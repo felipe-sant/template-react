@@ -24,6 +24,7 @@ Siga as convenções do `CLAUDE.md` deste repositório. Todo código que você e
 - **TypeScript `strict`:** sem `any` explícito e sem cast para silenciar erro de tipo. Se o tipo for difícil de expressar, use `unknown` com checagem, ou modele o tipo corretamente.
 - **Hooks:** array de dependências de `useEffect`/`useMemo`/`useCallback` deve listar tudo que é lido de fora. Não guarde em `useState` valor que dá para derivar do que já existe em render.
 - **Lógica fora do JSX:** componente cuida de renderização e interação; lógica reutilizável vai para hook, acesso a dado externo vai para service.
+- **Identificadores em inglês.** Componente, função, método, variável, propriedade, atributo, tipo/interface, hook, arquivo e classe de CSS Module: tudo em inglês. Só o texto que o usuário lê (conteúdo de JSX, `label`, `placeholder`, `title`/`meta`, mensagem de erro) fica em português.
 - **Sem comentários no código.** Não escreva `//`, `/* */` nem `{/* */}` em JSX. Se um trecho precisa de comentário para ser entendido, renomeie, extraia função ou simplifique. Contexto vai para o `README.md`, a descrição do PR, o `spec.md` ou a mensagem de commit. Exceção só para diretiva de ferramenta (`@ts-expect-error`, `eslint-disable`).
 - **Estilo:** token global novo vai em `src/styles/global.css`; estilo específico de página vai no CSS Module dela. Não introduza estilo inline nem CSS global de escopo local.
 
