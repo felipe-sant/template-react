@@ -153,7 +153,6 @@ empacotados.
   `manifest.json`/`logo192.png` já foram removidas junto com o `public/index.html` do CRA.
 - A fonte Roboto é referenciada no CSS mas nunca carregada.
 - `src/styles/pages/home.module.css` está vazio, embora `Home.page.tsx` use `css.main`.
-- `tsconfig.json` ainda tem `target: es5` e TypeScript 4.9 com React 19.
 
 ## Padrão de branches, commits e PRs
 
