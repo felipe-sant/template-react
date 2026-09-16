@@ -1,5 +1,5 @@
 export interface ExampleEntity {
     id: string
-    nome: string
-    ativo: boolean
+    name: string
+    active: boolean
 }
