@@ -1,4 +1,4 @@
-import css from "../styles/components/button.module.css"
+import css from "@/styles/components/button.module.css"
 
 interface ButtonProps {
     label: string

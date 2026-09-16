@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet"
-import css from "../styles/pages/notFound.module.css"
+import css from "@/styles/pages/notFound.module.css"
 
 function NotFoundPage() {
     return (
