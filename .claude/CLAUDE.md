@@ -168,9 +168,11 @@ PR segue a estrutura de `.github/PULL_REQUEST_TEMPLATE.md`, não um corpo livre.
   `sdd` (só planeja, escreve `spec.md`/`tasks.md` em `.docs/`, nunca toca em `src/`), `executor`
   (implementa um `tasks.md` já aprovado, em branch dedicada, com commits atômicos) e `reviewer`
   (audita o resultado contra este arquivo, somente leitura).
-- `.claude/skills/` — conhecimento carregável sob demanda. Hoje só `react-page-scaffold`, o passo
-  a passo de criar página. A skill de teste (`vitest-specialist`, issue #21) ainda não existe — a
-  convenção vive na seção "Comandos" deste arquivo e nos dois testes de exemplo.
+- `.claude/skills/` — conhecimento carregável sob demanda. São três, separadas pela pasta do
+  artefato: `react-page-scaffold` (página em `src/pages/` + CSS Module + registro de rota),
+  `react-component-scaffold` (componente reutilizável em `src/components/` + CSS Module em
+  `src/styles/components/`) e `vitest-specialist` (teste co-localizado com Vitest + Testing
+  Library, `src/setupTests.ts` e o bloco `test` do `vite.config.ts`).
 - `.docs/` — specs por feature/bug (`.docs/features/<slug>/`, `.docs/bugs/<slug>/`), a partir de
   `.docs/_template/`. As pastas de spec são gitignored: planejamento local, fora do histórico.
   O estado vive no campo `**Status:**` do `spec.md` (`rascunho` → `em-revisao` → `aprovada` →
