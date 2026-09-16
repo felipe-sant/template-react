@@ -82,6 +82,18 @@ removidos pelo projeto real que usar este template:
 npm run dev      # dev server do Vite (porta padrão 5173)
 npm run build    # checagem de tipos (tsc --noEmit) + build de produção em dist/
 npm run preview  # serve o conteúdo de dist/ — depende de um npm run build anterior
-npm test         # Vitest (passa com 0 testes enquanto a suíte não existir)
+npm test         # Vitest em watch mode
+npm test -- --run # execução one-shot (CI)
 npx tsc --noEmit # checagem de tipos isolada
 ```
+
+### Testes
+
+O teste fica **co-localizado**: `<arquivo>.test.tsx` ao lado do arquivo testado
+(`src/pages/Home.page.test.tsx`), nunca em `__tests__/` nem com sufixo `.spec.tsx`. O ambiente é
+`jsdom` e o setup é `src/setupTests.ts`, registrado em `test.setupFiles` do `vite.config.ts` — é
+ele que registra os matchers do `jest-dom` (`toBeInTheDocument()` e companhia).
+
+Os dois testes que vêm no template servem de modelo: `Home.page.test.tsx` renderiza a página
+direto, e `Router.test.tsx` renderiza a árvore de rotas (`AppRoutes`) sob `MemoryRouter` para
+verificar que uma URL inexistente cai no `NotFound`.
