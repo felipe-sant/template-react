@@ -8,7 +8,7 @@ Template base de frontend React + TypeScript, usado como ponto de partida para n
 Ainda está em construção e **não** está estruturado de forma definitiva — há uma migração
 planejada de Create React App (`react-scripts`) para **Vite**.
 
-Código, comentários e textos de UI estão em **português**. Mantenha esse padrão.
+Código e textos de UI estão em **português**. Mantenha esse padrão.
 
 ## Comandos
 
@@ -46,6 +46,22 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
 Não há camada de estado global, cliente HTTP, alias de import (`@/`) nem variáveis de ambiente
 configuradas. Ao adicionar qualquer uma dessas coisas, considere que a migração para Vite está
 prevista e evite acoplar a soluções específicas do `react-scripts`.
+
+## Estilo de código
+
+**Não escreva comentários no código.** Um bom código se explica sozinho: se um trecho só fica
+compreensível com um comentário, o problema é o trecho — renomeie a variável/função, extraia uma
+função com nome descritivo ou simplifique a lógica, em vez de comentar. Isso vale para `//`, `/* */`
+e `{/* */}` em JSX.
+
+O contexto que não cabe no código vai para onde ele é procurado de verdade: `README.md` (como usar),
+a descrição do PR (por que mudou), o `spec.md` da feature em `.docs/` (decisões de projeto) e a
+mensagem de commit (o que mudou naquele passo). Ao remover um comentário que carregava informação
+útil, mova essa informação para um desses lugares — não a descarte.
+
+Exceções, quando realmente necessárias: diretivas exigidas por ferramenta (`@ts-expect-error`,
+`eslint-disable`, pragmas de build) e o cabeçalho de licença de terceiros. Nenhuma delas é
+comentário explicativo.
 
 ## Pontos conhecidos em aberto
 
