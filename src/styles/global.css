@@ -1,5 +1,5 @@
 :root {
-    --roboto-font: 'Roboto', sans-serif;
+    --sans-font: system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
     --g1-color: #f7f7f7;
     --g2-color: #DEDEDE;    
     --g3-color: #CCCCCC;
@@ -16,7 +16,7 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: var(--roboto-font);
+    font-family: var(--sans-font);
 }
 
 main {
