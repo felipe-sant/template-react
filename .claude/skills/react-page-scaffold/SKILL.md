@@ -43,7 +43,7 @@ Nome do arquivo em camelCase, correspondendo ao componente (`NotFound.page.tsx` 
 
 **Toda classe usada como `css.<algo>` no JSX precisa existir aqui.** `src/types/declarations.d.ts` tipa o módulo como `{ [key: string]: string }`, ou seja, qualquer chave compila — `css.naoExiste` não é erro de tipo, é `undefined` em runtime e o elemento sai sem `class`. É exatamente o bug aberto na issue #3 (`home.module.css` vazio com `css.main` em uso). Confira o par JSX ↔ CSS a olho antes de dar a tarefa por concluída.
 
-Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-color`, `--roboto-font`) em vez de repetir valor hardcoded.
+Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-color`, `--sans-font`) em vez de repetir valor hardcoded.
 
 ### 3. Rota — `src/routers/Router.tsx`
 
