@@ -11,7 +11,7 @@ function NotFoundPage() {
             </Helmet>
             <main className={css.main}>
                 <div>
-                    <h1 className={css.title}>404 - Not Found</h1>
+                    <h1>404 - Not Found</h1>
                     <p><Link to="/">Vá para a página inicial.</Link></p>
                 </div>
             </main>

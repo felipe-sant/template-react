@@ -23,4 +23,10 @@ describe("NotFoundPage", () => {
 
         expect(screen.getByRole("link", { name: "Vá para a página inicial." })).toHaveAttribute("href", "/")
     })
+
+    it("não aplica atributo class no heading", () => {
+        render(<NotFoundPage />)
+
+        expect(screen.getByRole("heading", { name: "404 - Not Found" })).not.toHaveAttribute("class")
+    })
 })
