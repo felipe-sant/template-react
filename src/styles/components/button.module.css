@@ -1,5 +1,5 @@
 .button {
-    font-family: var(--roboto-font);
+    font-family: var(--sans-font);
     font-size: 1rem;
     padding: 0.5rem 1rem;
     border: 1px solid var(--g4-color);

@@ -87,11 +87,11 @@ Nome do arquivo em camelCase, correspondendo ao componente (`Button.tsx` → `bu
 
 **Toda classe usada como `css.<algo>` no JSX precisa existir aqui.** `src/types/declarations.d.ts` tipa o módulo como `{ [key: string]: string }`, ou seja, qualquer chave compila — `css.naoExiste` não é erro de tipo, é `undefined` em runtime e o elemento sai sem `class`. Foi o caso da issue #3 (`home.module.css` vazio com `css.main` em uso), já corrigida. Nem o `tsc` nem o teste pegam isso: confira o par JSX ↔ CSS a olho.
 
-Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-color`, `--roboto-font`) em vez de valor hardcoded, como `button.module.css` faz:
+Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-color`, `--sans-font`) em vez de valor hardcoded, como `button.module.css` faz:
 
 ```css
 .button {
-    font-family: var(--roboto-font);
+    font-family: var(--sans-font);
     border: 1px solid var(--g4-color);
     background-color: var(--g2-color);
     color: var(--g9-color);

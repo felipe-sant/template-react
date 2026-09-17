@@ -61,7 +61,7 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
 - **`src/pages/`** — convenção de nome `Nome.page.tsx`, componente `function NomePage()` com
   `export default`.
 - **`src/styles/`** — `global.css` guarda os CSS custom properties (escala de cinza `--g1-color`
-  … `--g10-color`, `--roboto-font`) e o reset. Estilos de página ficam em
+  … `--g10-color`, `--sans-font`) e o reset. Estilos de página ficam em
   `src/styles/pages/<nome>.module.css` (CSS Modules), importados como `import css from "..."`.
   A tipagem dos módulos vem de `src/types/declarations.d.ts`.
 - **Alias de import `@/`** — `@/*` resolve para `src/*`. Configurado em dois lugares que precisam
@@ -158,7 +158,6 @@ empacotados.
 - Não há favicon: o `index.html` da raiz não referencia nenhum ícone e não existe `public/`, então
   o navegador pede `/favicon.ico` e recebe 404 (issue #2). As referências mortas a
   `manifest.json`/`logo192.png` já foram removidas junto com o `public/index.html` do CRA.
-- A fonte Roboto é referenciada no CSS mas nunca carregada.
 
 ## Padrão de branches, commits e PRs
 

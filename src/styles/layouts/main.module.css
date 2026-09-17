@@ -12,7 +12,7 @@
     padding: 1rem;
     background-color: var(--g9-color);
     color: var(--g1-color);
-    font-family: var(--roboto-font);
+    font-family: var(--sans-font);
 }
 
 .content {
