@@ -159,7 +159,6 @@ empacotados.
   o navegador pede `/favicon.ico` e recebe 404 (issue #2). As referências mortas a
   `manifest.json`/`logo192.png` já foram removidas junto com o `public/index.html` do CRA.
 - A fonte Roboto é referenciada no CSS mas nunca carregada.
-- `src/styles/pages/home.module.css` está vazio, embora `Home.page.tsx` use `css.main`.
 
 ## Padrão de branches, commits e PRs
 
