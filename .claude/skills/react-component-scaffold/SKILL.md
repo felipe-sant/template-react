@@ -85,7 +85,7 @@ Componente cuida de **renderização e interação**. Ele não busca dado nem gu
 
 Nome do arquivo em camelCase, correspondendo ao componente (`Button.tsx` → `button.module.css`). O estilo **não** fica ao lado do componente: fica em `src/styles/components/`.
 
-**Toda classe usada como `css.<algo>` no JSX precisa existir aqui.** `src/types/declarations.d.ts` tipa o módulo como `{ [key: string]: string }`, ou seja, qualquer chave compila — `css.naoExiste` não é erro de tipo, é `undefined` em runtime e o elemento sai sem `class`. É o bug aberto na issue #3 (`home.module.css` vazio com `css.main` em uso). Nem o `tsc` nem o teste pegam isso: confira o par JSX ↔ CSS a olho.
+**Toda classe usada como `css.<algo>` no JSX precisa existir aqui.** `src/types/declarations.d.ts` tipa o módulo como `{ [key: string]: string }`, ou seja, qualquer chave compila — `css.naoExiste` não é erro de tipo, é `undefined` em runtime e o elemento sai sem `class`. Foi o caso da issue #3 (`home.module.css` vazio com `css.main` em uso), já corrigida. Nem o `tsc` nem o teste pegam isso: confira o par JSX ↔ CSS a olho.
 
 Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-color`, `--sans-font`) em vez de valor hardcoded, como `button.module.css` faz:
 

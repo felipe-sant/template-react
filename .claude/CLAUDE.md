@@ -158,7 +158,6 @@ empacotados.
 - Não há favicon: o `index.html` da raiz não referencia nenhum ícone e não existe `public/`, então
   o navegador pede `/favicon.ico` e recebe 404 (issue #2). As referências mortas a
   `manifest.json`/`logo192.png` já foram removidas junto com o `public/index.html` do CRA.
-- `src/styles/pages/home.module.css` está vazio, embora `Home.page.tsx` use `css.main`.
 
 ## Padrão de branches, commits e PRs
 
