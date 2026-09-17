@@ -43,7 +43,7 @@ Os estilos não ficam co-localizados: o CSS Module de uma peça vive em
 tipagem em `src/types/declarations.d.ts` é `{ [key: string]: string }`, então uma classe
 inexistente não gera erro de compilação — vira `undefined` e o elemento renderiza sem `class`.
 Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-color`,
-`--roboto-font`) em vez de valores hardcoded.
+`--sans-font`) em vez de valores hardcoded.
 
 ### Exceção de sufixo: arquivos raiz/singulares
 
