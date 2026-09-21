@@ -89,7 +89,10 @@ removidos pelo projeto real que usar este template:
 - `src/services/http.service.ts`
 - `src/types/example.types.ts`
 - `src/utils/formatDate.ts`
-- As páginas `src/pages/Home.page.tsx` e `src/pages/NotFound.page.tsx`.
+- `src/pages/Home.page.tsx` + `src/pages/Home.page.test.tsx`.
+- `src/pages/NotFound.page.tsx` + `src/pages/NotFound.page.test.tsx`. `src/routers/Router.test.tsx`
+  também depende do `NotFoundPage` de exemplo (cobre a rota-fallback renderizando-o) — ao
+  substituir essa página, revise esse teste em vez de apagá-lo inteiro.
 
 ## Comandos
 
