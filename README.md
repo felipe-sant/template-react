@@ -2,6 +2,12 @@
 
 Template base de frontend em React + TypeScript.
 
+## Requisitos
+
+- Node.js `>= 24.15.0` (major 24).
+- O arquivo `.nvmrc` na raiz do repositório fixa a versão recomendada (`24.21.0`). Quem usa `nvm`
+  pode rodar `nvm use` na raiz do repositório para obter automaticamente essa versão.
+
 ## Estrutura de `src/`
 
 Cada pasta tem um papel definido, uma convenção de nome de arquivo e um tipo de export esperado.
