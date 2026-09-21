@@ -8,4 +8,11 @@ describe("App", () => {
 
         expect(screen.getByRole("heading", { name: "Hello World!" })).toBeInTheDocument()
     })
+
+    it("define título e meta description da página no head", () => {
+        render(<App />)
+
+        expect(document.title).toBe("Título da Página")
+        expect(document.querySelector('meta[name="description"]')?.getAttribute("content")).toBe("Minha descrição personalizada.")
+    })
 })
