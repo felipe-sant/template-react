@@ -16,6 +16,8 @@ Template base de frontend em React + TypeScript.
 - Node.js `>= 24.15.0` (major 24).
 - O arquivo `.nvmrc` na raiz do repositório fixa a versão recomendada (`24.21.0`). Quem usa `nvm`
   pode rodar `nvm use` na raiz do repositório para obter automaticamente essa versão.
+- Gerenciador de pacotes: `npm`. O repositório versiona `package-lock.json` — não use `yarn` nem
+  `pnpm`, que gerariam um lockfile divergente.
 
 ## Estrutura de `src/`
 
