@@ -14,7 +14,7 @@ describe("HomePage", () => {
 
         expect(document.title).toBe("Título da Página")
         expect(document.querySelector('meta[name="description"]')?.getAttribute("content")).toBe(
-            "Minha descrição personalizada."
+            "Minha descrição personalizada.",
         )
     })
 })

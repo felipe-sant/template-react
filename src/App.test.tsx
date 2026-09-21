@@ -13,7 +13,9 @@ describe("App", () => {
         render(<App />)
 
         expect(document.title).toBe("Título da Página")
-        expect(document.querySelector('meta[name="description"]')?.getAttribute("content")).toBe("Minha descrição personalizada.")
+        expect(document.querySelector('meta[name="description"]')?.getAttribute("content")).toBe(
+            "Minha descrição personalizada.",
+        )
     })
 
     it("usa o título e a meta description de NotFound.page numa rota desconhecida", () => {
@@ -23,7 +25,7 @@ describe("App", () => {
 
         expect(document.title).toBe("Página não encontrada.")
         expect(document.querySelector('meta[name="description"]')?.getAttribute("content")).toBe(
-            "A página não existe ou você não possui acesso."
+            "A página não existe ou você não possui acesso.",
         )
     })
 })

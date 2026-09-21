@@ -8,7 +8,7 @@ describe("NotFoundPage", () => {
         render(
             <MemoryRouter>
                 <NotFoundPage />
-            </MemoryRouter>
+            </MemoryRouter>,
         )
 
         expect(screen.getByRole("heading", { name: "404 - Not Found" })).toBeInTheDocument()
@@ -18,32 +18,37 @@ describe("NotFoundPage", () => {
         render(
             <MemoryRouter>
                 <NotFoundPage />
-            </MemoryRouter>
+            </MemoryRouter>,
         )
 
-        expect(screen.getByRole("link", { name: "Vá para a página inicial." })).toHaveAttribute("href", "/")
+        expect(screen.getByRole("link", { name: "Vá para a página inicial." })).toHaveAttribute(
+            "href",
+            "/",
+        )
     })
 
     it("não aplica atributo class no heading", () => {
         render(
             <MemoryRouter>
                 <NotFoundPage />
-            </MemoryRouter>
+            </MemoryRouter>,
         )
 
-        expect(screen.getByRole("heading", { name: "404 - Not Found" })).not.toHaveAttribute("class")
+        expect(screen.getByRole("heading", { name: "404 - Not Found" })).not.toHaveAttribute(
+            "class",
+        )
     })
 
     it("define o title e a meta description da página", () => {
         render(
             <MemoryRouter>
                 <NotFoundPage />
-            </MemoryRouter>
+            </MemoryRouter>,
         )
 
         expect(document.title).toBe("Página não encontrada.")
         expect(document.querySelector('meta[name="description"]')?.getAttribute("content")).toBe(
-            "A página não existe ou você não possui acesso."
+            "A página não existe ou você não possui acesso.",
         )
     })
 })

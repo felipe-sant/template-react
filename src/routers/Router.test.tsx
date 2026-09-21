@@ -9,7 +9,7 @@ describe("AppRoutes", () => {
         render(
             <MemoryRouter initialEntries={["/rota-que-nao-existe"]}>
                 <AppRoutes />
-            </MemoryRouter>
+            </MemoryRouter>,
         )
 
         expect(screen.getByRole("heading", { name: "404 - Not Found" })).toBeInTheDocument()
@@ -19,7 +19,7 @@ describe("AppRoutes", () => {
         render(
             <MemoryRouter initialEntries={["/rota-que-nao-existe"]}>
                 <AppRoutes />
-            </MemoryRouter>
+            </MemoryRouter>,
         )
 
         userEvent.click(screen.getByRole("link", { name: "Vá para a página inicial." }))
