@@ -2,6 +2,15 @@
 
 Template base de frontend em React + TypeScript.
 
+## Stack
+
+- **React 19** — biblioteca de UI, com `StrictMode` habilitado em `src/index.tsx`.
+- **TypeScript** — tipagem estática em modo `strict`, sem `any` explícito.
+- **Vite** — dev server, build de produção e bundler (substitui o `react-scripts` do Create React App).
+- **Vitest** (+ **Testing Library**) — execução de teste em ambiente `jsdom`, integrado ao mesmo `vite.config.ts`.
+- **react-router-dom** — roteamento client-side, registrado em `src/routers/Router.tsx`.
+- **CSS Modules** — estilo com escopo por arquivo, em `src/styles/`.
+
 ## Requisitos
 
 - Node.js `>= 24.15.0` (major 24).
