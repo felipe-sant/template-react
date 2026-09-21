@@ -12,7 +12,8 @@
         "import/no-unassigned-import": [
             "error",
             { "allow": ["**/*.css", "@testing-library/jest-dom/vitest"] }
-        ]
+        ],
+        "import/no-relative-parent-imports": "error"
     },
     "env": {
         "builtin": true

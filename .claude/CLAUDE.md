@@ -131,6 +131,8 @@ Verificado automaticamente pelo oxlint:
   `jsx-a11y/label-has-associated-control`, `jsx-a11y/click-events-have-key-events`, entre outras
   do conjunto padrão do plugin), ativas sempre que o plugin `jsx-a11y` está habilitado,
   independente da categoria de severidade configurada.
+- Import interno usar o alias `@/` em vez de `../` → regra `import/no-relative-parent-imports`,
+  ligada individualmente como `error` pelo mesmo motivo das demais regras pontuais desta lista.
 
 Continua sendo revisão manual do `reviewer` (o oxlint não cobre):
 
@@ -140,8 +142,6 @@ Continua sendo revisão manual do `reviewer` (o oxlint não cobre):
   design, não mecânica.
 - Ausência de comentários no código — não existe regra de lint que proíba comentários.
 - Identificadores em inglês — não existe regra de lint que verifique o idioma de um identificador.
-- Import interno usar o alias `@/` em vez de `../` — não existe regra no oxlint para essa
-  convenção específica de projeto.
 - Subpath import quando o pacote publica (`lodash/debounce` em vez de `lodash`) — não existe
   regra no oxlint para essa convenção.
 
