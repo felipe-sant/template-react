@@ -116,6 +116,9 @@ npm run preview  # serve o conteúdo de dist/ — depende de um npm run build an
 npm test         # Vitest em watch mode
 npm test -- --run # execução one-shot (CI)
 npx tsc --noEmit # checagem de tipos isolada
+npm run lint      # roda o oxlint sobre o projeto, usando a configuração de .oxlintrc.json
+npm run lint:fix  # mesma coisa que npm run lint, mas aplicando automaticamente as correções possíveis (oxlint --fix)
+npm run format    # roda prettier --write em src/**/*.{ts,tsx} e vite.config.ts, conforme as regras de .prettierrc
 ```
 
 ### Testes

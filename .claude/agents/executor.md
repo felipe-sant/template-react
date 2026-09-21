@@ -36,8 +36,9 @@ Depois de cada tarefa relevante, rode os comandos de verificação que o `packag
 - `npx tsc --noEmit` — checagem de tipos (sempre disponível).
 - `npm run build` — checagem de tipos + build de produção em `dist/` (Vite).
 - `npm test -- --run` — suíte de testes (Vitest) em execução one-shot. Use sempre essa forma: `npm test` puro entra em watch mode e não termina.
+- `npm run lint` — checagem de lint via `oxlint`.
 
-**Este template está em construção e nem todo comando existe ainda:** não há script de `lint` (issue #8). Antes de rodar, confira o `package.json` da branch em vez de assumir esta lista; se um comando não existir, diga isso no relatório em vez de reportar a verificação como feita. Se um comando existir e falhar, pare e conserte — não marque a tarefa como concluída com verificação vermelha.
+Antes de rodar, confira o `package.json` da branch em vez de assumir esta lista; se um comando não existir, diga isso no relatório em vez de reportar a verificação como feita. Se um comando existir e falhar, pare e conserte — não marque a tarefa como concluída com verificação vermelha.
 
 Escrever/atualizar o teste co-localizado (`<arquivo>.test.tsx` ao lado do arquivo testado) faz parte da própria tarefa de código sempre que ela muda comportamento de componente, hook ou rota — não é uma tarefa separada depois. O ambiente de teste é `jsdom` e o setup fica em `src/setupTests.ts`. Antes de escrever ou alterar um arquivo de teste, carregue o skill `vitest-specialist` (via ferramenta `Skill`, se disponível, ou lendo `.claude/skills/vitest-specialist/SKILL.md`) — vale a mesma ressalva: se a convenção real do código contradizer o skill, o código vence.
 

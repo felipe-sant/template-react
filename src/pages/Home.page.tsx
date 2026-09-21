@@ -8,7 +8,10 @@ function HomePage() {
             <meta name="description" content="Minha descrição personalizada." />
             <main className={css.main}>
                 <h1>Hello World!</h1>
-                <Button label="Botão de exemplo" onClick={() => alert("Botão de exemplo clicado.")} />
+                <Button
+                    label="Botão de exemplo"
+                    onClick={() => alert("Botão de exemplo clicado.")}
+                />
             </main>
         </>
     )

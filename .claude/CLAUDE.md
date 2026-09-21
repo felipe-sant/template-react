@@ -23,9 +23,10 @@ npm test         # Vitest em watch mode (o script é `vitest`, sem `run`)
 npm test -- --run                            # execução one-shot (CI, agente, terminal não-interativo)
 npm test -- --run src/pages/Home.page.test.tsx   # um arquivo específico
 npx tsc --noEmit # checagem de tipos isolada
+npm run lint      # oxlint sobre o projeto (configuração em .oxlintrc.json)
+npm run lint:fix  # mesma coisa, aplicando as correções automáticas possíveis (oxlint --fix)
+npm run format    # prettier --write em src/**/*.{ts,tsx} e vite.config.ts, conforme .prettierrc
 ```
-
-Não existe script de lint — não há ESLint configurado no projeto.
 
 O teste é **co-localizado**: `<arquivo>.test.tsx` ao lado do arquivo testado
 (`src/pages/Home.page.test.tsx`, `src/components/Button.test.tsx`), nunca em `__tests__/` nem com
@@ -106,6 +107,43 @@ mensagem de commit (o que mudou naquele passo). Ao remover um comentário que ca
 Exceções, quando realmente necessárias: diretivas exigidas por ferramenta (`@ts-expect-error`,
 `eslint-disable`, pragmas de build) e o cabeçalho de licença de terceiros. Nenhuma delas é
 comentário explicativo.
+
+### O que o oxlint verifica automaticamente
+
+`npm run lint` (oxlint 1.85.0, configurado em `.oxlintrc.json`) cobre uma parte das convenções
+acima mecanicamente; o restante continua sendo revisão manual do agente `reviewer`.
+
+Verificado automaticamente pelo oxlint:
+
+- `any` explícito → regra `typescript/no-explicit-any`, ligada individualmente como `error` — a
+  categoria onde ela vive por padrão, `restriction`, traria também dezenas de regras de estilo
+  genéricas do core não relacionadas a esta convenção.
+- Array de dependências de hook incompleto → regra `react/exhaustive-deps` (equivalente ao
+  `react-hooks/exhaustive-deps` do ecossistema ESLint clássico; nesta versão do oxlint o
+  `react-hooks` não é um plugin separado, está embutido no plugin `react`). A regra de que hooks
+  só podem ser chamados incondicionalmente (rules-of-hooks) também é verificada, pela regra
+  `react/hooks`.
+- Import de namespace em vez de nomeado → regra `import/no-namespace`, ligada individualmente
+  como `error` pelo mesmo motivo do `no-explicit-any`: a categoria padrão dela, `style`, traria
+  ruído não relacionado.
+- Acessibilidade básica (`alt` em imagem, rótulo associado a campo de formulário, elemento
+  clicável com suporte a teclado) → regras do plugin `jsx-a11y` (`jsx-a11y/alt-text`,
+  `jsx-a11y/label-has-associated-control`, `jsx-a11y/click-events-have-key-events`, entre outras
+  do conjunto padrão do plugin), ativas sempre que o plugin `jsx-a11y` está habilitado,
+  independente da categoria de severidade configurada.
+- Import interno usar o alias `@/` em vez de `../` → regra `import/no-relative-parent-imports`,
+  ligada individualmente como `error` pelo mesmo motivo das demais regras pontuais desta lista.
+
+Continua sendo revisão manual do `reviewer` (o oxlint não cobre):
+
+- Separação de responsabilidades entre componente/hook/service ("Lógica fora do JSX") — convenção
+  arquitetural, não regra de lint mecânica.
+- Não guardar em `useState` um valor derivável do que já existe em render — idem, decisão de
+  design, não mecânica.
+- Ausência de comentários no código — não existe regra de lint que proíba comentários.
+- Identificadores em inglês — não existe regra de lint que verifique o idioma de um identificador.
+- Subpath import quando o pacote publica (`lodash/debounce` em vez de `lodash`) — não existe
+  regra no oxlint para essa convenção.
 
 ### Imports
 
