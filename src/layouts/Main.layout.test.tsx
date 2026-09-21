@@ -11,7 +11,7 @@ function renderLayout() {
                     <Route path="/" element={<p>Conteúdo da rota</p>} />
                 </Route>
             </Switch>
-        </MemoryRouter>,
+        </MemoryRouter>
     )
 }
 

@@ -7,11 +7,11 @@ export default defineConfig({
     plugins: [react()],
     resolve: {
         alias: {
-            "@": fileURLToPath(new URL("./src", import.meta.url)),
-        },
+            "@": fileURLToPath(new URL("./src", import.meta.url))
+        }
     },
     test: {
         environment: "jsdom",
-        setupFiles: ["./src/setupTests.ts"],
-    },
+        setupFiles: ["./src/setupTests.ts"]
+    }
 })

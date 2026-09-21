@@ -25,7 +25,7 @@ describe("get", () => {
 
         expect(fetchMock).toHaveBeenCalledWith("/api/example", {
             method: "GET",
-            headers: { Accept: "application/json" },
+            headers: { Accept: "application/json" }
         })
     })
 
@@ -46,9 +46,9 @@ describe("post", () => {
             method: "POST",
             headers: {
                 Accept: "application/json",
-                "Content-Type": "application/json",
+                "Content-Type": "application/json"
             },
-            body: '{"name":"Exemplo"}',
+            body: '{"name":"Exemplo"}'
         })
     })
 

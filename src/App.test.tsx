@@ -14,7 +14,7 @@ describe("App", () => {
 
         expect(document.title).toBe("Título da Página")
         expect(document.querySelector('meta[name="description"]')?.getAttribute("content")).toBe(
-            "Minha descrição personalizada.",
+            "Minha descrição personalizada."
         )
     })
 
@@ -25,7 +25,7 @@ describe("App", () => {
 
         expect(document.title).toBe("Página não encontrada.")
         expect(document.querySelector('meta[name="description"]')?.getAttribute("content")).toBe(
-            "A página não existe ou você não possui acesso.",
+            "A página não existe ou você não possui acesso."
         )
     })
 })
