@@ -19,6 +19,17 @@ Template base de frontend em React + TypeScript.
 - Gerenciador de pacotes: `npm`. O repositório versiona `package-lock.json` — não use `yarn` nem
   `pnpm`, que gerariam um lockfile divergente.
 
+## Começando
+
+1. Use o botão "Use this template" no GitHub para criar um repositório novo a partir deste
+   template (ou clone este repositório, se preferir).
+2. Instale as dependências: `npm install`.
+3. Renomeie o projeto: o campo `name` em `package.json`, o `<title>` e o `<meta
+   name="description">` em `index.html`, e o heading `# Novo projeto` deste `README.md`.
+4. Suba o dev server (`npm run dev`) e confirme em `http://localhost:5173`.
+5. Remova ou substitua os arquivos de exemplo pelo código real do projeto — ver a seção
+   "[Arquivos de exemplo (descartáveis)](#arquivos-de-exemplo-descartáveis)" abaixo.
+
 ## Estrutura de `src/`
 
 Cada pasta tem um papel definido, uma convenção de nome de arquivo e um tipo de export esperado.
