@@ -68,6 +68,11 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   continuar concordando: `paths` no `tsconfig.json` (para o `tsc` e o editor) e `resolve.alias` no
   `vite.config.ts` (para o dev server e o build). Mexer em um sem o outro deixa o `tsc --noEmit`
   verde e quebra o build, ou vice-versa. O Vitest herda o alias do mesmo `vite.config.ts`.
+- **`public/`** — assets estáticos que o Vite copia como estão para a raiz de `dist/` no build, sem
+  passar pelo bundler. Hoje contém só `favicon.svg`, referenciado em `index.html` via
+  `<link rel="icon">`. O template não inclui `manifest.json` nem ícones de PWA por decisão de
+  projeto: um manifest com `name`/ícones placeholder, sem produto definido, seria pior que não ter
+  manifest — cada projeto derivado adiciona isso quando precisar.
 
 Não há camada de estado global nem cliente HTTP configurados. A convenção de variáveis de
 ambiente é a do Vite: só variáveis com prefixo `VITE_`
@@ -152,12 +157,6 @@ que o pacote publica em vez de presumir. Não se aplica ao React, que só expõe
 chamada ao dispatcher interno do runtime. E pacotes ESM com bom tree-shaking (`lodash-es`,
 `date-fns` v3) já resolvem isso pela primeira regra — subpath é a saída para pacotes CJS ou mal
 empacotados.
-
-## Pontos conhecidos em aberto
-
-- Não há favicon: o `index.html` da raiz não referencia nenhum ícone e não existe `public/`, então
-  o navegador pede `/favicon.ico` e recebe 404 (issue #2). As referências mortas a
-  `manifest.json`/`logo192.png` já foram removidas junto com o `public/index.html` do CRA.
 
 ## Padrão de branches, commits e PRs
 
