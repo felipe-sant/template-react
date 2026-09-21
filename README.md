@@ -2,11 +2,33 @@
 
 Template base de frontend em React + TypeScript.
 
+## Stack
+
+- **React 19** — biblioteca de UI, com `StrictMode` habilitado em `src/index.tsx`.
+- **TypeScript** — tipagem estática em modo `strict`, sem `any` explícito.
+- **Vite** — dev server, build de produção e bundler (substitui o `react-scripts` do Create React App).
+- **Vitest** (+ **Testing Library**) — execução de teste em ambiente `jsdom`, integrado ao mesmo `vite.config.ts`.
+- **react-router-dom** — roteamento client-side, registrado em `src/routers/Router.tsx`.
+- **CSS Modules** — estilo com escopo por arquivo, em `src/styles/`.
+
 ## Requisitos
 
 - Node.js `>= 24.15.0` (major 24).
 - O arquivo `.nvmrc` na raiz do repositório fixa a versão recomendada (`24.21.0`). Quem usa `nvm`
   pode rodar `nvm use` na raiz do repositório para obter automaticamente essa versão.
+- Gerenciador de pacotes: `npm`. O repositório versiona `package-lock.json` — não use `yarn` nem
+  `pnpm`, que gerariam um lockfile divergente.
+
+## Começando
+
+1. Use o botão "Use this template" no GitHub para criar um repositório novo a partir deste
+   template (ou clone este repositório, se preferir).
+2. Instale as dependências: `npm install`.
+3. Renomeie o projeto: o campo `name` em `package.json`, o `<title>` e o `<meta
+   name="description">` em `index.html`, e o heading `# Novo projeto` deste `README.md`.
+4. Suba o dev server (`npm run dev`) e confirme em `http://localhost:5173`.
+5. Remova ou substitua os arquivos de exemplo pelo código real do projeto — ver a seção
+   "[Arquivos de exemplo (descartáveis)](#arquivos-de-exemplo-descartáveis)" abaixo.
 
 ## Estrutura de `src/`
 
@@ -80,7 +102,10 @@ removidos pelo projeto real que usar este template:
 - `src/services/http.service.ts`
 - `src/types/example.types.ts`
 - `src/utils/formatDate.ts`
-- As páginas `src/pages/Home.page.tsx` e `src/pages/NotFound.page.tsx`.
+- `src/pages/Home.page.tsx` + `src/pages/Home.page.test.tsx`.
+- `src/pages/NotFound.page.tsx` + `src/pages/NotFound.page.test.tsx`. `src/routers/Router.test.tsx`
+  também depende do `NotFoundPage` de exemplo (cobre a rota-fallback renderizando-o) — ao
+  substituir essa página, revise esse teste em vez de apagá-lo inteiro.
 
 ## Comandos
 
