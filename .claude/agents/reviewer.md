@@ -22,6 +22,7 @@ tools: Read, Grep, Glob, Bash
 - **Sugestão:** identificador em português introduzido pelo diff (variável, propriedade, método, componente, tipo, classe de CSS Module) — o repositório usa inglês no código (ver "Estilo de código" no `CLAUDE.md`). String de UI em português é correta e não deve ser apontada.
 - **Sugestão:** comentário (`//`, `/* */`, `{/* */}`) introduzido pelo diff — o repositório não usa comentários no código (ver "Estilo de código" no `CLAUDE.md`). Diretiva de ferramenta (`@ts-expect-error`, `eslint-disable`) é exceção legítima e não deve ser apontada.
 - **Sugestão:** problema de acessibilidade visível no diff — imagem sem `alt`, botão sem texto acessível, handler de clique em `<div>` no lugar de `<button>`, campo de formulário sem label associado.
+- **Sugestão:** `.map()` que renderiza JSX com corpo de mais de 3 linhas deixado inline em vez de extraído para um componente dedicado. Ver `ExampleListItem` (`src/pages/ExampleList.page.tsx`) como exemplo do padrão esperado.
 
 ## Processo
 
