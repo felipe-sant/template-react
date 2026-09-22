@@ -15,6 +15,8 @@ Toda página deste template é composta por **três peças que precisam existir 
 
 `Home.page.tsx` e `NotFound.page.tsx` são os exemplos de referência já no repositório. Como todo exemplo de template, existem para serem copiados e depois substituídos pelas páginas reais do projeto — não são peça permanente da aplicação.
 
+Há uma quarta peça, mas **condicional**: se a página tiver lógica de estado/efeito (fetch, `useState`, `useEffect`), essa lógica vai para um hook dedicado em `src/pages/hooks/use<Nome>.ts` — ver passo 2. Página só apresentacional, como `Home.page.tsx` e `NotFound.page.tsx`, não tem essa peça.
+
 ## Passo a passo
 
 ### 1. Componente — `src/pages/<Nome>.page.tsx`
@@ -37,7 +39,73 @@ export default ExemploPage
 
 A tag raiz é `<main>` — `src/styles/global.css` já aplica `min-height: 100dvh` nela.
 
-### 2. Estilo — `src/styles/pages/<nome>.module.css`
+### 2. Hook de página (quando houver lógica de estado/efeito) — `src/pages/hooks/use<Nome>.ts`
+
+Se a página busca dado (fetch), guarda estado (`useState`) ou roda efeito (`useEffect`), essa
+lógica não fica no componente: vive num hook dedicado em `src/pages/hooks/use<Nome>.ts`,
+exportando `use<Nome>()`. O `.page.tsx` só chama o hook e renderiza o retorno — sem
+`useState`/`useEffect` nem chamada a service dentro do componente.
+
+Isso é diferente de `src/hooks/`, reservado a hooks reutilizáveis entre páginas e componentes
+(`useToggle`, `useAuth`). `src/pages/hooks/` é para lógica específica de uma única página, que não
+faz sentido reaproveitar em outro lugar.
+
+`src/pages/hooks/useExampleList.ts` é o exemplo real já no repositório, consumido por
+`src/pages/ExampleList.page.tsx`. Versão simplificada da mesma ideia:
+
+```ts
+import { useEffect, useState } from "react"
+import { get } from "@/services/http.service"
+
+type ExampleState =
+    | { status: "loading" }
+    | { status: "error"; message: string }
+    | { status: "success"; items: string[] }
+
+export function useExample(): ExampleState {
+    const [state, setState] = useState<ExampleState>({ status: "loading" })
+
+    useEffect(() => {
+        get<string[]>("/mock/example.json")
+            .then((items) => setState({ status: "success", items }))
+            .catch((error: unknown) => {
+                const message = error instanceof Error ? error.message : "Erro ao carregar."
+                setState({ status: "error", message })
+            })
+    }, [])
+
+    return state
+}
+```
+
+```tsx
+import { useExample } from "@/pages/hooks/useExample"
+
+function ExemploPage() {
+    const state = useExample()
+
+    return (
+        <main>
+            {state.status === "loading" && <p>Carregando...</p>}
+            {state.status === "error" && <p role="alert">{state.message}</p>}
+            {state.status === "success" && (
+                <ul>
+                    {state.items.map((item) => (
+                        <li key={item}>{item}</li>
+                    ))}
+                </ul>
+            )}
+        </main>
+    )
+}
+
+export default ExemploPage
+```
+
+Página só apresentacional, sem estado nem efeito (como `Home.page.tsx` e `NotFound.page.tsx`), não
+tem hook — este passo não se aplica.
+
+### 3. Estilo — `src/styles/pages/<nome>.module.css`
 
 Nome do arquivo em camelCase, correspondendo ao componente (`NotFound.page.tsx` → `notFound.module.css`).
 
@@ -45,7 +113,7 @@ Nome do arquivo em camelCase, correspondendo ao componente (`NotFound.page.tsx` 
 
 Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-color`, `--sans-font`) em vez de repetir valor hardcoded.
 
-### 3. Rota — `src/routers/Router.tsx`
+### 4. Rota — `src/routers/Router.tsx`
 
 Registre a página no `Router`. O `Routes` é importado com o alias `Switch`, e a rota `*` (NotFound) tem que continuar sendo a **última**:
 
@@ -59,7 +127,7 @@ import Exemplo from "@/pages/Exemplo.page";
 </Switch>
 ```
 
-### 4. Metadados da página (quando necessário)
+### 5. Metadados da página (quando necessário)
 
 `App.tsx` define `<title>`/`<meta name="description">` padrão do site via `react-helmet`. Uma página só precisa declarar os seus se quiser sobrescrever — `NotFound.page.tsx` é o exemplo.
 
@@ -81,6 +149,8 @@ Sempre `<Link to="/rota">` ou `useNavigate()` do `react-router-dom`. Nunca `<a h
 ## Checklist
 
 - [ ] `src/pages/<Nome>.page.tsx` criado, com `export default`
+- [ ] Se a página tiver lógica de estado/efeito, ela está em `src/pages/hooks/use<Nome>.ts`
+      (exportando `use<Nome>()`) — o `.page.tsx` só chama o hook e renderiza o retorno
 - [ ] `src/styles/pages/<nome>.module.css` criado, e **toda** classe usada como `css.<algo>` existe nele
 - [ ] Rota registrada em `src/routers/Router.tsx`, com `*` ainda por último
 - [ ] Navegação interna usando `<Link>`, não `<a href>`
