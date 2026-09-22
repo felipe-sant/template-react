@@ -214,6 +214,11 @@ vindo da tabela daquele arquivo (Fix, Feat, Hotfix, Refactor, Test, Perf, Style,
 Chore, Revert) — nunca uma label do GitHub (`enhancement`, etc.) no lugar do tipo. A descrição do
 PR segue a estrutura de `.github/PULL_REQUEST_TEMPLATE.md`, não um corpo livre.
 
+Quando `npm run build`, `npm run lint` e `npm test -- --run` já rodaram localmente (verificação
+que o agente `executor` faz a cada tarefa, ver `.claude/agents/executor.md`) antes do `git push`,
+o push é feito com `git push --no-verify` — a validação manual já cobre o que um hook rodaria de
+novo, então repetir via hook no momento do push seria redundante.
+
 ## Tooling de IA (agents, skills e spec-driven)
 
 - `.claude/agents/` — três papéis que formam o fluxo planejar → aprovar → executar → revisar:
