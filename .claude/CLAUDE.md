@@ -26,6 +26,7 @@ npx tsc --noEmit # checagem de tipos isolada
 npm run lint      # oxlint sobre o projeto (configuração em .oxlintrc.json)
 npm run lint:fix  # mesma coisa, aplicando as correções automáticas possíveis (oxlint --fix)
 npm run format    # prettier --write em src/**/*.{ts,tsx} e vite.config.ts, conforme .prettierrc
+npm run test:cov  # vitest run --coverage — suíte inteira + relatório de cobertura
 ```
 
 O teste é **co-localizado**: `<arquivo>.test.tsx` ao lado do arquivo testado
@@ -44,6 +45,22 @@ Os testes existentes servem de modelo para cada formato: render direto da págin
 
 Ficam sem teste `src/index.tsx`, que só chama `createRoot` num `#root` que não existe fora do
 `index.html`, e `src/types/example.types.ts`, que só declara tipo e não tem runtime.
+
+`npm run test:cov` roda a suíte inteira com `@vitest/coverage-v8` (bloco `test.coverage` em
+`vite.config.ts`), gerando relatório nos formatos `text`, `json`, `json-summary` e `html` em
+`coverage/` (gitignored) e aplicando um threshold mínimo de 80% em statements, branches, functions
+e lines — abaixo disso o comando termina com erro. `exclude` cobre os arquivos sem runtime
+relevante já citados acima, mais `vite.config.ts`, `src/setupTests.ts` e
+`src/types/declarations.d.ts`.
+
+`.github/workflows/ci.yml` roda em push para `main` e em todo Pull Request, com três jobs:
+`build` (`npm run build`) e `lint` (`npm run lint`) sempre completos, e `test`, cujo escopo
+depende do contexto — suíte completa + `npm run test:cov` (com o threshold de 80% acima) quando o
+evento é push (sempre em `main`) ou o PR mira `main`, ou quando o diff toca um arquivo
+"suite-wide" (`package.json`, `package-lock.json`, `vite.config.ts`, `tsconfig*.json`,
+`src/setupTests.ts`); nos demais PRs, roda só `vitest --changed` (sem coverage), cobrindo apenas
+os testes afetados pelo diff. Em `mode=full`, o diretório `coverage/` é publicado como artifact do
+workflow.
 
 `vite build` sozinho não checa tipos (usa esbuild, que só transpila); por isso o script `build`
 roda `tsc --noEmit` antes.
