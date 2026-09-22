@@ -128,7 +128,8 @@ removidos pelo projeto real que usar este template:
   (guard) para o data router, não um sistema de autenticação real; `useAuth.ts` é o único ponto a
   substituir por uma implementação real de login.
 - `src/pages/ExampleList.page.tsx` + `src/styles/pages/exampleList.module.css` +
-  `src/pages/ExampleList.page.test.tsx` — fluxo de exemplo integrado, registrado na rota
+  `src/pages/ExampleList.page.test.tsx` + `src/pages/hooks/useExampleList.ts` +
+  `src/pages/hooks/useExampleList.test.ts` — fluxo de exemplo integrado, registrado na rota
   `/exemplos`: busca uma lista de `ExampleEntity` com `http.service`, formata a data de cada item
   com `formatDate` e trata carregamento/erro/lista vazia. Consome um mock estático em
   `public/mock/example-entities.json`, não `VITE_API_URL` — ver nota abaixo sobre o motivo.
