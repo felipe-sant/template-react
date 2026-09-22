@@ -101,6 +101,15 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   projeto: um manifest com `name`/ícones placeholder, sem produto definido, seria pior que não ter
   manifest — cada projeto derivado adiciona isso quando precisar.
 
+- **Fluxo de exemplo integrado** — `src/pages/ExampleList.page.tsx`, registrado na rota
+  `/exemplos` de `src/routers/Router.tsx` (dentro de `MainLayout`, fora de `RequireAuth`), busca uma
+  lista de `ExampleEntity` (`src/types/example.types.ts`) com `get` de
+  `src/services/http.service.ts`, formata cada `createdAt` com `src/utils/formatDate.ts` e trata
+  carregamento/erro/lista vazia. O dado vem de um mock estático em `public/mock/`, não de
+  `VITE_API_URL`: o valor padrão dessa variável em `.env.example` é um domínio reservado que não
+  resolve, então apontar o exemplo para ele quebraria por padrão logo após um `git clone` sem
+  `.env` configurado.
+
 Não há camada de estado global nem cliente HTTP configurados. A convenção de variáveis de
 ambiente é a do Vite: só variáveis com prefixo `VITE_`
 são expostas ao código do cliente, e a leitura é `import.meta.env.VITE_ALGO` — não
