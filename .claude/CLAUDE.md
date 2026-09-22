@@ -189,6 +189,9 @@ Continua sendo revisão manual do `reviewer` (o oxlint não cobre):
 - Identificadores em inglês — não existe regra de lint que verifique o idioma de um identificador.
 - Subpath import quando o pacote publica (`lodash/debounce` em vez de `lodash`) — não existe
   regra no oxlint para essa convenção.
+- `.map()` que renderiza JSX com corpo de mais de 3 linhas deve ser extraído para um componente
+  dedicado em vez de ficar inline — não existe regra de lint que meça linhas de corpo de `.map()`.
+  Ver `ExampleListItem` (`src/pages/ExampleList.page.tsx`) como exemplo já seguindo a convenção.
 
 ### Imports
 
