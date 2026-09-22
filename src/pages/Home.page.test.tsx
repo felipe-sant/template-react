@@ -17,4 +17,17 @@ describe("HomePage", () => {
             "Minha descrição personalizada."
         )
     })
+
+    it("renderiza a vitrine de tokens de design", () => {
+        render(<HomePage />)
+
+        expect(screen.getByText("Rótulo de exemplo")).toBeInTheDocument()
+        expect(screen.getByText("destaque")).toBeInTheDocument()
+        expect(
+            screen.getByText("Legenda de exemplo em texto secundário, para conteúdo complementar.")
+        ).toBeInTheDocument()
+        expect(screen.getByText("Sucesso")).toBeInTheDocument()
+        expect(screen.getByText("Aviso")).toBeInTheDocument()
+        expect(screen.getByText("Erro")).toBeInTheDocument()
+    })
 })
