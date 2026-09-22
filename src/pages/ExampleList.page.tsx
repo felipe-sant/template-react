@@ -1,40 +1,9 @@
-import { useEffect, useState } from "react"
-import { get } from "@/services/http.service"
 import { formatDate } from "@/utils/formatDate"
-import type { ExampleEntity } from "@/types/example.types"
+import { useExampleList } from "@/pages/hooks/useExampleList"
 import css from "@/styles/pages/exampleList.module.css"
 
-type ExampleListState =
-    | { status: "loading" }
-    | { status: "error"; message: string }
-    | { status: "success"; entities: ExampleEntity[] }
-
 function ExampleListPage() {
-    const [state, setState] = useState<ExampleListState>({ status: "loading" })
-
-    useEffect(() => {
-        let isMounted = true
-
-        get<ExampleEntity[]>("/mock/example-entities.json")
-            .then((entities) => {
-                if (isMounted) {
-                    setState({ status: "success", entities })
-                }
-            })
-            .catch((error: unknown) => {
-                if (isMounted) {
-                    const message =
-                        error instanceof Error
-                            ? error.message
-                            : "Não foi possível carregar os exemplos."
-                    setState({ status: "error", message })
-                }
-            })
-
-        return () => {
-            isMounted = false
-        }
-    }, [])
+    const state = useExampleList()
 
     return (
         <>

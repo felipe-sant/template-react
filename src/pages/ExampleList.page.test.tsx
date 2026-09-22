@@ -1,14 +1,15 @@
 import { describe, expect, it, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import ExampleListPage from "@/pages/ExampleList.page"
-import { get } from "@/services/http.service"
+import { useExampleList } from "@/pages/hooks/useExampleList"
+import type { ExampleListState } from "@/pages/hooks/useExampleList"
 import type { ExampleEntity } from "@/types/example.types"
 
-vi.mock("@/services/http.service", () => ({
-    get: vi.fn()
+vi.mock("@/pages/hooks/useExampleList", () => ({
+    useExampleList: vi.fn()
 }))
 
-const mockedGet = vi.mocked(get)
+const mockedUseExampleList = vi.mocked(useExampleList)
 
 function createExampleEntity(overrides: Partial<ExampleEntity> = {}): ExampleEntity {
     return {
@@ -20,61 +21,43 @@ function createExampleEntity(overrides: Partial<ExampleEntity> = {}): ExampleEnt
     }
 }
 
+function mockState(state: ExampleListState) {
+    mockedUseExampleList.mockReturnValue(state)
+}
+
 describe("ExampleListPage", () => {
-    it("mostra o estado de carregando antes da resposta chegar", () => {
-        mockedGet.mockReturnValueOnce(new Promise(() => {}))
+    it("mostra o estado de carregando quando o hook retorna loading", () => {
+        mockState({ status: "loading" })
 
         render(<ExampleListPage />)
 
         expect(screen.getByText("Carregando exemplos...")).toBeInTheDocument()
     })
 
-    it("mostra o nome e a data formatada de cada exemplo ao carregar com sucesso", async () => {
-        mockedGet.mockResolvedValueOnce([createExampleEntity()])
+    it("mostra o nome e a data formatada de cada exemplo quando o hook retorna sucesso", () => {
+        mockState({ status: "success", entities: [createExampleEntity()] })
 
         render(<ExampleListPage />)
 
-        expect(await screen.findByText("Exemplo A")).toBeInTheDocument()
+        expect(screen.getByText("Exemplo A")).toBeInTheDocument()
         expect(screen.getByText("15/01/2024")).toBeInTheDocument()
     })
 
-    it("mostra a mensagem de lista vazia quando não há exemplos", async () => {
-        mockedGet.mockResolvedValueOnce([])
+    it("mostra a mensagem de lista vazia quando o hook retorna sucesso sem exemplos", () => {
+        mockState({ status: "success", entities: [] })
 
         render(<ExampleListPage />)
 
-        expect(await screen.findByText("Nenhum exemplo encontrado.")).toBeInTheDocument()
+        expect(screen.getByText("Nenhum exemplo encontrado.")).toBeInTheDocument()
         expect(screen.queryByText("Carregando exemplos...")).not.toBeInTheDocument()
     })
 
-    it("mostra uma mensagem de alerta quando a busca falha", async () => {
-        mockedGet.mockRejectedValueOnce(new Error("Falha ao buscar exemplos."))
+    it("mostra uma mensagem de alerta quando o hook retorna erro", () => {
+        mockState({ status: "error", message: "Falha ao buscar exemplos." })
 
         render(<ExampleListPage />)
 
-        expect(await screen.findByRole("alert")).toHaveTextContent("Falha ao buscar exemplos.")
+        expect(screen.getByRole("alert")).toHaveTextContent("Falha ao buscar exemplos.")
         expect(screen.queryByRole("list")).not.toBeInTheDocument()
-    })
-
-    it("não lança erro nem warning ao resolver a busca após o componente desmontar", async () => {
-        let resolveGet!: (entities: ExampleEntity[]) => void
-        mockedGet.mockReturnValueOnce(
-            new Promise((resolve) => {
-                resolveGet = resolve
-            })
-        )
-        const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {})
-        const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {})
-
-        const { unmount } = render(<ExampleListPage />)
-        unmount()
-        resolveGet([createExampleEntity()])
-        await Promise.resolve()
-
-        expect(errorSpy).not.toHaveBeenCalled()
-        expect(warnSpy).not.toHaveBeenCalled()
-
-        errorSpy.mockRestore()
-        warnSpy.mockRestore()
     })
 })
