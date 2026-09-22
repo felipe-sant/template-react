@@ -40,7 +40,7 @@ Siga essa tabela ao adicionar código novo.
 | `components/` | Componentes de UI reutilizáveis, sem rota própria. | `<Nome>.tsx` (PascalCase, sem sufixo) | `export default` no final do arquivo |
 | `layouts/` | Estruturas de página compartilhadas (header/footer ao redor de `<Outlet />`). | `<Nome>.layout.tsx` | `export default` no final do arquivo |
 | `pages/` | Telas ligadas a uma rota. | `<Nome>.page.tsx` | `export default` no final do arquivo |
-| `routers/` | Registro das rotas da aplicação. | `Router.tsx` (arquivo único) | `export default` no final do arquivo |
+| `routers/` | Registro das rotas da aplicação e módulos auxiliares de roteamento. | `Router.tsx` / `RequireAuth.tsx` (`export default`); `paths.ts` (export nomeado) | ver coluna anterior |
 | `hooks/` | Hooks React reutilizáveis. | `use<Nome>.ts` | export **nomeado** |
 | `services/` | Acesso a dado externo (HTTP e afins). | `<nome>.service.ts` | export **nomeado** |
 | `types/` | Tipos compartilhados entre vários arquivos. | `<nome>.types.ts` / `<nome>.d.ts` | ver abaixo |
@@ -108,8 +108,9 @@ removidos pelo projeto real que usar este template:
 
 - `src/components/Button.tsx` + `src/styles/components/button.module.css` +
   `src/components/Button.test.tsx` (consumido em `src/pages/Home.page.tsx`, também como exemplo).
-- `src/layouts/Main.layout.tsx` + `src/styles/layouts/main.module.css` — ainda **não registrado em
-  nenhuma rota**; a rota de layout com `<Outlet />` é escopo da issue #24.
+- `src/layouts/Main.layout.tsx` + `src/styles/layouts/main.module.css` — já registrado como rota de
+  layout em `src/routers/Router.tsx` (issue #24); o `<Outlet />` ainda não tem conteúdo de exemplo
+  próprio, o que fica para a issue #32.
 - `src/hooks/useToggle.ts`
 - `src/services/http.service.ts`
 - `src/types/example.types.ts`
@@ -118,6 +119,12 @@ removidos pelo projeto real que usar este template:
 - `src/pages/NotFound.page.tsx` + `src/pages/NotFound.page.test.tsx`. `src/routers/Router.test.tsx`
   também depende do `NotFoundPage` de exemplo (cobre a rota-fallback renderizando-o) — ao
   substituir essa página, revise esse teste em vez de apagá-lo inteiro.
+- `src/hooks/useAuth.ts` + `src/hooks/useAuth.test.ts`, `src/routers/RequireAuth.tsx` +
+  `src/routers/RequireAuth.test.tsx`, `src/pages/ProtectedExample.page.tsx` +
+  `src/pages/ProtectedExample.page.test.tsx`, `src/pages/Forbidden.page.tsx` +
+  `src/pages/Forbidden.page.test.tsx` — juntos formam um exemplo do **padrão** de bloqueio de rota
+  (guard) para o data router, não um sistema de autenticação real; `useAuth.ts` é o único ponto a
+  substituir por uma implementação real de login.
 
 ## Variáveis de ambiente
 

@@ -1,29 +1,51 @@
 import { describe, expect, it } from "vitest"
-import { MemoryRouter } from "react-router-dom"
+import { createMemoryRouter, RouterProvider } from "react-router-dom"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { AppRoutes } from "@/routers/Router"
+import { routes } from "@/routers/Router"
+import { ROUTES } from "@/routers/paths"
 
-describe("AppRoutes", () => {
-    it("renderiza a página de NotFound em uma rota inexistente", () => {
-        render(
-            <MemoryRouter initialEntries={["/rota-que-nao-existe"]}>
-                <AppRoutes />
-            </MemoryRouter>
-        )
+function renderRoutes(initialEntries: string[]) {
+    const router = createMemoryRouter(routes, { initialEntries })
+    return render(<RouterProvider router={router} />)
+}
 
-        expect(screen.getByRole("heading", { name: "404 - Not Found" })).toBeInTheDocument()
+describe("routes", () => {
+    it("mostra o fallback de carregamento antes da página lazy resolver", () => {
+        renderRoutes(["/"])
+
+        expect(screen.getByText("Carregando...")).toBeInTheDocument()
     })
 
-    it("navega da NotFound para a Home ao clicar no link, sem full reload", () => {
-        render(
-            <MemoryRouter initialEntries={["/rota-que-nao-existe"]}>
-                <AppRoutes />
-            </MemoryRouter>
-        )
+    it("renderiza o header e o footer do MainLayout ao redor da página em uma rota válida", async () => {
+        renderRoutes(["/"])
 
+        expect(await screen.findByRole("heading", { name: "Hello World!" })).toBeInTheDocument()
+        expect(screen.getByRole("banner")).toBeInTheDocument()
+        expect(screen.getByRole("contentinfo")).toBeInTheDocument()
+    })
+
+    it("renderiza a página de NotFound em uma rota inexistente", async () => {
+        renderRoutes(["/rota-que-nao-existe"])
+
+        expect(await screen.findByRole("heading", { name: "404 - Not Found" })).toBeInTheDocument()
+    })
+
+    it("navega da NotFound para a Home ao clicar no link, sem full reload", async () => {
+        renderRoutes(["/rota-que-nao-existe"])
+
+        await screen.findByRole("link", { name: "Vá para a página inicial." })
         userEvent.click(screen.getByRole("link", { name: "Vá para a página inicial." }))
 
-        expect(screen.getByRole("heading", { name: "Hello World!" })).toBeInTheDocument()
+        expect(await screen.findByRole("heading", { name: "Hello World!" })).toBeInTheDocument()
+    })
+
+    it("redireciona para a página de acesso negado ao acessar a rota protegida sem autenticação", async () => {
+        renderRoutes([ROUTES.protectedExample])
+
+        expect(await screen.findByRole("heading", { name: "Acesso negado." })).toBeInTheDocument()
+        expect(
+            screen.queryByText("Você só vê isso se estiver autenticado.")
+        ).not.toBeInTheDocument()
     })
 })
