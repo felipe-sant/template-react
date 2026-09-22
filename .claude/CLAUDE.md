@@ -104,7 +104,9 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
 Não há camada de estado global nem cliente HTTP configurados. A convenção de variáveis de
 ambiente é a do Vite: só variáveis com prefixo `VITE_`
 são expostas ao código do cliente, e a leitura é `import.meta.env.VITE_ALGO` — não
-`process.env.REACT_APP_ALGO`, que era a convenção do Create React App e não existe mais aqui.
+`process.env.REACT_APP_ALGO`, que era a convenção do Create React App e não existe mais aqui —
+materializada em `.env.example` (na raiz, com `VITE_API_URL` como exemplo) e na augmentação de
+`ImportMetaEnv`/`ImportMeta` em `src/vite-env.d.ts`.
 
 A configuração de build fica em `vite.config.ts` na raiz (plugin React + bloco `test` do Vitest),
 e a entrada da aplicação é o `index.html` da raiz, que carrega `/src/index.tsx` como módulo.
