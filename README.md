@@ -119,6 +119,7 @@ npx tsc --noEmit # checagem de tipos isolada
 npm run lint      # roda o oxlint sobre o projeto, usando a configuração de .oxlintrc.json
 npm run lint:fix  # mesma coisa que npm run lint, mas aplicando automaticamente as correções possíveis (oxlint --fix)
 npm run format    # roda prettier --write em src/**/*.{ts,tsx} e vite.config.ts, conforme as regras de .prettierrc
+npm run test:cov  # roda vitest run --coverage — suíte inteira + relatório de cobertura
 ```
 
 > [!WARNING]
@@ -155,3 +156,19 @@ verificar que uma URL inexistente cai no `NotFound`, `Button.test.tsx` cobre um 
 interação (clique disparando `onClick`), `useToggle.test.ts` usa `renderHook` para um hook,
 `formatDate.test.ts` cobre uma função pura, `http.service.test.ts` stuba o `fetch` com
 `vi.stubGlobal` e `Main.layout.test.tsx` preenche o `<Outlet />` com uma rota-filha.
+
+`npm run test:cov` roda a suíte inteira com relatório de cobertura (`@vitest/coverage-v8`),
+gerando os formatos `text`, `json`, `json-summary` e `html` em `coverage/` (fora do controle de
+versão) e exigindo um mínimo de 80% em statements, branches, functions e lines (bloco
+`test.coverage` em `vite.config.ts`) — abaixo disso o comando falha.
+
+### CI
+
+`.github/workflows/ci.yml` roda em todo push para `main` e em todo Pull Request, com três jobs:
+`build` e `lint` sempre completos (`npm run build` e `npm run lint`); e `test`, cujo escopo
+depende do contexto — suíte completa com `npm run test:cov` (respeitando o threshold de 80%
+acima) quando o evento é push em `main`, quando o PR mira `main`, ou quando o diff altera um
+arquivo "suite-wide" (`package.json`, `package-lock.json`, `vite.config.ts`, `tsconfig*.json`,
+`src/setupTests.ts`); nos demais Pull Requests, roda só `vitest --changed`, sem coverage, testando
+apenas o que o diff afeta. Quando a suíte completa roda, `coverage/` é publicado como artifact do
+workflow.
