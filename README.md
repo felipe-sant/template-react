@@ -32,6 +32,12 @@ Template base de frontend em React + TypeScript.
 
 ## Estrutura de `src/`
 
+> [!WARNING]
+> Essa organização de pastas é uma escolha pessoal de [@felipe-sant](https://github.com/felipe-sant).
+> Para adotar outro padrão de arquitetura, edite `.claude/CLAUDE.md` — é a fonte de verdade das
+> convenções deste template, usada pelos agentes de IA (`sdd`, `executor`, `reviewer`) e pelas
+> skills de scaffold. Mudar só este `README.md` deixa o resto do tooling desatualizado.
+
 Cada pasta tem um papel definido, uma convenção de nome de arquivo e um tipo de export esperado.
 Siga essa tabela ao adicionar código novo.
 
