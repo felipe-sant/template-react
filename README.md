@@ -108,6 +108,12 @@ removidos pelo projeto real que usar este template:
 
 - `src/components/Button.tsx` + `src/styles/components/button.module.css` +
   `src/components/Button.test.tsx` (consumido em `src/pages/Home.page.tsx`, também como exemplo).
+- `src/components/ErrorMessage.tsx` + `src/styles/components/errorMessage.module.css` +
+  `src/components/ErrorMessage.test.tsx` (consumido em `ExampleList.page.tsx` para o estado de
+  erro).
+- `src/components/EmptyState.tsx` + `src/styles/components/emptyState.module.css` +
+  `src/components/EmptyState.test.tsx` (consumido em `ExampleList.page.tsx` para o estado de lista
+  vazia).
 - `src/layouts/Main.layout.tsx` + `src/styles/layouts/main.module.css` — já registrado como rota de
   layout em `src/routers/Router.tsx` (issue #24); o `<Outlet />` já tem conteúdo de exemplo próprio,
   preenchido pela rota `/exemplos` (`ExampleList.page.tsx`, issue #32).
