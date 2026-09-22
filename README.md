@@ -70,8 +70,20 @@ Os estilos não ficam co-localizados: o CSS Module de uma peça vive em
 **Toda classe usada como `css.<algo>` no JSX precisa existir no `.module.css` importado.** A
 tipagem em `src/types/declarations.d.ts` é `{ [key: string]: string }`, então uma classe
 inexistente não gera erro de compilação — vira `undefined` e o elemento renderiza sem `class`.
-Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-color`,
-`--sans-font`) em vez de valores hardcoded.
+Use as custom properties de `src/styles/global.css` (paleta, papéis semânticos, tipografia,
+espaçamento, forma, movimento) em vez de valores hardcoded.
+
+### Design tokens
+
+> [!WARNING]
+> A paleta (neutra, escura e de marca), a tipografia, o espaçamento, a forma e o movimento
+> definidos em `src/styles/global.css` são escolha pessoal de
+> [@felipe-sant](https://github.com/felipe-sant), baseada no design system do portfólio pessoal
+> dele — não convenção da comunidade React/TypeScript. Troque esses valores livremente: nada no
+> restante do template depende dos tokens específicos escolhidos aqui. A tipografia depende de um
+> `@import` do Google Fonts (dependência de rede nova); para evitá-la, basta trocar
+> `--font-heading`/`--font-body`/`--font-mono` por fontes locais ou de sistema e remover o
+> `@import`.
 
 ### Exceção de sufixo: arquivos raiz/singulares
 
