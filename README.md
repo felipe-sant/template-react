@@ -107,6 +107,27 @@ removidos pelo projeto real que usar este template:
   também depende do `NotFoundPage` de exemplo (cobre a rota-fallback renderizando-o) — ao
   substituir essa página, revise esse teste em vez de apagá-lo inteiro.
 
+## Variáveis de ambiente
+
+A convenção de variáveis de ambiente é a do Vite, não a do Create React App: só variável com
+prefixo `VITE_` é exposta ao código do cliente, e a leitura em código é `import.meta.env.VITE_ALGO`
+— não `process.env.REACT_APP_ALGO`, que era a convenção do `react-scripts` e não existe mais neste
+template.
+
+Para configurar o ambiente local, copie `.env.example` para `.env` e preencha o valor real de cada
+variável:
+
+```bash
+cp .env.example .env
+```
+
+`.env` (e variações locais como `.env.local`) não são versionados — o `.gitignore` já cobre esses
+arquivos, nenhuma configuração adicional é necessária.
+
+Toda variável nova declarada em `.env.example` precisa de uma entrada correspondente em
+`src/vite-env.d.ts`, na interface `ImportMetaEnv`, para que `import.meta.env` tenha
+autocomplete e checagem de tipo.
+
 ## Comandos
 
 ```bash
