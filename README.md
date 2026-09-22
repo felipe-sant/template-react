@@ -70,8 +70,20 @@ Os estilos não ficam co-localizados: o CSS Module de uma peça vive em
 **Toda classe usada como `css.<algo>` no JSX precisa existir no `.module.css` importado.** A
 tipagem em `src/types/declarations.d.ts` é `{ [key: string]: string }`, então uma classe
 inexistente não gera erro de compilação — vira `undefined` e o elemento renderiza sem `class`.
-Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-color`,
-`--sans-font`) em vez de valores hardcoded.
+Use as custom properties de `src/styles/global.css` (paleta, papéis semânticos, tipografia,
+espaçamento, forma, movimento) em vez de valores hardcoded.
+
+### Design tokens
+
+> [!WARNING]
+> A paleta (neutra, escura e de marca), a tipografia, o espaçamento, a forma e o movimento
+> definidos em `src/styles/global.css` são escolha pessoal de
+> [@felipe-sant](https://github.com/felipe-sant), baseada no design system do portfólio pessoal
+> dele — não convenção da comunidade React/TypeScript. Troque esses valores livremente: nada no
+> restante do template depende dos tokens específicos escolhidos aqui. A tipografia depende de um
+> `@import` do Google Fonts (dependência de rede nova); para evitá-la, basta trocar
+> `--font-heading`/`--font-body`/`--font-mono` por fontes locais ou de sistema e remover o
+> `@import`.
 
 ### Exceção de sufixo: arquivos raiz/singulares
 
@@ -113,6 +125,27 @@ removidos pelo projeto real que usar este template:
   `src/pages/Forbidden.page.test.tsx` — juntos formam um exemplo do **padrão** de bloqueio de rota
   (guard) para o data router, não um sistema de autenticação real; `useAuth.ts` é o único ponto a
   substituir por uma implementação real de login.
+
+## Variáveis de ambiente
+
+A convenção de variáveis de ambiente é a do Vite, não a do Create React App: só variável com
+prefixo `VITE_` é exposta ao código do cliente, e a leitura em código é `import.meta.env.VITE_ALGO`
+— não `process.env.REACT_APP_ALGO`, que era a convenção do `react-scripts` e não existe mais neste
+template.
+
+Para configurar o ambiente local, copie `.env.example` para `.env` e preencha o valor real de cada
+variável:
+
+```bash
+cp .env.example .env
+```
+
+`.env` (e variações locais como `.env.local`) não são versionados — o `.gitignore` já cobre esses
+arquivos, nenhuma configuração adicional é necessária.
+
+Toda variável nova declarada em `.env.example` precisa de uma entrada correspondente em
+`src/vite-env.d.ts`, na interface `ImportMetaEnv`, para que `import.meta.env` tenha
+autocomplete e checagem de tipo.
 
 ## Comandos
 

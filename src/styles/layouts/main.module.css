@@ -9,10 +9,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1rem;
-    background-color: var(--g9-color);
-    color: var(--g1-color);
-    font-family: var(--sans-font);
+    padding: var(--space-4);
+    background-color: var(--bg-raised);
+    color: var(--text-strong);
+    font-family: var(--font-body);
+}
+
+.header {
+    border-bottom: var(--border-width) solid var(--border-subtle);
+}
+
+.footer {
+    border-top: var(--border-width) solid var(--border-subtle);
 }
 
 .content {

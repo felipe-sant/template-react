@@ -1,18 +1,18 @@
 .button {
-    font-family: var(--sans-font);
-    font-size: 1rem;
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--g4-color);
-    border-radius: 0.25rem;
-    background-color: var(--g2-color);
-    color: var(--g9-color);
+    font-family: var(--font-body);
+    font-size: var(--text-body-md);
+    padding: var(--pad-control-y) var(--pad-control-x);
+    border: var(--border-width) solid var(--border-strong);
+    border-radius: var(--radius);
+    background-color: var(--bg-raised);
+    color: var(--text-strong);
     cursor: pointer;
 }
 
 .button:hover {
-    background-color: var(--g3-color);
+    background-color: var(--bg-placeholder);
 }
 
 .button:active {
-    background-color: var(--g4-color);
+    background-color: var(--border-subtle);
 }
