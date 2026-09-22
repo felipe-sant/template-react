@@ -32,12 +32,6 @@ Template base de frontend em React + TypeScript.
 
 ## Estrutura de `src/`
 
-> [!WARNING]
-> Essa organização de pastas é uma escolha pessoal de [@felipe-sant](https://github.com/felipe-sant).
-> Para adotar outro padrão de arquitetura, edite `.claude/CLAUDE.md` — é a fonte de verdade das
-> convenções deste template, usada pelos agentes de IA (`sdd`, `executor`, `reviewer`) e pelas
-> skills de scaffold. Mudar só este `README.md` deixa o resto do tooling desatualizado.
-
 Cada pasta tem um papel definido, uma convenção de nome de arquivo e um tipo de export esperado.
 Siga essa tabela ao adicionar código novo.
 
@@ -126,6 +120,14 @@ npm run lint      # roda o oxlint sobre o projeto, usando a configuração de .o
 npm run lint:fix  # mesma coisa que npm run lint, mas aplicando automaticamente as correções possíveis (oxlint --fix)
 npm run format    # roda prettier --write em src/**/*.{ts,tsx} e vite.config.ts, conforme as regras de .prettierrc
 ```
+
+> [!WARNING]
+> As regras de formatação em `.prettierrc` (`tabWidth: 4`, `trailingComma: "none"`, sem ponto e
+> vírgula, aspas duplas, etc.) e de lint em `.oxlintrc.json` são escolha pessoal de
+> [@felipe-sant](https://github.com/felipe-sant), não convenção da comunidade React/TypeScript.
+> Quem preferir 2 espaços de indentação, ponto e vírgula ou outra convenção pode simplesmente
+> editar esses dois arquivos — nada no restante do template depende dos valores específicos
+> escolhidos aqui.
 
 ### Git hooks
 
