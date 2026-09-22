@@ -2,10 +2,13 @@ import { lazy, Suspense, useState } from "react"
 import { createBrowserRouter, RouterProvider, type RouteObject } from "react-router-dom"
 import MainLayout from "@/layouts/Main.layout"
 import ErrorPage from "@/pages/Error.page"
+import RequireAuth from "@/routers/RequireAuth"
 import { ROUTES } from "@/routers/paths"
 
 const Home = lazy(() => import("@/pages/Home.page"))
 const NotFound = lazy(() => import("@/pages/NotFound.page"))
+const ProtectedExample = lazy(() => import("@/pages/ProtectedExample.page"))
+const Forbidden = lazy(() => import("@/pages/Forbidden.page"))
 
 export const routes: RouteObject[] = [
     {
@@ -19,6 +22,27 @@ export const routes: RouteObject[] = [
                         <Home />
                     </Suspense>
                 )
+            },
+            {
+                path: ROUTES.forbidden,
+                element: (
+                    <Suspense fallback={<p>Carregando...</p>}>
+                        <Forbidden />
+                    </Suspense>
+                )
+            },
+            {
+                element: <RequireAuth />,
+                children: [
+                    {
+                        path: ROUTES.protectedExample,
+                        element: (
+                            <Suspense fallback={<p>Carregando...</p>}>
+                                <ProtectedExample />
+                            </Suspense>
+                        )
+                    }
+                ]
             },
             {
                 path: ROUTES.notFound,
