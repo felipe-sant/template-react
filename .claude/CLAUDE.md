@@ -48,6 +48,15 @@ Ficam sem teste `src/index.tsx`, que só chama `createRoot` num `#root` que não
 `vite build` sozinho não checa tipos (usa esbuild, que só transpila); por isso o script `build`
 roda `tsc --noEmit` antes.
 
+`npm install` configura automaticamente (script `prepare`, `"prepare": "husky"`) um hook de
+`pre-commit` do Husky que roda `npx lint-staged` a cada commit — sem passo manual extra.
+`lint-staged` (`.lintstagedrc.json`) aplica `oxlint --fix` e depois `prettier --write` só nos
+arquivos `.ts`/`.tsx` staged, mesmo escopo dos scripts `lint:fix`/`format`; corrige o que for
+automático e bloqueia o commit se sobrar erro de lint não corrigível sozinho. O `.editorconfig` na
+raiz (`root = true`) padroniza charset, final de linha, quebra de linha final, remoção de trailing
+whitespace e indentação (`indent_size = 2` por padrão, `4` para `*.ts`/`*.tsx`/`*.css`) para
+editores compatíveis, coerente com o `.prettierrc` já existente.
+
 ## Arquitetura
 
 Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` → `src/routers/Router.tsx` → páginas.
