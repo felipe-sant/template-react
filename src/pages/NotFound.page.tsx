@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { ROUTES } from "@/routers/paths"
 import css from "@/styles/pages/notFound.module.css"
 
 function NotFoundPage() {
@@ -10,7 +11,7 @@ function NotFoundPage() {
                 <div>
                     <h1>404 - Not Found</h1>
                     <p>
-                        <Link to="/">Vá para a página inicial.</Link>
+                        <Link to={ROUTES.home}>Vá para a página inicial.</Link>
                     </p>
                 </div>
             </main>
