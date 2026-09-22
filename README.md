@@ -121,6 +121,25 @@ npm run lint:fix  # mesma coisa que npm run lint, mas aplicando automaticamente 
 npm run format    # roda prettier --write em src/**/*.{ts,tsx} e vite.config.ts, conforme as regras de .prettierrc
 ```
 
+> [!WARNING]
+> As regras de formatação em `.prettierrc` (`tabWidth: 4`, `trailingComma: "none"`, sem ponto e
+> vírgula, aspas duplas, etc.) e de lint em `.oxlintrc.json` são escolha pessoal de
+> [@felipe-sant](https://github.com/felipe-sant), não convenção da comunidade React/TypeScript.
+> Quem preferir 2 espaços de indentação, ponto e vírgula ou outra convenção pode simplesmente
+> editar esses dois arquivos — nada no restante do template depende dos valores específicos
+> escolhidos aqui.
+
+### Git hooks
+
+`npm install` configura automaticamente (via script `prepare`) um hook de `pre-commit` do
+[Husky](https://typicode.github.io/husky/) que roda `lint-staged` em cada commit — nenhum passo
+manual extra é necessário. `lint-staged` (configurado em `.lintstagedrc.json`) aplica `oxlint --fix`
+e depois `prettier --write` só nos arquivos `.ts`/`.tsx` staged, corrigindo o que for automático ou
+bloqueando o commit quando sobrar um erro de lint que o `oxlint` não sabe corrigir sozinho. O
+`.editorconfig` na raiz complementa isso para editores compatíveis: padroniza charset, final de
+linha, quebra de linha final, remoção de espaço em branco à direita e indentação (2 espaços por
+padrão, 4 para `.ts`/`.tsx`/`.css`) antes mesmo de o Prettier rodar.
+
 ### Testes
 
 O teste fica **co-localizado**: `<arquivo>.test.tsx` ao lado do arquivo testado
