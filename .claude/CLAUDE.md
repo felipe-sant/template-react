@@ -86,7 +86,13 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   arquivo exporta `AppRoutes` (só as `<Route>`) separado do `Router` (export default, que envolve
   `AppRoutes` com `BrowserRouter`) — é `AppRoutes` que o teste renderiza sob `MemoryRouter`.
 - **`src/pages/`** — convenção de nome `Nome.page.tsx`, componente `function NomePage()` com
-  `export default`.
+  `export default`. Lógica de estado/efeito específica de uma página (`useState`, `useEffect`,
+  chamada a service) não fica no componente: vive em `src/pages/hooks/use<Nome>.ts`, exportando
+  `use<Nome>()` — ver `src/pages/hooks/useExampleList.ts` como exemplo já presente no repositório.
+  O `.page.tsx` correspondente só chama esse hook e renderiza o retorno, sem `useState`/`useEffect`
+  nem chamada a service dentro do componente. Isso é distinto de `src/hooks/`, que continua
+  reservado a hooks reutilizáveis entre páginas e componentes, não específicos de uma única página
+  (`src/hooks/useToggle.ts`, `src/hooks/useAuth.ts`).
 - **`src/styles/`** — `global.css` guarda os CSS custom properties (escala de cinza `--g1-color`
   … `--g10-color`, `--sans-font`) e o reset. Estilos de página ficam em
   `src/styles/pages/<nome>.module.css` (CSS Modules), importados como `import css from "..."`.
@@ -100,6 +106,17 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   `<link rel="icon">`. O template não inclui `manifest.json` nem ícones de PWA por decisão de
   projeto: um manifest com `name`/ícones placeholder, sem produto definido, seria pior que não ter
   manifest — cada projeto derivado adiciona isso quando precisar.
+
+- **Fluxo de exemplo integrado** — `src/pages/ExampleList.page.tsx`, registrado na rota
+  `/exemplos` de `src/routers/Router.tsx` (dentro de `MainLayout`, fora de `RequireAuth`), consome
+  `src/pages/hooks/useExampleList.ts`, que busca uma lista de `ExampleEntity`
+  (`src/types/example.types.ts`) com `get` de `src/services/http.service.ts` e concentra o
+  `useState`/`useEffect` de carregamento/erro/sucesso; a página só formata cada `createdAt` com
+  `src/utils/formatDate.ts` e renderiza carregamento/erro/lista vazia a partir do estado que o hook
+  devolve. O dado vem de um mock estático em `public/mock/`, não de
+  `VITE_API_URL`: o valor padrão dessa variável em `.env.example` é um domínio reservado que não
+  resolve, então apontar o exemplo para ele quebraria por padrão logo após um `git clone` sem
+  `.env` configurado.
 
 Não há camada de estado global nem cliente HTTP configurados. A convenção de variáveis de
 ambiente é a do Vite: só variáveis com prefixo `VITE_`
@@ -172,6 +189,9 @@ Continua sendo revisão manual do `reviewer` (o oxlint não cobre):
 - Identificadores em inglês — não existe regra de lint que verifique o idioma de um identificador.
 - Subpath import quando o pacote publica (`lodash/debounce` em vez de `lodash`) — não existe
   regra no oxlint para essa convenção.
+- `.map()` que renderiza JSX com corpo de mais de 3 linhas deve ser extraído para um componente
+  dedicado em vez de ficar inline — não existe regra de lint que meça linhas de corpo de `.map()`.
+  Ver `ExampleListItem` (`src/pages/ExampleList.page.tsx`) como exemplo já seguindo a convenção.
 
 ### Imports
 

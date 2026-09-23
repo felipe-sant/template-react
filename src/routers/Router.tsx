@@ -9,6 +9,7 @@ const Home = lazy(() => import("@/pages/Home.page"))
 const NotFound = lazy(() => import("@/pages/NotFound.page"))
 const ProtectedExample = lazy(() => import("@/pages/ProtectedExample.page"))
 const Forbidden = lazy(() => import("@/pages/Forbidden.page"))
+const ExampleList = lazy(() => import("@/pages/ExampleList.page"))
 
 export const routes: RouteObject[] = [
     {
@@ -28,6 +29,14 @@ export const routes: RouteObject[] = [
                 element: (
                     <Suspense fallback={<p>Carregando...</p>}>
                         <Forbidden />
+                    </Suspense>
+                )
+            },
+            {
+                path: ROUTES.examples,
+                element: (
+                    <Suspense fallback={<p>Carregando...</p>}>
+                        <ExampleList />
                     </Suspense>
                 )
             },

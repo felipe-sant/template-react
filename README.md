@@ -108,13 +108,21 @@ removidos pelo projeto real que usar este template:
 
 - `src/components/Button.tsx` + `src/styles/components/button.module.css` +
   `src/components/Button.test.tsx` (consumido em `src/pages/Home.page.tsx`, também como exemplo).
+- `src/components/ErrorMessage.tsx` + `src/styles/components/errorMessage.module.css` +
+  `src/components/ErrorMessage.test.tsx` (consumido em `ExampleList.page.tsx` para o estado de
+  erro).
+- `src/components/EmptyState.tsx` + `src/styles/components/emptyState.module.css` +
+  `src/components/EmptyState.test.tsx` (consumido em `ExampleList.page.tsx` para o estado de lista
+  vazia).
 - `src/layouts/Main.layout.tsx` + `src/styles/layouts/main.module.css` — já registrado como rota de
-  layout em `src/routers/Router.tsx` (issue #24); o `<Outlet />` ainda não tem conteúdo de exemplo
-  próprio, o que fica para a issue #32.
+  layout em `src/routers/Router.tsx` (issue #24); o `<Outlet />` já tem conteúdo de exemplo próprio,
+  preenchido pela rota `/exemplos` (`ExampleList.page.tsx`, issue #32).
 - `src/hooks/useToggle.ts`
-- `src/services/http.service.ts`
-- `src/types/example.types.ts`
-- `src/utils/formatDate.ts`
+- `src/services/http.service.ts` (consumido em `src/pages/ExampleList.page.tsx`, também como
+  exemplo).
+- `src/types/example.types.ts` (consumido em `src/pages/ExampleList.page.tsx`, também como
+  exemplo).
+- `src/utils/formatDate.ts` (consumido em `src/pages/ExampleList.page.tsx`, também como exemplo).
 - `src/pages/Home.page.tsx` + `src/pages/Home.page.test.tsx`.
 - `src/pages/NotFound.page.tsx` + `src/pages/NotFound.page.test.tsx`. `src/routers/Router.test.tsx`
   também depende do `NotFoundPage` de exemplo (cobre a rota-fallback renderizando-o) — ao
@@ -125,6 +133,22 @@ removidos pelo projeto real que usar este template:
   `src/pages/Forbidden.page.test.tsx` — juntos formam um exemplo do **padrão** de bloqueio de rota
   (guard) para o data router, não um sistema de autenticação real; `useAuth.ts` é o único ponto a
   substituir por uma implementação real de login.
+- `src/pages/ExampleList.page.tsx` + `src/styles/pages/exampleList.module.css` +
+  `src/pages/ExampleList.page.test.tsx` + `src/pages/hooks/useExampleList.ts` +
+  `src/pages/hooks/useExampleList.test.ts` — fluxo de exemplo integrado, registrado na rota
+  `/exemplos`: busca uma lista de `ExampleEntity` com `http.service`, formata a data de cada item
+  com `formatDate` e trata carregamento/erro/lista vazia. Consome um mock estático em
+  `public/mock/example-entities.json`, não `VITE_API_URL` — ver nota abaixo sobre o motivo.
+
+> [!NOTE]
+> `ExampleList.page.tsx` busca dados de `public/mock/example-entities.json` (servido pelo Vite como
+> está, sem passar pelo bundler — mesmo mecanismo do `favicon.svg`), e não de `VITE_API_URL`. O
+> valor padrão de `VITE_API_URL` em `.env.example` é um domínio reservado que não resolve
+> (`https://api.example.com`), então apontar o exemplo para ele faria a página mostrar erro por
+> padrão logo após um `git clone`, sem `.env` configurado. O mock estático funciona offline, sem
+> setup, e ainda exercita o `fetch` real de `http.service` no navegador — só o destino da URL é
+> local. Ao substituir este exemplo por uma feature real, troque a URL do mock por algo como
+> `` `${import.meta.env.VITE_API_URL}/examples` ``.
 
 ## Variáveis de ambiente
 
