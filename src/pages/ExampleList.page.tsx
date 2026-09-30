@@ -5,7 +5,11 @@ import EmptyState from "@/components/EmptyState"
 import type { ExampleEntity } from "@/types/example.types"
 import css from "@/styles/pages/exampleList.module.css"
 
-function ExampleListItem({ entity }: { entity: ExampleEntity }) {
+interface ExampleListItemProps {
+    entity: ExampleEntity
+}
+
+function ExampleListItem({ entity }: ExampleListItemProps) {
     return (
         <li className={css.item}>
             <span className={css.name}>{entity.name}</span>
