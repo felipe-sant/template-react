@@ -1,7 +1,10 @@
+import { lazy } from "react"
 import { describe, expect, it } from "vitest"
 import { MemoryRouter, Route, Routes as Switch } from "react-router-dom"
 import { render, screen } from "@testing-library/react"
 import MainLayout from "@/layouts/Main.layout"
+
+const NeverResolves = lazy(() => new Promise<never>(() => {}))
 
 function renderLayout() {
     render(
@@ -27,5 +30,21 @@ describe("MainLayout", () => {
         renderLayout()
 
         expect(screen.getByText("Conteúdo da rota")).toBeInTheDocument()
+    })
+
+    it("mostra o fallback no lugar do Outlet sem esconder header e footer", () => {
+        render(
+            <MemoryRouter initialEntries={["/"]}>
+                <Switch>
+                    <Route element={<MainLayout />}>
+                        <Route path="/" element={<NeverResolves />} />
+                    </Route>
+                </Switch>
+            </MemoryRouter>
+        )
+
+        expect(screen.getByText("Carregando...")).toBeInTheDocument()
+        expect(screen.getByRole("banner")).toBeInTheDocument()
+        expect(screen.getByRole("contentinfo")).toBeInTheDocument()
     })
 })
