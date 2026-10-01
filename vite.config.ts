@@ -11,6 +11,7 @@ export default defineConfig({
     },
     test: {
         environment: "jsdom",
+        pool: "vmThreads",
         setupFiles: ["./src/setupTests.ts"],
         coverage: {
             provider: "v8",
