@@ -45,6 +45,15 @@ quando precisar, seguindo as convenções abaixo.
    `.page.tsx`: fica em `src/locales/<idioma>/<namespace>.json` (`home.json`, `notFound.json`),
    um arquivo por idioma.
 
+## Documentação
+
+| Pasta | O que é |
+| --- | --- |
+| [`docs/`](docs/README.md) | Documentação versionada só deste frontend: arquitetura, decisões, diagramas e telas. O conteúdo atual é um exemplo fictício a substituir |
+| `.specs/` | Planejamento local (`spec.md` e `tasks.md` por feature ou bug), gitignored |
+
+`docs/` cobre apenas este frontend. O sistema inteiro fica no repositório pai, que reúne backend e frontend como submódulos, e o contrato da API fica no backend. O índice completo está em [`docs/README.md`](docs/README.md).
+
 ## Estrutura de `src/`
 
 Cada pasta tem um papel definido, uma convenção de nome de arquivo e um tipo de export esperado.
