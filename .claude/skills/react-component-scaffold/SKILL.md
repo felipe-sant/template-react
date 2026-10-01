@@ -44,13 +44,15 @@ export default SaveButton
 
 Import interno sempre com o alias `@/`, nunca subindo de pasta com `../`.
 
+O `SaveButton` não chama `t()`: o `label` muda a cada uso, então chega por prop **já traduzido** por quem renderiza o componente (ver "Consumindo o componente"). Texto fixo do componente, que é igual em todo uso, é o caso da seção 5.
+
 ### 2. Props — interface `<Nome>Props` no próprio arquivo
 
 A interface de props fica **no arquivo do componente**, não em `src/types/`. `src/types/<nome>.types.ts` é para tipo compartilhado entre vários arquivos; props de um componente específico não são isso, e movê-las para lá só adiciona um import e um lugar a mais para desatualizar. A regra vem da #10 e está no `README.md`.
 
 - Prop opcional com `?` (`onClick?: () => void`), e o valor padrão no destructuring quando fizer sentido.
 - `strict` está ativo: nada de `any` explícito nem de cast para calar o compilador. Se o tipo for difícil, use `unknown` com checagem.
-- **Nome de prop em inglês, texto visível em português.** `<SaveButton label="Salvar alterações" />` é o exemplo canônico: `SaveButton` e `label` em inglês, o conteúdo que o usuário lê em português.
+- **Nome de prop em inglês, texto visível traduzido.** `<SaveButton label={t("profile.saveChanges")} />` é o exemplo canônico: `SaveButton`, `label` e a chave em inglês; o conteúdo que o usuário lê vem do valor da chave em `src/locales/<idioma>/`. Prop de texto é `string` e recebe o texto pronto — o componente não recebe chave de tradução nem traduz o que recebeu. Passar literal (`label="Salvar alterações"`) é acusado pelo lint `react/jsx-no-literals` fora de teste.
 
 ### 3. Composição em vez de mais uma prop booleana
 
@@ -100,40 +102,92 @@ Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-col
 
 Token novo de cor ou fonte entra em `global.css`; o que é específico do componente fica no CSS Module dele. Não introduza estilo inline nem CSS global de escopo local.
 
-### 5. Acessibilidade mínima
+### 5. Texto fixo — namespace `common`, chave `<componente>.<papel>`
+
+Texto que é igual em todo uso do componente (o `aria-label` de um botão só com ícone, um "Fechar", um "Carregando...") não vira prop: o próprio componente traduz, com a chave `common:<componente>.<papel>` — componente em lowerCamelCase, papel em inglês (`common:saveButton.label`, `common:closeButton.label`). O namespace `common` é o `defaultNS`, então dentro do componente basta `useTranslation()` sem argumento e `t("closeButton.label")`, sem o prefixo `common:`.
+
+O valor entra nos três arquivos, `pt-BR` primeiro — é a língua de referência, de onde sai o tipo das chaves:
+
+- `src/locales/pt-BR/common.json` → `"closeButton": { "label": "Fechar" }`
+- `src/locales/en/common.json` → `"closeButton": { "label": "Close" }`
+- `src/locales/es/common.json` → `"closeButton": { "label": "Cerrar" }`
+
+Chave em `pt-BR` que falta em `en` ou `es` quebra o `npm run typecheck`; chave escrita errado no `t()` também. Os JSON usam 2 espaços de indentação.
+
+```tsx
+import { useTranslation } from "react-i18next"
+import css from "@/styles/components/closeButton.module.css"
+
+interface CloseButtonProps {
+    onClick: () => void
+}
+
+function CloseButton({ onClick }: CloseButtonProps) {
+    const { t } = useTranslation()
+
+    return (
+        <button
+            type="button"
+            className={css.closeButton}
+            aria-label={t("closeButton.label")}
+            onClick={onClick}
+        >
+            <span className={css.icon} aria-hidden="true" />
+        </button>
+    )
+}
+
+export default CloseButton
+```
+
+`useTranslation()` faz o componente re-renderizar quando o idioma troca. O lint `react/jsx-no-literals` acusa, fora de `*.test.ts(x)`, texto literal como filho (`<p>Fechar</p>`, `<p>{"Fechar"}</p>`) e string literal nos atributos `aria-label`, `aria-description`, `title`, `alt`, `placeholder`, `label` e `content`. Atributo que não é texto de UI (`type="button"`, `aria-hidden="true"`) continua literal.
+
+### 6. Acessibilidade mínima
 
 É o que o `reviewer` audita, e o que faz `getByRole` funcionar no teste:
 
 - **Elemento semântico certo.** `<button type="button">` para ação, nunca `<div onClick>` — a `div` não recebe foco, não responde a Enter/Espaço e não tem papel de botão. `type="button"` evita o submit implícito dentro de `<form>`.
-- **Nome acessível.** O texto visível já serve (`{label}` dentro do `<button>`). Se o controle só tem ícone, ele precisa de `aria-label` em português.
-- **`alt` em toda imagem** — descritivo, ou `alt=""` quando a imagem for puramente decorativa.
+- **Nome acessível.** O texto visível já serve (`{label}` dentro do `<button>`). Se o controle só tem ícone, ele precisa de `aria-label` traduzido — `aria-label={t("closeButton.label")}`, como no `CloseButton` da seção 5.
+- **`alt` em toda imagem** — descritivo e traduzido (`alt={t("<componente>.<papel>")}`, ou vindo de prop quando varia por uso), ou `alt={""}` quando a imagem for puramente decorativa — escrito como expressão, porque `alt=""` é string literal num atributo restrito e o lint acusa.
 - Navegação interna com `<Link to="...">`/`useNavigate` do `react-router-dom`, nunca `<a href>` para rota interna: a âncora crua força reload completo e descarta o estado da aplicação (issue #5). Componente com `<Link>` dentro só renderiza sob um router — o teste dele precisa de `MemoryRouter` em volta.
 
-### 6. Teste — `src/components/<Nome>.test.tsx`
+### 7. Teste — `src/components/<Nome>.test.tsx`
 
 Todo componente novo ou alterado precisa do teste co-localizado, no mesmo commit. Não é tarefa para depois: o `reviewer` trata a ausência como bloqueante incondicional.
 
 **Como escrever e rodar o teste está na skill `vitest-specialist`** (`.claude/skills/vitest-specialist/SKILL.md`) — esta skill não repete a receita. A skill traz um trecho de teste de componente com render e clique.
 
+O `src/setupTests.ts` volta o idioma para `pt-BR` antes de cada teste, então o teste afirma o texto em português: o texto fixo pelo valor de `pt-BR` (`getByRole("button", { name: "Fechar" })`) e o texto de prop pelo literal que o próprio teste passou (`<SaveButton label="Salvar alterações" />`). Literal em `*.test.tsx` é permitido — o `react/jsx-no-literals` fica desligado para teste.
+
 ## Consumindo o componente
 
+Quem renderiza traduz o texto que varia por uso com o próprio `t()` e passa o resultado por prop. Numa página `Profile.page.tsx` hipotética, a chave vive no namespace da página (`profile:saveChanges`) e só a página sabe dela:
+
 ```tsx
+import { useTranslation } from "react-i18next"
 import SaveButton from "@/components/SaveButton"
 
-<SaveButton label="Salvar alterações" onClick={() => save()} />
+const { t } = useTranslation("profile")
+
+<SaveButton label={t("saveChanges")} onClick={() => save()} />
 ```
+
+Componente com texto fixo (seção 5) não pede nada de quem consome: `<CloseButton onClick={close} />`.
 
 ## Checklist
 
 - [ ] `src/components/<Nome>.tsx` criado, PascalCase e sem sufixo, com `export default` no final
 - [ ] Interface `<Nome>Props` no próprio arquivo do componente, sem `any`
-- [ ] Nome de prop em inglês; só o texto visível ao usuário em português
+- [ ] Nome de prop e chave de tradução em inglês
+- [ ] Texto que varia por uso chega por prop, já traduzido por quem chama com `t()`
+- [ ] Texto fixo do componente via `t("<componente>.<papel>")` (namespace `common`), com o valor em `src/locales/pt-BR/common.json`, `en/common.json` e `es/common.json`
+- [ ] Nenhum texto de UI literal no JSX, nem em `aria-label`, `title`, `alt`, `placeholder`, `label` ou `content` (`npm run lint` acusa)
 - [ ] `src/styles/components/<nome>.module.css` criado, e **toda** classe usada como `css.<algo>` existe nele
 - [ ] Cores e fonte vindas das custom properties de `global.css`
-- [ ] Elemento semântico correto, com nome acessível (e `alt` em imagem)
-- [ ] `src/components/<Nome>.test.tsx` criado, cobrindo render e interação (ver `vitest-specialist`)
+- [ ] Elemento semântico correto, com nome acessível traduzido (`aria-label={t(...)}` em controle só com ícone, `alt` em imagem)
+- [ ] `src/components/<Nome>.test.tsx` criado, cobrindo render e interação e afirmando o texto em `pt-BR` (ver `vitest-specialist`)
 - [ ] Sem comentário no código, import interno com `@/` e nunca `../`
-- [ ] `npm run typecheck`, `npm test -- --run` e `npm run build` passando
+- [ ] `npm run typecheck`, `npm run lint`, `npm test -- --run` e `npm run build` passando
 - [ ] O componente foi visto renderizado (`npm run dev`) — o build passar não prova que o estilo foi aplicado
 
 ## Ao remover ou renomear um componente
