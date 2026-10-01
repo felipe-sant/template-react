@@ -116,7 +116,8 @@ removidos pelo projeto real que usar este template:
   vazia).
 - `src/layouts/Main.layout.tsx` + `src/styles/layouts/main.module.css` — já registrado como rota de
   layout em `src/routers/Router.tsx` (issue #24); o `<Outlet />` já tem conteúdo de exemplo próprio,
-  preenchido pela rota `/exemplos` (`ExampleList.page.tsx`, issue #32).
+  preenchido pela rota `/exemplos` (`ExampleList.page.tsx`, issue #32); também provê o único
+  `<Suspense>` (fallback `Carregando...`) das rotas-filhas lazy, em volta do `<Outlet />`.
 - `src/hooks/useToggle.ts`
 - `src/services/http.service.ts` (consumido em `src/pages/ExampleList.page.tsx`, também como
   exemplo).

@@ -85,6 +85,8 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   importado com alias `Switch`. A rota `*` cai em `NotFound`. Toda página nova entra aqui. O
   arquivo exporta `AppRoutes` (só as `<Route>`) separado do `Router` (export default, que envolve
   `AppRoutes` com `BrowserRouter`) — é `AppRoutes` que o teste renderiza sob `MemoryRouter`.
+  As rotas-filhas de `MainLayout` são `lazy` e o único `<Suspense>` fica em volta do `<Outlet />`
+  de `src/layouts/Main.layout.tsx`: página nova não precisa (nem deve) ter o próprio `<Suspense>`.
 - **`src/pages/`** — convenção de nome `Nome.page.tsx`, componente `function NomePage()` com
   `export default`. Lógica de estado/efeito específica de uma página (`useState`, `useEffect`,
   chamada a service) não fica no componente: vive em `src/pages/hooks/use<Nome>.ts`, exportando

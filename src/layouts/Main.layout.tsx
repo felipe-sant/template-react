@@ -1,3 +1,4 @@
+import { Suspense } from "react"
 import { Outlet } from "react-router-dom"
 import css from "@/styles/layouts/main.module.css"
 
@@ -8,7 +9,9 @@ function MainLayout() {
                 <span>Header de exemplo</span>
             </header>
             <div className={css.content}>
-                <Outlet />
+                <Suspense fallback={<p>Carregando...</p>}>
+                    <Outlet />
+                </Suspense>
             </div>
             <footer className={css.footer}>
                 <span>Footer de exemplo</span>

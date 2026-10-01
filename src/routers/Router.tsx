@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState } from "react"
+import { lazy, useState } from "react"
 import { createBrowserRouter, RouterProvider, type RouteObject } from "react-router-dom"
 import MainLayout from "@/layouts/Main.layout"
 import ErrorPage from "@/pages/Error.page"
@@ -18,48 +18,28 @@ export const routes: RouteObject[] = [
         children: [
             {
                 path: ROUTES.home,
-                element: (
-                    <Suspense fallback={<p>Carregando...</p>}>
-                        <Home />
-                    </Suspense>
-                )
+                element: <Home />
             },
             {
                 path: ROUTES.forbidden,
-                element: (
-                    <Suspense fallback={<p>Carregando...</p>}>
-                        <Forbidden />
-                    </Suspense>
-                )
+                element: <Forbidden />
             },
             {
                 path: ROUTES.examples,
-                element: (
-                    <Suspense fallback={<p>Carregando...</p>}>
-                        <ExampleList />
-                    </Suspense>
-                )
+                element: <ExampleList />
             },
             {
                 element: <RequireAuth />,
                 children: [
                     {
                         path: ROUTES.protectedExample,
-                        element: (
-                            <Suspense fallback={<p>Carregando...</p>}>
-                                <ProtectedExample />
-                            </Suspense>
-                        )
+                        element: <ProtectedExample />
                     }
                 ]
             },
             {
                 path: ROUTES.notFound,
-                element: (
-                    <Suspense fallback={<p>Carregando...</p>}>
-                        <NotFound />
-                    </Suspense>
-                )
+                element: <NotFound />
             }
         ]
     }
