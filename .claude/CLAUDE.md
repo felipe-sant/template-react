@@ -33,7 +33,7 @@ npm test -- --run src/pages/test/Home.page.test.tsx   # um arquivo específico
 npm run typecheck # checagem de tipos (tsc -b) de src/ e vite.config.ts
 npm run lint      # oxlint sobre o projeto (configuração em .oxlintrc.json)
 npm run lint:fix  # mesma coisa, aplicando as correções automáticas possíveis (oxlint --fix)
-npm run format    # prettier --write em src/**/*.{ts,tsx} e vite.config.ts, conforme .prettierrc
+npm run format    # prettier --write em **/*.{ts,tsx,css,json,md,yml}, conforme .prettierrc e .prettierignore
 npm run test:cov  # vitest run --coverage — suíte inteira + relatório de cobertura
 ```
 
@@ -98,12 +98,16 @@ roda `npm run typecheck` (`tsc -b`, que cobre `src/` via `tsconfig.app.json` e `
 
 `npm install` configura automaticamente (script `prepare`, `"prepare": "husky"`) um hook de
 `pre-commit` do Husky que roda `npx lint-staged` a cada commit — sem passo manual extra.
-`lint-staged` (`.lintstagedrc.json`) aplica `oxlint --fix` e depois `prettier --write` só nos
-arquivos `.ts`/`.tsx` staged, mesmo escopo dos scripts `lint:fix`/`format`; corrige o que for
+`lint-staged` (`.lintstagedrc.json`) aplica `oxlint --fix` e depois `prettier --write` nos
+arquivos `.ts`/`.tsx` staged, e só `prettier --write` nos `.css`/`.json`/`.md`/`.yml` staged (mesmo
+escopo do script `format`, com `package-lock.json`, `dist/` e `coverage/` fora via
+`.prettierignore`); corrige o que for
 automático e bloqueia o commit se sobrar erro de lint não corrigível sozinho. O `.editorconfig` na
 raiz (`root = true`) padroniza charset, final de linha, quebra de linha final, remoção de trailing
-whitespace e indentação (`indent_size = 2` por padrão, `4` para `*.ts`/`*.tsx`/`*.css`) para
-editores compatíveis, coerente com o `.prettierrc` já existente.
+whitespace e indentação (`indent_size = 4` para todos os tipos, exceto `package-lock.json`, em `2`)
+para editores compatíveis, coerente com o `.prettierrc`. O stylelint foi avaliado e recusado
+(superfície de CSS pequena, conflito com escolhas pessoais de estilo, dependências extras); pode ser
+reavaliado se o CSS crescer.
 
 ## Arquitetura
 
@@ -147,7 +151,7 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` (`P
     de `pt-BR`: chave inexistente em `t()` é erro de compilação, e `en`/`es` são tipados como
     `typeof` de `pt-BR` em `resources.ts`, então namespace ou chave faltando também não compila.
 - **`src/locales/`** — tradução é dado, separado da configuração em `src/i18n/`:
-  `src/locales/<idioma>/<namespace>.json`, JSON com 2 espaços, os mesmos namespaces e chaves nos
+  `src/locales/<idioma>/<namespace>.json`, JSON com 4 espaços, os mesmos namespaces e chaves nos
   três idiomas. Um namespace por dono do texto, com o nome do CSS Module correspondente (`home`,
   `notFound`, `error`, `mainLayout`); `common` guarda texto compartilhado (`backHome`, `loading`)
   e texto fixo de componente de `src/components/`. Chave em inglês, lowerCamelCase, hierárquica por

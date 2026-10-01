@@ -208,7 +208,7 @@ src/
   compartilhado (`backHome`, `loading`) e texto fixo de componentes de `src/components/`
   (`common:saveButton.label`).
 - **A chave é identificador**: em inglês, lowerCamelCase e hierárquica por papel (`meta.title`,
-  `meta.description`, `heading`, `showcase.status.success`). Os JSON usam 2 espaços de indentação.
+  `meta.description`, `heading`, `showcase.status.success`). Os JSON usam 4 espaços de indentação.
 - `src/i18n/resources.ts` monta `{ "pt-BR": ..., en: ..., es: ... }` a partir dos JSON e tipa `en`
   e `es` como `typeof` dos recursos de `pt-BR`: namespace ou chave faltando em `en`/`es` vira erro de
   compilação. Chave sobrando não é pega pelo tipo, só por `src/i18n/test/resources.test.ts`, que também
@@ -410,7 +410,7 @@ npm test -- --run # execução one-shot (CI)
 npm run typecheck # checagem de tipos (tsc -b) de src/ e vite.config.ts
 npm run lint      # roda o oxlint sobre o projeto, usando a configuração de .oxlintrc.json
 npm run lint:fix  # mesma coisa que npm run lint, mas aplicando automaticamente as correções possíveis (oxlint --fix)
-npm run format    # roda prettier --write em src/**/*.{ts,tsx} e vite.config.ts, conforme as regras de .prettierrc
+npm run format    # roda prettier --write em **/*.{ts,tsx,css,json,md,yml}, conforme .prettierrc e .prettierignore
 npm run test:cov  # roda vitest run --coverage — suíte inteira + relatório de cobertura
 ```
 
@@ -418,7 +418,7 @@ npm run test:cov  # roda vitest run --coverage — suíte inteira + relatório d
 > As regras de formatação em `.prettierrc` (`tabWidth: 4`, `trailingComma: "none"`, sem ponto e
 > vírgula, aspas duplas, etc.) e de lint em `.oxlintrc.json` são escolha pessoal de
 > [@felipe-sant](https://github.com/felipe-sant), não convenção da comunidade React/TypeScript.
-> Quem preferir 2 espaços de indentação, ponto e vírgula ou outra convenção pode simplesmente
+> Quem preferir outra indentação de indentação, ponto e vírgula ou outra convenção pode simplesmente
 > editar esses dois arquivos — nada no restante do template depende dos valores específicos
 > escolhidos aqui.
 
@@ -427,11 +427,18 @@ npm run test:cov  # roda vitest run --coverage — suíte inteira + relatório d
 `npm install` configura automaticamente (via script `prepare`) um hook de `pre-commit` do
 [Husky](https://typicode.github.io/husky/) que roda `lint-staged` em cada commit — nenhum passo
 manual extra é necessário. `lint-staged` (configurado em `.lintstagedrc.json`) aplica `oxlint --fix`
-e depois `prettier --write` só nos arquivos `.ts`/`.tsx` staged, corrigindo o que for automático ou
+e depois `prettier --write` nos arquivos `.ts`/`.tsx` staged, e aplica só `prettier --write` aos
+`.css`/`.json`/`.md`/`.yml` staged — mesmo escopo do script `format`, que deixa de fora
+`package-lock.json`, `dist/` e `coverage/` via `.prettierignore` —, corrigindo o que for automático ou
 bloqueando o commit quando sobrar um erro de lint que o `oxlint` não sabe corrigir sozinho. O
 `.editorconfig` na raiz complementa isso para editores compatíveis: padroniza charset, final de
-linha, quebra de linha final, remoção de espaço em branco à direita e indentação (2 espaços por
-padrão, 4 para `.ts`/`.tsx`/`.css`) antes mesmo de o Prettier rodar.
+linha, quebra de linha final, remoção de espaço em branco à direita e indentação (4 espaços em
+todos os tipos, como no `.prettierrc`, exceto `package-lock.json`, que o npm mantém em 2) antes mesmo
+de o Prettier rodar.
+
+O stylelint foi avaliado e recusado: a superfície de CSS é pequena, o `stylelint-config-standard`
+brigaria com escolhas pessoais de estilo documentadas aqui e exigiria duas dependências de dev e um
+passo a mais no CI. Pode ser reavaliado se o CSS do template crescer.
 
 ### Testes
 

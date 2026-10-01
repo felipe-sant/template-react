@@ -139,7 +139,7 @@ Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-col
 
 ### 4. Namespace de tradução — `src/locales/{pt-BR,en,es}/<nome>.json`
 
-O namespace tem o mesmo nome do CSS Module da página (`about.module.css` → `about`; `NotFound.page.tsx` → `notFound`). Chaves em inglês, lowerCamelCase e hierárquicas por papel: `meta.title`, `meta.description`, `heading`, `showcase.status.success`. JSON com 2 espaços de indentação.
+O namespace tem o mesmo nome do CSS Module da página (`about.module.css` → `about`; `NotFound.page.tsx` → `notFound`). Chaves em inglês, lowerCamelCase e hierárquicas por papel: `meta.title`, `meta.description`, `heading`, `showcase.status.success`. JSON com 4 espaços de indentação.
 
 1. Crie `src/locales/pt-BR/<nome>.json` primeiro. `pt-BR` é a língua de referência: o texto novo nasce em português e os JSON de `pt-BR` são a fonte do tipo das chaves.
 

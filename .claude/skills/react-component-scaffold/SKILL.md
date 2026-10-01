@@ -112,7 +112,7 @@ O valor entra nos três arquivos, `pt-BR` primeiro — é a língua de referênc
 - `src/locales/en/common.json` → `"closeButton": { "label": "Close" }`
 - `src/locales/es/common.json` → `"closeButton": { "label": "Cerrar" }`
 
-Chave em `pt-BR` que falta em `en` ou `es` quebra o `npm run typecheck`; chave escrita errado no `t()` também. Os JSON usam 2 espaços de indentação.
+Chave em `pt-BR` que falta em `en` ou `es` quebra o `npm run typecheck`; chave escrita errado no `t()` também. Os JSON usam 4 espaços de indentação.
 
 ```tsx
 import { useTranslation } from "react-i18next"
