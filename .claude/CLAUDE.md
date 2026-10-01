@@ -197,8 +197,17 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   placeholder, sem produto definido, seria pior que não ter manifest — cada projeto derivado
   adiciona isso quando precisar.
 
-Não há camada de estado global nem cliente HTTP configurados. A convenção de variáveis de
-ambiente é a do Vite: só variáveis com prefixo `VITE_`
+Não há camada de estado global configurada. **`src/services/http/`** é o cliente HTTP, um símbolo
+por arquivo com `export default`: `apiUrl.ts` (a constante da URL da API, a **única** leitura de
+`import.meta.env.VITE_API_URL` no código, vazia quando a variável não existe, para a URL poder ser
+relativa e funcionar com proxy do Vite), `get.ts` e `post.ts` (`get<T>(path, options?)` e
+`post<T>(path, body, options?)`, que chamam `fetch` com `apiUrl + path`, enviam `Accept-Language`
+com `getLanguage()` a cada chamada e aceitam `options.signal` (`AbortSignal`); uma requisição
+cancelada rejeita com o `AbortError` do `fetch`, sem embrulho) e `parseResponse.ts` (resposta
+não-ok vira `Error` literal em português com o status e, quando há, o corpo). O chamador passa só
+o caminho relativo. Timeout próprio não existe: quem quiser usa `AbortSignal.timeout(ms)`.
+
+A convenção de variáveis de ambiente é a do Vite: só variáveis com prefixo `VITE_`
 são expostas ao código do cliente, e a leitura é `import.meta.env.VITE_ALGO` — não
 `process.env.REACT_APP_ALGO`, que era a convenção do Create React App e não existe mais aqui —
 materializada em `.env.example` (na raiz, com `VITE_API_URL` como exemplo) e na augmentação de

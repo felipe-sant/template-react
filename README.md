@@ -144,6 +144,29 @@ Toda variável nova declarada em `.env.example` precisa de uma entrada correspon
 `src/vite-env.d.ts`, na interface `ImportMetaEnv`, para que `import.meta.env` tenha
 autocomplete e checagem de tipo.
 
+### `VITE_API_URL`
+
+`.env.example` é o modelo: nele `VITE_API_URL` aponta para `https://api.example.com`. Para usar a
+API real, troque o valor no seu `.env` pela URL base dela, sem barra no final. Só variável com
+prefixo `VITE_` chega ao código do cliente.
+
+`src/services/http/apiUrl.ts` é o único arquivo que lê `import.meta.env.VITE_API_URL`. `get` e
+`post` (em `src/services/http/`) recebem **só o caminho relativo** e montam a URL final com
+`apiUrl + path`:
+
+```ts
+import get from "@/services/http/get"
+
+const controller = new AbortController()
+const items = await get<string[]>("/items", { signal: controller.signal })
+```
+
+- `signal` é opcional e cancela a requisição, que rejeita com `AbortError`. Para timeout, use
+  `AbortSignal.timeout(ms)` como `signal`.
+- Com a variável vazia ou ausente, o caminho segue relativo (`/items`), útil com proxy do Vite.
+- Resposta não-ok vira `Error` com o status e o corpo, quando houver.
+- `get` e `post` enviam `Accept-Language` com o idioma ativo (`getLanguage()`).
+
 ## Internacionalização
 
 Texto que o usuário lê não é escrito no código: o componente referencia uma **chave de tradução**
