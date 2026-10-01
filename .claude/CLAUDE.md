@@ -29,7 +29,7 @@ npm run build    # typecheck + build de produção em dist/
 npm run preview  # serve o conteúdo de dist/ já gerado — depende de um npm run build anterior
 npm test         # Vitest em watch mode (o script é `vitest`, sem `run`)
 npm test -- --run                            # execução one-shot (CI, agente, terminal não-interativo)
-npm test -- --run src/pages/Home.page.test.tsx   # um arquivo específico
+npm test -- --run src/pages/test/Home.page.test.tsx   # um arquivo específico
 npm run typecheck # checagem de tipos (tsc -b) de src/ e vite.config.ts
 npm run lint      # oxlint sobre o projeto (configuração em .oxlintrc.json)
 npm run lint:fix  # mesma coisa, aplicando as correções automáticas possíveis (oxlint --fix)
@@ -37,10 +37,12 @@ npm run format    # prettier --write em src/**/*.{ts,tsx} e vite.config.ts, conf
 npm run test:cov  # vitest run --coverage — suíte inteira + relatório de cobertura
 ```
 
-O teste é **co-localizado**: `<arquivo>.test.tsx` ao lado do arquivo testado
-(`src/pages/Home.page.test.tsx`), nunca em `__tests__/` nem com
-sufixo `.spec.tsx`. Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service
-(`src/services/http.service.test.ts`). O ambiente é `jsdom` e o setup é
+O teste fica em **`test/` dentro do diretório do arquivo testado**:
+`src/pages/Home.page.tsx` -> `src/pages/test/Home.page.test.tsx`, nunca em `__tests__/` nem com
+sufixo `.spec.tsx`. O arquivo testado é importado pelo alias `@/` (`import HomePage from
+"@/pages/Home.page"`), nunca por `../`; `vi.mock`, `vi.doMock` e `import()` dinâmico também usam
+alias. Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service
+(`src/services/test/http.service.test.ts`). O ambiente é `jsdom` e o setup é
 `src/setupTests.ts`, registrado em `test.setupFiles` do `vite.config.ts` — é ele que importa
 `@testing-library/jest-dom/vitest` (registrando matchers como `toBeInTheDocument()`) e que roda
 `afterEach(cleanup)`, porque sem `globals: true` o Testing Library não liga o cleanup sozinho.
@@ -52,11 +54,11 @@ tela afirma o texto em português, nunca a chave (o i18next devolve a própria c
 tradução), não mocka `react-i18next` e troca de idioma com `setLanguage` dentro do `it`. Para
 simular uma nova carga de página (detecção do zero e persistência do `?lng=`), prepare URL,
 `navigator` e `localStorage`, rode `vi.resetModules()` e faça `await import("@/i18n/i18n")`,
-como em `src/i18n/i18n.test.ts`; restaure URL e stubs no fim.
+como em `src/i18n/test/i18n.test.ts`; restaure URL e stubs no fim.
 Os testes existentes servem de modelo para os formatos que o template já tem: render direto da
-página (`Home.page.test.tsx`), árvore de rotas em `createMemoryRouter` para verificar a rota `*`
-(`Router.test.tsx`), módulo com `fetch` stubado via `vi.stubGlobal` (`http.service.test.ts`) e
-layout com `<Outlet />` preenchido por rota-filha (`Main.layout.test.tsx`). Componente com
+página (`src/pages/test/Home.page.test.tsx`), árvore de rotas em `createMemoryRouter` para verificar a rota `*`
+(`src/routers/test/Router.test.tsx`), módulo com `fetch` stubado via `vi.stubGlobal` (`src/services/test/http.service.test.ts`) e
+layout com `<Outlet />` preenchido por rota-filha (`src/layouts/test/Main.layout.test.tsx`). Componente com
 interação, hook com `renderHook` e função pura não têm teste-modelo no repositório: a skill
 `vitest-specialist` traz um trecho de cada formato.
 
@@ -380,7 +382,7 @@ novo, então repetir via hook no momento do push seria redundante.
 - `.claude/skills/` — conhecimento carregável sob demanda. São três, separadas pela pasta do
   artefato: `react-page-scaffold` (página em `src/pages/` + CSS Module + registro de rota),
   `react-component-scaffold` (componente reutilizável em `src/components/` + CSS Module em
-  `src/styles/components/`) e `vitest-specialist` (teste co-localizado com Vitest + Testing
+  `src/styles/components/`) e `vitest-specialist` (teste em `test/` por diretório com Vitest + Testing
   Library, `src/setupTests.ts` e o bloco `test` do `vite.config.ts`).
 - `.docs/` — specs por feature/bug (`.docs/features/<slug>/`, `.docs/bugs/<slug>/`), a partir de
   `.docs/_template/`. As pastas de spec são gitignored: planejamento local, fora do histórico.

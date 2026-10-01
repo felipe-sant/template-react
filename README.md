@@ -167,7 +167,7 @@ src/
   `meta.description`, `heading`, `showcase.status.success`). Os JSON usam 2 espaços de indentação.
 - `src/i18n/resources.ts` monta `{ "pt-BR": ..., en: ..., es: ... }` a partir dos JSON e tipa `en`
   e `es` como `typeof` dos recursos de `pt-BR`: namespace ou chave faltando em `en`/`es` vira erro de
-  compilação. Chave sobrando não é pega pelo tipo, só por `src/i18n/resources.test.ts`, que também
+  compilação. Chave sobrando não é pega pelo tipo, só por `src/i18n/test/resources.test.ts`, que também
   barra valor vazio.
 - A tipagem das chaves vem de `src/types/i18next.d.ts` (augmentação de `CustomTypeOptions`) e o
   tipo `SupportedLanguage` de `src/types/language.types.ts`.
@@ -326,8 +326,8 @@ use uma chave por idioma.
    em `resources`.
 4. Para que variantes regionais caiam no idioma novo (`fr-CA` → `fr`), adicione o mapeamento em
    `LANGUAGE_BY_PRIMARY_SUBTAG` (`src/i18n/resolveSupportedLanguage.ts`).
-5. Atualize os testes que listam os idiomas (`src/i18n/resources.test.ts`,
-   `src/i18n/resolveSupportedLanguage.test.ts`, `src/i18n/getLanguage.test.ts`).
+5. Atualize os testes que listam os idiomas (`src/i18n/test/resources.test.ts`,
+   `src/i18n/test/resolveSupportedLanguage.test.ts`, `src/i18n/test/getLanguage.test.ts`).
 
 ### Mensagens de `Error`
 
@@ -391,8 +391,9 @@ padrão, 4 para `.ts`/`.tsx`/`.css`) antes mesmo de o Prettier rodar.
 
 ### Testes
 
-O teste fica **co-localizado**: `<arquivo>.test.tsx` ao lado do arquivo testado
-(`src/pages/Home.page.test.tsx`), nunca em `__tests__/` nem com sufixo `.spec.tsx`. O ambiente é
+O teste fica em **`test/` dentro do diretório do arquivo testado**: `src/pages/Home.page.tsx` ->
+`src/pages/test/Home.page.test.tsx`, nunca em `__tests__/` nem com sufixo `.spec.tsx`. O arquivo
+testado é importado pelo alias `@/`, nunca por `../`. O ambiente é
 `jsdom` e o setup é `src/setupTests.ts`, registrado em `test.setupFiles` do `vite.config.ts` — é
 ele que registra os matchers do `jest-dom` (`toBeInTheDocument()` e companhia).
 
@@ -406,7 +407,7 @@ Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service.
 
 Cada formato tem seu jeito: página renderizada direto, árvore de rotas sob um router em memória,
 componente com interação (`user-event`), hook com `renderHook`, função pura e módulo com `fetch`
-stubado via `vi.stubGlobal` (como em `src/services/http.service.test.ts`). A skill
+stubado via `vi.stubGlobal` (como em `src/services/test/http.service.test.ts`). A skill
 `vitest-specialist` em `.claude/skills/` traz um trecho de cada um.
 
 `npm run test:cov` roda a suíte inteira com relatório de cobertura (`@vitest/coverage-v8`),
