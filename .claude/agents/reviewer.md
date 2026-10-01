@@ -27,17 +27,17 @@ tools: Read, Grep, Glob, Bash
 
 ## Processo
 
-- Se o trabalho revisado veio de uma spec em `.docs/`, confira também se os critérios de aceite do `spec.md` foram atendidos e se todas as tarefas do `tasks.md` estão marcadas como concluídas.
+- Se o trabalho revisado veio de uma spec em `.specs/`, confira também se os critérios de aceite do `spec.md` foram atendidos e se todas as tarefas do `tasks.md` estão marcadas como concluídas.
 - Se houver um PR aberto, confira se a descrição segue a estrutura de `.github/PULL_REQUEST_TEMPLATE.md` (Descrição, Alterações, Decisões técnicas, Como testar, Evidências, Impactos e pontos de atenção) em vez de um corpo livre — aponte como bloqueante se o template não foi seguido.
 - Confira se o PR tem assignee definido (deve ser quem abriu o PR) — aponte como bloqueante se estiver sem assignee.
 - Confira se o título do commit/PR segue o padrão do `CONTRIBUTING.md` (`<Tipo> <ícone> [#<número>] <descrição>`), com o `<Tipo>` vindo da tabela daquele arquivo — não de uma label do GitHub.
-- Aponte como bloqueante se o diff/commit incluir arquivos de `.docs/bugs/<slug>/` ou `.docs/features/<slug>/` — essas pastas são planejamento local e não devem ser commitadas.
+- Aponte como bloqueante se o diff/commit incluir arquivos de `.specs/bugs/<slug>/` ou `.specs/features/<slug>/` — essas pastas são planejamento local e não devem ser commitadas.
 - Aponte cada problema encontrado com arquivo e linha, classificando como bloqueante ou sugestão.
 - Não invente problemas hipotéticos — reporte apenas o que realmente diverge do que está documentado ou do que o código faz. Este é um template **em construção**: a ausência de coisas já rastreadas em issue aberta (CI, estrutura de pastas) é dívida conhecida do repositório, não achado contra o autor do diff. Só reporte como achado se o diff tiver piorado o ponto, ou se a tarefa em revisão era justamente resolvê-lo.
 
 ## Consome
 
-Um diff, PR ou conjunto de arquivos alterados, e opcionalmente a spec de origem em `.docs/`.
+Um diff, PR ou conjunto de arquivos alterados, e opcionalmente a spec de origem em `.specs/`.
 
 ## Produz
 
