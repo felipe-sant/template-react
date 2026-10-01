@@ -1,19 +1,19 @@
 ---
 name: react-component-scaffold
-description: Como criar um componente reutilizável neste template React, seguindo a convenção Componente + CSS Module + teste co-localizado. Use quando for adicionar, alterar, renomear ou remover um componente em src/components/.
+description: Como criar um componente reutilizável neste template React, seguindo a convenção Componente + CSS Module + teste em test/. Use quando for adicionar, alterar, renomear ou remover um componente em src/components/.
 ---
 
 # React Component Scaffold
 
 **Tem rota própria → é página** (use a skill `react-page-scaffold`). **É reaproveitado dentro de outras telas e não tem rota → é componente**, e esta skill é a certa. Estrutura de página compartilhada (header/footer em volta de um `<Outlet />`) é `src/layouts/`, que não é assunto desta skill nem tem convenção fechada ainda (issue #24).
 
-Um componente é composto por **duas peças que precisam existir juntas** — mais o teste, que é obrigatório e está na terceira linha da tabela. O estilo **não** é co-localizado; o teste **é**.
+Um componente é composto por **duas peças que precisam existir juntas** — mais o teste, que é obrigatório e está na terceira linha da tabela. O estilo **não** fica ao lado do componente; o teste fica em `src/components/test/`.
 
 | Peça | Caminho | Se faltar |
 | --- | --- | --- |
 | Componente | `src/components/<Nome>.tsx` (PascalCase, **sem sufixo** de papel) | — |
 | Estilo | `src/styles/components/<nome>.module.css` (camelCase) | `css.<classe>` vira `undefined`, o elemento renderiza sem `class` e sem erro nenhum |
-| Teste | `src/components/<Nome>.test.tsx` | o `reviewer` bloqueia a revisão — a falta de teste co-localizado é reprovação incondicional |
+| Teste | `src/components/test/<Nome>.test.tsx` | o `reviewer` bloqueia a revisão — a falta de teste é reprovação incondicional |
 
 O template não traz componente pronto: `src/components/` é criada ao escrever o primeiro, e os trechos abaixo, com um `SaveButton` hipotético, ilustram o formato esperado das três peças.
 
@@ -151,9 +151,9 @@ export default CloseButton
 - **`alt` em toda imagem** — descritivo e traduzido (`alt={t("<componente>.<papel>")}`, ou vindo de prop quando varia por uso), ou `alt={""}` quando a imagem for puramente decorativa — escrito como expressão, porque `alt=""` é string literal num atributo restrito e o lint acusa.
 - Navegação interna com `<Link to="...">`/`useNavigate` do `react-router-dom`, nunca `<a href>` para rota interna: a âncora crua força reload completo e descarta o estado da aplicação (issue #5). Componente com `<Link>` dentro só renderiza sob um router — o teste dele precisa de `MemoryRouter` em volta.
 
-### 7. Teste — `src/components/<Nome>.test.tsx`
+### 7. Teste — `src/components/test/<Nome>.test.tsx`
 
-Todo componente novo ou alterado precisa do teste co-localizado, no mesmo commit. Não é tarefa para depois: o `reviewer` trata a ausência como bloqueante incondicional.
+Todo componente novo ou alterado precisa do teste em `src/components/test/`, no mesmo commit. Não é tarefa para depois: o `reviewer` trata a ausência como bloqueante incondicional.
 
 **Como escrever e rodar o teste está na skill `vitest-specialist`** (`.claude/skills/vitest-specialist/SKILL.md`) — esta skill não repete a receita. A skill traz um trecho de teste de componente com render e clique.
 
@@ -191,7 +191,7 @@ Componente com texto fixo (seção 5) não pede nada de quem consome: `<CloseBut
 - [ ] `src/styles/components/<nome>.module.css` criado, e **toda** classe usada como `css.<algo>` existe nele
 - [ ] Cores e fonte vindas das custom properties de `global.css`
 - [ ] Elemento semântico correto, com nome acessível traduzido (`aria-label={t(...)}` em controle só com ícone, `alt` em imagem)
-- [ ] `src/components/<Nome>.test.tsx` criado, cobrindo render e interação e afirmando o texto em `pt-BR` (ver `vitest-specialist`)
+- [ ] `src/components/test/<Nome>.test.tsx` criado, cobrindo render e interação e afirmando o texto em `pt-BR` (ver `vitest-specialist`)
 - [ ] Sem comentário no código, import interno com `@/` e nunca `../`
 - [ ] `npm run typecheck`, `npm run lint`, `npm test -- --run` e `npm run build` passando
 - [ ] O componente foi visto renderizado (`npm run dev`) — o build passar não prova que o estilo foi aplicado
@@ -204,4 +204,4 @@ Remova ou renomeie as três peças juntas — componente, CSS Module e teste —
 grep -rn "components/<Nome>" src/
 ```
 
-Um import órfão quebra o build e aparece logo. Um **CSS Module órfão não quebra nada** e fica esquecido no repositório; um **teste que ficou para trás** ou deixa de ser coletado (se o nome saiu da convenção) ou passa a testar um import morto e derruba o build. Ao renomear, o arquivo de estilo acompanha em camelCase (`Example.tsx` → `example.module.css`) e o teste em PascalCase (`Example.test.tsx`).
+Um import órfão quebra o build e aparece logo. Um **CSS Module órfão não quebra nada** e fica esquecido no repositório; um **teste que ficou para trás** ou deixa de ser coletado (se o nome saiu da convenção) ou passa a testar um import morto e derruba o build. Ao renomear, o arquivo de estilo acompanha em camelCase (`Example.tsx` → `example.module.css`) e o teste em PascalCase (`src/components/test/Example.test.tsx`).

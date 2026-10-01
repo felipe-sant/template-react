@@ -178,7 +178,7 @@ O namespace tem o mesmo nome do CSS Module da página (`about.module.css` → `a
 
 4. Acrescente o nome ao array `ns` do `init()` em `src/i18n/i18n.ts`.
 
-`en` e `es` são tipados como `typeof ptBR`: namespace ou chave que existe em `pt-BR` e falta em `en`/`es` quebra o `npm run typecheck`. Chave sobrando em `en`/`es` não é pega pelo tipo, só por `src/i18n/resources.test.ts`.
+`en` e `es` são tipados como `typeof ptBR`: namespace ou chave que existe em `pt-BR` e falta em `en`/`es` quebra o `npm run typecheck`. Chave sobrando em `en`/`es` não é pega pelo tipo, só por `src/i18n/test/resources.test.ts`.
 
 ### 5. Rota — `src/routers/paths.ts` e `src/routers/Router.tsx`
 
@@ -237,7 +237,7 @@ Sempre `<Link to="/rota">` ou `useNavigate()` do `react-router-dom`. Nunca `<a h
 - [ ] Navegação interna usando `<Link>`, não `<a href>`
 - [ ] Metadados declarados com `t("meta.title")`/`t("meta.description")` se a página precisar substituir os placeholders do `index.html`
 - [ ] Valores de cor/fonte vindos das custom properties de `global.css`
-- [ ] `npm run typecheck`, `npm run build` e `npm test -- --run src/i18n/resources.test.ts` passando
+- [ ] `npm run typecheck`, `npm run build` e `npm test -- --run src/i18n/test/resources.test.ts` passando
 - [ ] A rota foi aberta no navegador e renderiza a página certa (o build passar não prova isso)
 
 ## Ao remover ou renomear uma página

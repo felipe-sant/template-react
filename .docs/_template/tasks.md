@@ -20,7 +20,7 @@ Fase 1 (sequencial)  →  Fase 2 (T2 [P] e T3 [P] em paralelo)  →  Fase 3
 - [ ] T1 — <descrição objetiva da tarefa>
     - **Arquivo(s):** `src/...`
     - **Depende de:** nenhuma
-    - **Feito quando:** critério objetivo e verificável (ex.: `npm test` passa cobrindo o cenário X em `src/pages/Home.page.test.tsx`)
+    - **Feito quando:** critério objetivo e verificável (ex.: `npm test` passa cobrindo o cenário X em `src/pages/test/Home.page.test.tsx`)
 
 - [ ] T2 [P] — <descrição objetiva da tarefa>
     - **Arquivo(s):** `src/...`
@@ -34,8 +34,8 @@ Cada tarefa deve ser pequena o suficiente para o executor marcar como concluída
 sem ambiguidade.
 
 Sobre testes: o repositório tem suíte utilizável (Vitest + jsdom; one-shot em
-`npm test -- --run`). A convenção é teste co-localizado
-(`<arquivo>.test.tsx` ao lado do arquivo testado em `src/`, nunca `__tests__/`
+`npm test -- --run`). A convenção é teste em `test/` por diretório
+(`<diretório>/test/<arquivo>.test.tsx` em `src/`, nunca `__tests__/`
 nem `.spec.tsx`), e o "Feito quando" de toda tarefa que muda comportamento de
 componente/hook/rota deve referenciar o arquivo de teste que cobre o cenário.
 
