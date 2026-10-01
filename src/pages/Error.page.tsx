@@ -1,6 +1,6 @@
 import { useTranslation } from "react-i18next"
 import { Link, useRouteError } from "react-router-dom"
-import { ROUTES } from "@/routers/paths"
+import ROUTES from "@/routers/paths"
 import css from "@/styles/pages/error.module.css"
 
 function ErrorPage() {
