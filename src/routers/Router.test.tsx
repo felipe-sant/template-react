@@ -19,7 +19,7 @@ describe("routes", () => {
     it("renderiza o header e o footer do MainLayout ao redor da página em uma rota válida", async () => {
         renderRoutes(["/"])
 
-        expect(await screen.findByRole("heading", { name: "Hello World!" })).toBeInTheDocument()
+        expect(await screen.findByRole("heading", { name: "Olá, mundo!" })).toBeInTheDocument()
         expect(screen.getByRole("banner")).toBeInTheDocument()
         expect(screen.getByRole("contentinfo")).toBeInTheDocument()
     })
@@ -37,6 +37,6 @@ describe("routes", () => {
         await screen.findByRole("link", { name: "Vá para a página inicial." })
         await user.click(screen.getByRole("link", { name: "Vá para a página inicial." }))
 
-        expect(await screen.findByRole("heading", { name: "Hello World!" })).toBeInTheDocument()
+        expect(await screen.findByRole("heading", { name: "Olá, mundo!" })).toBeInTheDocument()
     })
 })

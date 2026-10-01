@@ -6,13 +6,13 @@ describe("App", () => {
     it("renderiza a página inicial na rota raiz", async () => {
         render(<App />)
 
-        expect(await screen.findByRole("heading", { name: "Hello World!" })).toBeInTheDocument()
+        expect(await screen.findByRole("heading", { name: "Olá, mundo!" })).toBeInTheDocument()
     })
 
     it("define título e meta description da página no head", async () => {
         render(<App />)
 
-        expect(await screen.findByRole("heading", { name: "Hello World!" })).toBeInTheDocument()
+        expect(await screen.findByRole("heading", { name: "Olá, mundo!" })).toBeInTheDocument()
         expect(document.title).toBe("Título da Página")
         expect(document.querySelector('meta[name="description"]')?.getAttribute("content")).toBe(
             "Minha descrição personalizada."
