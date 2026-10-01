@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it } from "vitest"
 import { render, screen } from "@testing-library/react"
 import App from "@/App"
+
+afterEach(() => {
+    window.history.pushState({}, "", "/")
+})
 
 describe("App", () => {
     it("renderiza a página inicial na rota raiz", async () => {

@@ -221,6 +221,8 @@ describe("routes", () => {
 })
 ```
 
+**Fallback do `<Suspense>`:** o `lazy()` guarda o módulo carregado no próprio `Router.tsx`, então depois que qualquer teste do arquivo renderizou a página, o fallback (`Carregando...`) não aparece mais e um teste dele passa ou falha conforme a ordem. O teste do fallback chama `vi.resetModules()` e importa `routes` de novo com `await import("@/routers/Router")`, recebendo um `lazy()` ainda não resolvido — como em `src/routers/Router.test.tsx`.
+
 **Por que não renderizar o `Router` (export default):** ele usa `createBrowserRouter`, que lê a URL real do jsdom (`/`) e não aceita entrada inicial — não há como testar outra rota. O `createMemoryRouter` recebe as mesmas `routes` e deixa escolher a URL de partida.
 
 **Para testar o conteúdo de uma tela, importe a página direto** (como no item 5) em vez de atravessar a árvore de rotas. Assim o teste falha por um motivo só: se ele renderiza via rota, uma quebra no `Router.tsx` derruba junto o teste da página, e você perde tempo procurando no lugar errado. O teste de rota testa **roteamento** (qual URL cai em qual tela); o teste de página testa conteúdo.
