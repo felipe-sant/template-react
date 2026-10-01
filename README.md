@@ -466,3 +466,11 @@ arquivo "suite-wide" (`package.json`, `package-lock.json`, `vite.config.ts`, `ts
 `src/setupTests.ts`); nos demais Pull Requests, roda só `vitest --changed`, sem coverage, testando
 apenas o que o diff afeta. Quando a suíte completa roda, `coverage/` é publicado como artifact do
 workflow.
+
+Cada push num Pull Request cancela o run anterior da mesma ref (`concurrency` por workflow e ref,
+com `cancel-in-progress` só para `pull_request`); runs em `main` nunca são cancelados, para o
+artifact de coverage sempre ser produzido.
+
+O `.github/dependabot.yml` atualiza dependências dos ecossistemas `npm` e `github-actions` uma vez
+por mês, agrupando as atualizações `minor` e `patch` num único PR por ecossistema; versões `major`
+chegam em PRs individuais. Como esses PRs miram `main`, rodam a suíte completa com coverage.

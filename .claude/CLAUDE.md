@@ -88,6 +88,11 @@ evento é push (sempre em `main`) ou o PR mira `main`, ou quando o diff toca um 
 os testes afetados pelo diff. Em `mode=full`, o diretório `coverage/` é publicado como artifact do
 workflow.
 
+Cada push num PR cancela o run anterior da mesma ref (`concurrency`, `cancel-in-progress` só para
+`pull_request`; `main` nunca é cancelada). O `.github/dependabot.yml` atualiza `npm` e
+`github-actions` mensalmente, com `minor`/`patch` agrupados num PR por ecossistema e `major` em PR
+próprio; como mira `main`, esses PRs rodam a suíte completa.
+
 `vite build` sozinho não checa tipos (usa esbuild, que só transpila); por isso o script `build`
 roda `npm run typecheck` (`tsc -b`, que cobre `src/` via `tsconfig.app.json` e `vite.config.ts` via `tsconfig.node.json`) antes.
 
