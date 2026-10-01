@@ -236,6 +236,12 @@ Cada página declara os próprios `<title>` e `<meta>` direto no JSX, com as tag
 - Tipo não exportado fica local ao arquivo, sem `export` (`<Nome>Props`, `<Nome>State`, tipos de request/response); só sobe para `src/types/` se outro arquivo precisar.
 - `*.d.ts` de ambiente fica fora da regra.
 
+## Estado: `useState`, slice ou RTK Query
+
+- Estado que só esta página usa fica em `useState` no hook da página.
+- Estado de cliente compartilhado entre telas vai para um slice (skill `redux-store-scaffold`), lido com `useAppSelector` e escrito com `useAppDispatch`.
+- Dado vindo do servidor vai para um endpoint do RTK Query (skill `rtk-query-endpoint-scaffold`), consumido pelo hook de página `src/pages/hooks/use<Nome>.ts` com `isLoading` e `error`; o `get`/`post` de `src/services/http/` fica para o que não passa pelo RTK Query.
+
 ## Navegação entre páginas
 
 Sempre `<Link to="/rota">` ou `useNavigate()` do `react-router-dom`. Nunca `<a href="/rota">` para rota interna: a âncora crua faz reload completo e descarta todo o estado da aplicação (issue #5). `<a href>` só para link externo.

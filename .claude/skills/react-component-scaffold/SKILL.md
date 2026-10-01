@@ -180,6 +180,10 @@ export default ProfilePage
 
 Componente com texto fixo (seção 5) não pede nada de quem consome: `<CloseButton onClick={close} />`.
 
+## Estado compartilhado
+
+Componente reutilizável recebe dado por prop. Quando precisar ler a store, use `useAppSelector` com seletor estreito e `useAppDispatch` (skill `redux-store-scaffold`); dado do servidor entra por endpoint do RTK Query (skill `rtk-query-endpoint-scaffold`), de preferência consumido pela página e passado por prop. O teste usa `renderWithStore` (skill `vitest-specialist`).
+
 ## Checklist
 
 - [ ] `src/components/<Nome>.tsx` criado, PascalCase e sem sufixo, com `export default` no final

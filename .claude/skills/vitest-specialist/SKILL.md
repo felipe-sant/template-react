@@ -229,6 +229,54 @@ describe("routes", () => {
 
 Componente que usa `<Link>` ou `useNavigate` também precisa de um router em volta — sem ele o render estoura na hora.
 
+## 6b. Testar algo que usa a store (Redux / RTK Query)
+
+`renderWithStore(ui, { preloadedState })`, de `@/testUtils/renderWithStore`, cria `createStore(preloadedState)` por chamada, envolve o `ui` em `Provider` e devolve o resultado do `render` junto da `store`. Cada chamada tem estado e cache do RTK Query isolados, então um teste não vaza para o outro. Para estado de slice, passe `preloadedState` em vez de despachar actions na mão.
+
+Não há endpoint em `src/`, então o teste injeta o dele com `api.injectEndpoints`, stuba o `fetch` com `vi.stubGlobal` e define `VITE_API_URL` absoluta com `vi.stubEnv` (o `Request` do Node não aceita URL relativa). A constante da URL é lida na carga do módulo: use `vi.resetModules()` e import dinâmico, e restaure no `afterEach`. O endpoint injetado persiste enquanto o módulo vive, então use nome único por arquivo ou `resetModules` por teste. Modelos: `src/store/test/api.test.ts` e `src/testUtils/test/renderWithStore.test.tsx`.
+
+```tsx
+import { afterEach, expect, it, vi } from "vitest"
+import { screen } from "@testing-library/react"
+
+afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
+    vi.resetModules()
+})
+
+it("mostra o dado do endpoint injetado", async () => {
+    vi.stubEnv("VITE_API_URL", "https://api.example.com")
+    vi.resetModules()
+    const { default: api } = await import("@/store/api")
+    const { default: renderWithStore } = await import("@/testUtils/renderWithStore")
+    vi.stubGlobal(
+        "fetch",
+        vi.fn().mockImplementation(
+            async () =>
+                new Response(JSON.stringify({ name: "Exemplo" }), {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" }
+                })
+        )
+    )
+    const profileApi = api.injectEndpoints({
+        endpoints: (build) => ({
+            getProfile: build.query<{ name: string }, void>({ query: () => "/profile" })
+        })
+    })
+
+    function Profile() {
+        const { data } = profileApi.useGetProfileQuery()
+        return <p>{data?.name}</p>
+    }
+
+    renderWithStore(<Profile />)
+
+    expect(await screen.findByText("Exemplo")).toBeInTheDocument()
+})
+```
+
 ## 7. Texto traduzido
 
 Todo texto de UI vem de chave (`t()`/`<Trans>`), com valor por idioma em `src/locales/`. O teste não precisa de nada para isso funcionar: **não há wrapper de render nem provider**, porque o `initReactI18next` registra a instância de `src/i18n/i18n.ts` globalmente, e o `src/setupTests.ts` deixa todo teste começando em `pt-BR` e sem escolha salva (item 4).
@@ -346,6 +394,7 @@ Ordem de preferência: **`getByRole` com `name`** > `getByLabelText` / `getByTex
 - [ ] `describe`/`it`/`expect`/`vi` importados de `vitest`
 - [ ] Import do arquivo testado com `@/`, nunca `../`
 - [ ] Query por `getByRole` com `name` sempre que possível; `getByTestId` só como último recurso
+- [ ] Componente que lê a store renderizado com `renderWithStore` (nunca um `Provider` montado à mão); endpoint injetado com `fetch` stubado e `VITE_API_URL` absoluta
 - [ ] Router em memória em volta do que depende de rota (`createMemoryRouter(routes, ...)` + `RouterProvider`), não o `Router` default
 - [ ] Nenhum `afterEach(cleanup)` local — o `src/setupTests.ts` já faz isso em toda suíte
 - [ ] Texto afirmado em `pt-BR`, nunca a chave; outro idioma só com `await setLanguage(...)` dentro do `it`
