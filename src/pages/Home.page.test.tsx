@@ -44,10 +44,11 @@ describe("HomePage", () => {
         expect(screen.getByText("Erro")).toBeInTheDocument()
     })
 
-    it("navega para a página de exemplos ao clicar no botão", () => {
+    it("navega para a página de exemplos ao clicar no botão", async () => {
+        const user = userEvent.setup()
         renderHomePage()
 
-        userEvent.click(screen.getByRole("button", { name: "Ver exemplos integrados" }))
+        await user.click(screen.getByRole("button", { name: "Ver exemplos integrados" }))
 
         expect(screen.getByText("Página de exemplos")).toBeInTheDocument()
     })

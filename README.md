@@ -57,7 +57,7 @@ import css from "@/styles/pages/home.module.css"
 ```
 
 Nunca suba de pasta com `../` — um import assim quebra ao mover o arquivo de lugar. O alias é
-configurado em dois lugares que precisam concordar: `paths` no `tsconfig.json` e `resolve.alias`
+configurado em dois lugares que precisam concordar: `paths` no `tsconfig.app.json` e `resolve.alias`
 no `vite.config.ts`. Import na mesma pasta ou descendo da própria localização (`./routers/Router`
 em `src/App.tsx`) continua válido.
 
@@ -176,11 +176,11 @@ autocomplete e checagem de tipo.
 
 ```bash
 npm run dev      # dev server do Vite (porta padrão 5173)
-npm run build    # checagem de tipos (tsc --noEmit) + build de produção em dist/
+npm run build    # typecheck + build de produção em dist/
 npm run preview  # serve o conteúdo de dist/ — depende de um npm run build anterior
 npm test         # Vitest em watch mode
 npm test -- --run # execução one-shot (CI)
-npx tsc --noEmit # checagem de tipos isolada
+npm run typecheck # checagem de tipos (tsc -b) de src/ e vite.config.ts
 npm run lint      # roda o oxlint sobre o projeto, usando a configuração de .oxlintrc.json
 npm run lint:fix  # mesma coisa que npm run lint, mas aplicando automaticamente as correções possíveis (oxlint --fix)
 npm run format    # roda prettier --write em src/**/*.{ts,tsx} e vite.config.ts, conforme as regras de .prettierrc

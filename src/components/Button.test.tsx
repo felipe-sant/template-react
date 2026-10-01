@@ -10,11 +10,12 @@ describe("Button", () => {
         expect(screen.getByRole("button", { name: "Botão de exemplo" })).toBeInTheDocument()
     })
 
-    it("dispara o onClick ao ser clicado", () => {
+    it("dispara o onClick ao ser clicado", async () => {
+        const user = userEvent.setup()
         const onClick = vi.fn()
         render(<Button label="Botão de exemplo" onClick={onClick} />)
 
-        userEvent.click(screen.getByRole("button", { name: "Botão de exemplo" }))
+        await user.click(screen.getByRole("button", { name: "Botão de exemplo" }))
 
         expect(onClick).toHaveBeenCalledTimes(1)
     })

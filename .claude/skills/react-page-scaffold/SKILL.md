@@ -156,7 +156,7 @@ Sempre `<Link to="/rota">` ou `useNavigate()` do `react-router-dom`. Nunca `<a h
 - [ ] Navegação interna usando `<Link>`, não `<a href>`
 - [ ] Metadados declarados se a página precisar sobrescrever os do `App.tsx`
 - [ ] Valores de cor/fonte vindos das custom properties de `global.css`
-- [ ] `npx tsc --noEmit` e `npm run build` passando
+- [ ] `npm run typecheck` e `npm run build` passando
 - [ ] A rota foi aberta no navegador e renderiza a página certa (o build passar não prova isso)
 
 ## Ao remover ou renomear uma página

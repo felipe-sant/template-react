@@ -164,3 +164,7 @@ yarn-error.log*
 # specs locais (planejamento, nao versionado)
 .docs/bugs/*/
 .docs/features/*/
+
+# Claude Code - configuracao local de maquina
+.claude/settings.local.json
+.claude/worktrees/

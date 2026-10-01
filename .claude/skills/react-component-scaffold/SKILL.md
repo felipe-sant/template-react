@@ -133,7 +133,7 @@ import Button from "@/components/Button"
 - [ ] Elemento semântico correto, com nome acessível (e `alt` em imagem)
 - [ ] `src/components/<Nome>.test.tsx` criado, cobrindo render e interação (ver `vitest-specialist`)
 - [ ] Sem comentário no código, import interno com `@/` e nunca `../`
-- [ ] `npx tsc --noEmit`, `npm test -- --run` e `npm run build` passando
+- [ ] `npm run typecheck`, `npm test -- --run` e `npm run build` passando
 - [ ] O componente foi visto renderizado (`npm run dev`) — o build passar não prova que o estilo foi aplicado
 
 ## Ao remover ou renomear um componente
