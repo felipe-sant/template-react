@@ -36,10 +36,11 @@ describe("routes", () => {
     })
 
     it("navega da NotFound para a Home ao clicar no link, sem full reload", async () => {
+        const user = userEvent.setup()
         renderRoutes(["/rota-que-nao-existe"])
 
         await screen.findByRole("link", { name: "Vá para a página inicial." })
-        userEvent.click(screen.getByRole("link", { name: "Vá para a página inicial." }))
+        await user.click(screen.getByRole("link", { name: "Vá para a página inicial." }))
 
         expect(await screen.findByRole("heading", { name: "Hello World!" })).toBeInTheDocument()
     })
