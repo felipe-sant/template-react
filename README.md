@@ -71,7 +71,7 @@ Siga essa tabela ao adicionar código novo. As pastas que ainda não têm arquiv
 Use o alias `@/`, que resolve para `src/`:
 
 ```ts
-import { ROUTES } from "@/routers/paths"
+import ROUTES from "@/routers/paths"
 import css from "@/styles/pages/home.module.css"
 ```
 
