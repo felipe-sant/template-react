@@ -113,11 +113,12 @@ describe("Button", () => {
         expect(screen.getByRole("button", { name: "Botão de exemplo" })).toBeInTheDocument()
     })
 
-    it("dispara o onClick ao ser clicado", () => {
+    it("dispara o onClick ao ser clicado", async () => {
+        const user = userEvent.setup()
         const onClick = vi.fn()
         render(<Button label="Botão de exemplo" onClick={onClick} />)
 
-        userEvent.click(screen.getByRole("button", { name: "Botão de exemplo" }))
+        await user.click(screen.getByRole("button", { name: "Botão de exemplo" }))
 
         expect(onClick).toHaveBeenCalledTimes(1)
     })
@@ -172,7 +173,7 @@ Ordem de preferência: **`getByRole` com `name`** > `getByLabelText` / `getByTex
 - **`fireEvent`** para disparar um evento cru: `fireEvent.click(element)`, `fireEvent.change(input, { target: { value: "texto" } })`.
 - **`@testing-library/user-event`** quando a interação é uma sequência real de usuário (digitar caractere a caractere, `tab`, `hover`) — ele dispara a cadeia de eventos que o navegador dispararia, e por isso pega bug que o `fireEvent` não pega.
 
-> **Versão instalada: `@testing-library/user-event@13.5.0`.** Nessa versão a API é **síncrona e sem instância**: `userEvent.click(element)`, `userEvent.type(input, "texto")`, direto no default import. **`userEvent.setup()` não existe aqui** — a forma `const user = userEvent.setup(); await user.click(...)`, que aparece em praticamente todo exemplo encontrado na internet, é da v14 e quebra neste repositório (`userEvent.setup is not a function`). Não copie exemplo de v14. Subir para a v14 é pendência de `package.json`, não de documentação.
+> **Versão instalada: `@testing-library/user-event` v14.** A API é **assíncrona e baseada em instância**: crie `const user = userEvent.setup()` dentro do `it` e use `await user.click(element)`, `await user.type(input, "texto")`. Sem o `await`, a asserção seguinte roda antes do efeito da interação (teste flaky ou falso verde). Chamar `userEvent.click(...)` direto, sem `setup()`, é a forma antiga e não deve ser usada.
 
 ## 9. Erros comuns
 
@@ -185,7 +186,7 @@ Ordem de preferência: **`getByRole` com `name`** > `getByLabelText` / `getByTex
 | `document is not defined` | `environment: "jsdom"` fora do bloco `test` do `vite.config.ts` |
 | `Found multiple elements with the role ...` | render anterior não foi desmontado: alguém removeu o `afterEach(cleanup)` do `src/setupTests.ts` (item 4) |
 | `describe is not defined` / `vi is not defined` | falta o `import` de `vitest` — não há `globals: true` |
-| `userEvent.setup is not a function` | exemplo de v14 num repositório com a v13 (item 8) |
+| asserção logo após `user.click(...)` falha de forma intermitente, ou passa sem o efeito acontecer | a interação da v14 é assíncrona e faltou o `await` (item 8) |
 
 **Teste que passaria com o setup desligado não prova nada.** `expect(element).toBeTruthy()` é verdadeiro para qualquer objeto, inclusive um nó fora do documento; prefira um matcher do `jest-dom` (`toBeInTheDocument`, `toHaveTextContent`, `toBeDisabled`) que afirma algo sobre o DOM. Vale o mesmo teste de sanidade de sempre: quebre a asserção de propósito uma vez e confirme que ela fica vermelha.
 
@@ -197,7 +198,7 @@ Ordem de preferência: **`getByRole` com `name`** > `getByLabelText` / `getByTex
 - [ ] Query por `getByRole` com `name` sempre que possível; `getByTestId` só como último recurso
 - [ ] `MemoryRouter` em volta do que depende de rota; `AppRoutes`, não o `Router` default
 - [ ] Nenhum `afterEach(cleanup)` local — o `src/setupTests.ts` já faz isso em toda suíte
-- [ ] `user-event` na API v13, sem `setup()`
+- [ ] `user-event` na API v14 (`setup()` e `await`)
 - [ ] Sem comentário no código; nome de identificador em inglês, descrição do `it` em português
 - [ ] `npm test -- --run` passa, e a contagem de arquivos cresceu com o arquivo novo
 - [ ] `npm run typecheck` passa
