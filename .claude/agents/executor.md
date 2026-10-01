@@ -33,7 +33,7 @@ Siga as convenções do `CLAUDE.md` deste repositório. Todo código que você e
 
 Depois de cada tarefa relevante, rode os comandos de verificação que o `package.json` da branch realmente tem, antes de marcar a tarefa como concluída. Hoje:
 
-- `npx tsc --noEmit` — checagem de tipos (sempre disponível).
+- `npm run typecheck` — checagem de tipos (`tsc -b`, sempre disponível).
 - `npm run build` — checagem de tipos + build de produção em `dist/` (Vite).
 - `npm test -- --run` — suíte de testes (Vitest) em execução one-shot. Use sempre essa forma: `npm test` puro entra em watch mode e não termina.
 - `npm run lint` — checagem de lint via `oxlint`.

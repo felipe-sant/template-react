@@ -17,12 +17,12 @@ ver "Estilo de código".
 
 ```bash
 npm run dev      # dev server do Vite (porta padrão 5173)
-npm run build    # checagem de tipos (tsc --noEmit) + build de produção em dist/
+npm run build    # typecheck + build de produção em dist/
 npm run preview  # serve o conteúdo de dist/ já gerado — depende de um npm run build anterior
 npm test         # Vitest em watch mode (o script é `vitest`, sem `run`)
 npm test -- --run                            # execução one-shot (CI, agente, terminal não-interativo)
 npm test -- --run src/pages/Home.page.test.tsx   # um arquivo específico
-npx tsc --noEmit # checagem de tipos isolada
+npm run typecheck # checagem de tipos (tsc -b) de src/ e vite.config.ts
 npm run lint      # oxlint sobre o projeto (configuração em .oxlintrc.json)
 npm run lint:fix  # mesma coisa, aplicando as correções automáticas possíveis (oxlint --fix)
 npm run format    # prettier --write em src/**/*.{ts,tsx} e vite.config.ts, conforme .prettierrc
@@ -63,7 +63,7 @@ os testes afetados pelo diff. Em `mode=full`, o diretório `coverage/` é public
 workflow.
 
 `vite build` sozinho não checa tipos (usa esbuild, que só transpila); por isso o script `build`
-roda `tsc --noEmit` antes.
+roda `npm run typecheck` (`tsc -b`, que cobre `src/` via `tsconfig.app.json` e `vite.config.ts` via `tsconfig.node.json`) antes.
 
 `npm install` configura automaticamente (script `prepare`, `"prepare": "husky"`) um hook de
 `pre-commit` do Husky que roda `npx lint-staged` a cada commit — sem passo manual extra.
@@ -98,8 +98,8 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   `src/styles/pages/<nome>.module.css` (CSS Modules), importados como `import css from "..."`.
   A tipagem dos módulos vem de `src/types/declarations.d.ts`.
 - **Alias de import `@/`** — `@/*` resolve para `src/*`. Configurado em dois lugares que precisam
-  continuar concordando: `paths` no `tsconfig.json` (para o `tsc` e o editor) e `resolve.alias` no
-  `vite.config.ts` (para o dev server e o build). Mexer em um sem o outro deixa o `tsc --noEmit`
+  continuar concordando: `paths` no `tsconfig.app.json` (para o `tsc` e o editor) e `resolve.alias` no
+  `vite.config.ts` (para o dev server e o build). Mexer em um sem o outro deixa o `tsc -b`
   verde e quebra o build, ou vice-versa. O Vitest herda o alias do mesmo `vite.config.ts`.
 - **`public/`** — assets estáticos que o Vite copia como estão para a raiz de `dist/` no build, sem
   passar pelo bundler. Hoje contém só `favicon.svg`, referenciado em `index.html` via

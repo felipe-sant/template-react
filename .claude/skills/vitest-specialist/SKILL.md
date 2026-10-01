@@ -25,8 +25,8 @@ Não há `globals: true` e não há `passWithNoTests` — as duas ausências tê
 | `npm test` | **watch mode** (o script é `vitest`, sem `run`). Não termina. |
 | `npm test -- --run` | execução one-shot. **É esta que você usa** num agente, em CI ou em terminal não-interativo. |
 | `npm test -- --run src/pages/Home.page.test.tsx` | um arquivo só, one-shot. |
-| `npx tsc --noEmit` | checagem de tipos isolada, inclusive dos arquivos de teste. |
-| `npm run build` | `tsc --noEmit` + build de produção. Não roda teste. |
+| `npm run typecheck` | checagem de tipos isolada, inclusive dos arquivos de teste. |
+| `npm run build` | `typecheck` + build de produção. Não roda teste. |
 
 Rodar `npm test` puro dentro de um agente trava a sessão até o timeout: o processo fica esperando input que nunca vem. Sempre `-- --run`.
 
@@ -200,7 +200,7 @@ Ordem de preferência: **`getByRole` com `name`** > `getByLabelText` / `getByTex
 - [ ] `user-event` na API v13, sem `setup()`
 - [ ] Sem comentário no código; nome de identificador em inglês, descrição do `it` em português
 - [ ] `npm test -- --run` passa, e a contagem de arquivos cresceu com o arquivo novo
-- [ ] `npx tsc --noEmit` passa
+- [ ] `npm run typecheck` passa
 
 ## Ao remover ou renomear o arquivo testado
 
