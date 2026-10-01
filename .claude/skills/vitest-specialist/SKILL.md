@@ -52,12 +52,19 @@ Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service. 
 
 ## 4. `src/setupTests.ts` e o subpath — não "conserte" este import
 
-O arquivo é registrado em `test.setupFiles` do `vite.config.ts` e faz duas coisas:
+O arquivo é registrado em `test.setupFiles` do `vite.config.ts` e faz três coisas: registra os matchers do `jest-dom`, reseta o idioma antes de cada teste e desmonta o DOM depois de cada teste.
 
 ```ts
 import "@testing-library/jest-dom/vitest"
 import { cleanup } from "@testing-library/react"
-import { afterEach } from "vitest"
+import { afterEach, beforeEach } from "vitest"
+import i18n from "@/i18n/i18n"
+import LANGUAGE_STORAGE_KEY from "@/i18n/languageStorageKey"
+
+beforeEach(async () => {
+    localStorage.removeItem(LANGUAGE_STORAGE_KEY)
+    await i18n.changeLanguage("pt-BR")
+})
 
 afterEach(cleanup)
 ```
@@ -72,6 +79,10 @@ ReferenceError: expect is not defined
 Esse erro ao menos aponta o arquivo. O sintoma de o `setupFiles` ter sumido do `vite.config.ts` é outro, e mais enganoso — `Invalid Chai property: toBeInTheDocument`, apontando para a linha do `expect` no teste, sem nenhuma menção ao setup.
 
 **O `afterEach(cleanup)` também é obrigatório, e não é redundante.** O cleanup automático do Testing Library se registra num `afterEach` global; sem `globals: true` esse global não existe, então o RTL não liga nada sozinho (ele testa `if (typeof afterEach === 'function')`). É esta linha que desmonta o DOM entre um `it` e o seguinte. Apagá-la por parecer supérflua faz todo arquivo com mais de um `render` começar a falhar com `Found multiple elements`.
+
+**O `beforeEach` reseta o idioma, e o reset não grava nada.** Ele apaga a escolha salva em `LANGUAGE_STORAGE_KEY` e chama `i18n.changeLanguage("pt-BR")` direto na instância — não `setLanguage`, que gravaria a escolha via `saveLanguage`. O detector de `src/i18n/i18n.ts` é configurado com `caches: []`, então `changeLanguage` não escreve no `localStorage`: a ordem dos dois passos não importa e todo teste começa sem escolha salva. Sem esse reset, a suíte dependeria do navegador do `jsdom`, que reporta `en-US`, e um teste que troca o idioma vazaria o idioma para o seguinte.
+
+**O literal é `"pt-BR"`, não o fallback `en`.** São duas coisas independentes: `pt-BR` é a língua de referência — o texto nasce nela e os testes de tela afirmam o texto em português —, e `en` (`FALLBACK_LANGUAGE`) é o que o usuário vê quando nenhuma fonte de detecção dá um idioma suportado. Trocar o literal por `FALLBACK_LANGUAGE` "por consistência" faz todo teste de tela falhar, porque passaria a renderizar em inglês. Não existe constante para a língua de referência de propósito: ela seria um símbolo público só para este arquivo.
 
 Se você encontrar este arquivo e algo nele parecer errado, não está: deixe como está.
 
@@ -90,12 +101,12 @@ describe("HomePage", () => {
     it("renderiza o título principal", () => {
         render(<HomePage />)
 
-        expect(screen.getByRole("heading", { name: "Hello World!" })).toBeInTheDocument()
+        expect(screen.getByRole("heading", { name: "Olá, mundo!" })).toBeInTheDocument()
     })
 })
 ```
 
-Import interno com `@/`, nunca `../`. O nome do `describe` é o identificador testado (inglês); a descrição do `it` é uma frase em português, como todo texto lido por gente.
+Não há provider nem wrapper de render: a página chama `useTranslation()` e o texto sai em `pt-BR` porque o `src/setupTests.ts` resetou o idioma (item 4) e o `initReactI18next` registra a instância globalmente. Import interno com `@/`, nunca `../`. O nome do `describe` é o identificador testado (inglês); a descrição do `it` é uma frase em português, como todo texto lido por gente.
 
 ### Mais de um `render` no mesmo arquivo
 
@@ -127,6 +138,8 @@ describe("SaveButton", () => {
 ```
 
 Isso só funciona por causa da linha no setup — ver item 4.
+
+O `label="Salvar alterações"` literal é aceito aqui porque `*.test.ts`/`*.test.tsx` estão liberados de `react/jsx-no-literals` (item 7). No código da aplicação, quem usa o componente passa o texto já traduzido: `<SaveButton label={t("profile.saveChanges")} />`.
 
 ### Hook com `renderHook`
 
@@ -201,7 +214,9 @@ describe("routes", () => {
         const router = createMemoryRouter(routes, { initialEntries: ["/rota-que-nao-existe"] })
         render(<RouterProvider router={router} />)
 
-        expect(await screen.findByRole("heading", { name: "404 - Not Found" })).toBeInTheDocument()
+        expect(
+            await screen.findByRole("heading", { name: "404 - Página não encontrada" })
+        ).toBeInTheDocument()
     })
 })
 ```
@@ -212,7 +227,81 @@ describe("routes", () => {
 
 Componente que usa `<Link>` ou `useNavigate` também precisa de um router em volta — sem ele o render estoura na hora.
 
-## 7. Queries do Testing Library
+## 7. Texto traduzido
+
+Todo texto de UI vem de chave (`t()`/`<Trans>`), com valor por idioma em `src/locales/`. O teste não precisa de nada para isso funcionar: **não há wrapper de render nem provider**, porque o `initReactI18next` registra a instância de `src/i18n/i18n.ts` globalmente, e o `src/setupTests.ts` deixa todo teste começando em `pt-BR` e sem escolha salva (item 4).
+
+**Afirme o texto em `pt-BR`, nunca a chave.** `pt-BR` é a língua de referência e o idioma do reset — não o fallback `en`. Uma asserção sobre a chave (`getByRole("heading", { name: "heading" })`) passaria mesmo com a tradução vazia ou ausente, porque o i18next devolve a própria chave quando não acha valor. O texto em português é o que prova que a tradução existe e chegou à tela.
+
+**Para testar outro idioma, troque dentro do `it` com `await setLanguage(...)`**, antes do `render`, como no cenário `es` de `src/pages/Home.page.test.tsx`:
+
+```tsx
+import { describe, expect, it } from "vitest"
+import { render, screen } from "@testing-library/react"
+import setLanguage from "@/i18n/setLanguage"
+import HomePage from "@/pages/Home.page"
+
+describe("HomePage", () => {
+    it("traduz os metadados e o trecho em destaque quando o idioma é es", async () => {
+        await setLanguage("es")
+
+        render(<HomePage />)
+
+        expect(document.title).toBe("Título de la página")
+        expect(screen.getByText("destacado").tagName).toBe("STRONG")
+    })
+})
+```
+
+Não precisa desfazer a troca: o `beforeEach` do setup volta para `pt-BR` e apaga a escolha que o `setLanguage` gravou, antes do próximo teste.
+
+**Não mocke `react-i18next`.** Um mock de `useTranslation` que devolve a chave esconde exatamente o que o teste deveria pegar (chave errada, namespace não registrado em `src/i18n/resources.ts`, tradução faltando) e diverge do comportamento real de `<Trans>`.
+
+**`*.test.ts`/`*.test.tsx` estão liberados de `react/jsx-no-literals`** por um bloco `overrides` no `.oxlintrc.json`. Em teste, `render(<SaveButton label="Salvar alterações" />)` é aceito; o mesmo literal num componente da aplicação é erro de lint.
+
+### Simular uma nova carga de página
+
+A detecção de idioma (`?lng=` → escolha salva → navegador → `en`) e a persistência do `?lng=` rodam uma vez só, quando `src/i18n/i18n.ts` é importado. `i18n.changeLanguage()` sem argumento não serve para reproduzir isso: ele não executa a persistência do `?lng=`. Para testar a inicialização, prepare a URL, o navegador e o `localStorage`, descarte o cache de módulos com `vi.resetModules()` e importe a instância de novo com `await import("@/i18n/i18n")` — como o `i18n.ts` cria a instância com `createInstance()`, cada import depois do reset é uma instância nova, sem estado da anterior. É o helper de `src/i18n/i18n.test.ts`:
+
+```ts
+import { afterEach, describe, expect, it, vi } from "vitest"
+import LANGUAGE_STORAGE_KEY from "@/i18n/languageStorageKey"
+
+interface PageLoad {
+    search?: string
+    browserLanguages?: string[]
+}
+
+async function loadPage({ search = "", browserLanguages = ["en-US"] }: PageLoad = {}) {
+    window.history.pushState({}, "", `/${search}`)
+    vi.spyOn(navigator, "languages", "get").mockReturnValue(browserLanguages)
+    vi.spyOn(navigator, "language", "get").mockReturnValue(browserLanguages[0] ?? "")
+    vi.resetModules()
+
+    const { default: i18n } = await import("@/i18n/i18n")
+
+    return i18n
+}
+
+afterEach(() => {
+    vi.restoreAllMocks()
+    window.history.pushState({}, "", "/")
+    localStorage.removeItem(LANGUAGE_STORAGE_KEY)
+})
+
+describe("i18n", () => {
+    it("ativa e grava o idioma de um ?lng= válido", async () => {
+        const i18n = await loadPage({ search: "?lng=es", browserLanguages: ["en"] })
+
+        expect(i18n.resolvedLanguage).toBe("es")
+        expect(localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBe("es")
+    })
+})
+```
+
+O `?lng=` é stubado com `window.history.pushState` e o `navigator` com `vi.spyOn` no getter. **Restaure os dois no `afterEach`**: `vi.restoreAllMocks()` desfaz os spies e `pushState` de volta para `"/"` limpa a URL, senão o `?lng=` e o idioma do navegador vazam para o teste seguinte (inclusive o `App.test.tsx`, que lê a URL real). Um teste que muda a URL por outro motivo, como o cenário de rota desconhecida em `src/App.test.tsx`, segue a mesma regra.
+
+## 8. Queries do Testing Library
 
 Ordem de preferência: **`getByRole` com `name`** > `getByLabelText` / `getByText` > `getByTestId` (último recurso). `getByRole` consulta a árvore de acessibilidade — o que o usuário e o leitor de tela enxergam —, então além de encontrar o elemento ele pega regressão de acessibilidade: se o `<button>` virou `<div onClick>` ou a imagem perdeu o `alt`, a query falha. `getByTestId` passa mesmo com a marcação quebrada, por isso é o último recurso.
 
@@ -224,14 +313,14 @@ Ordem de preferência: **`getByRole` com `name`** > `getByLabelText` / `getByTex
 
 `getAllBy*`/`queryAllBy*`/`findAllBy*` para mais de um elemento. `findBy*` sem `await` devolve uma Promise que passa em qualquer `expect` de verdade/falsidade e nunca testa nada.
 
-## 8. Interação
+## 9. Interação
 
 - **`fireEvent`** para disparar um evento cru: `fireEvent.click(element)`, `fireEvent.change(input, { target: { value: "texto" } })`.
 - **`@testing-library/user-event`** quando a interação é uma sequência real de usuário (digitar caractere a caractere, `tab`, `hover`) — ele dispara a cadeia de eventos que o navegador dispararia, e por isso pega bug que o `fireEvent` não pega.
 
 > **Versão instalada: `@testing-library/user-event` v14.** A API é **assíncrona e baseada em instância**: crie `const user = userEvent.setup()` dentro do `it` e use `await user.click(element)`, `await user.type(input, "texto")`. Sem o `await`, a asserção seguinte roda antes do efeito da interação (teste flaky ou falso verde). Chamar `userEvent.click(...)` direto, sem `setup()`, é a forma antiga e não deve ser usada.
 
-## 9. Erros comuns
+## 10. Erros comuns
 
 | Sintoma | Causa |
 | --- | --- |
@@ -242,7 +331,10 @@ Ordem de preferência: **`getByRole` com `name`** > `getByLabelText` / `getByTex
 | `document is not defined` | `environment: "jsdom"` fora do bloco `test` do `vite.config.ts` |
 | `Found multiple elements with the role ...` | render anterior não foi desmontado: alguém removeu o `afterEach(cleanup)` do `src/setupTests.ts` (item 4) |
 | `describe is not defined` / `vi is not defined` | falta o `import` de `vitest` — não há `globals: true` |
-| asserção logo após `user.click(...)` falha de forma intermitente, ou passa sem o efeito acontecer | a interação da v14 é assíncrona e faltou o `await` (item 8) |
+| teste de tela não acha o texto em português, mas acha o texto em inglês | o `beforeEach` do `src/setupTests.ts` sumiu ou trocou o `"pt-BR"` pelo fallback `en`, e o idioma veio do navegador do `jsdom` (`en-US`) (item 4) |
+| teste passa sozinho e falha na suíte, com o idioma ou a URL de outro teste | um teste stubou `?lng=` ou o `navigator` e não restaurou no `afterEach` (item 7) |
+| o texto renderizado é a própria chave (`heading`, `meta.title`) | chave sem valor, ou namespace não registrado em `src/i18n/resources.ts`: o i18next devolve a chave quando não acha tradução (item 7) |
+| asserção logo após `user.click(...)` falha de forma intermitente, ou passa sem o efeito acontecer | a interação da v14 é assíncrona e faltou o `await` (item 9) |
 
 **Teste que passaria com o setup desligado não prova nada.** `expect(element).toBeTruthy()` é verdadeiro para qualquer objeto, inclusive um nó fora do documento; prefira um matcher do `jest-dom` (`toBeInTheDocument`, `toHaveTextContent`, `toBeDisabled`) que afirma algo sobre o DOM. Vale o mesmo teste de sanidade de sempre: quebre a asserção de propósito uma vez e confirme que ela fica vermelha.
 
@@ -254,6 +346,9 @@ Ordem de preferência: **`getByRole` com `name`** > `getByLabelText` / `getByTex
 - [ ] Query por `getByRole` com `name` sempre que possível; `getByTestId` só como último recurso
 - [ ] Router em memória em volta do que depende de rota (`createMemoryRouter(routes, ...)` + `RouterProvider`), não o `Router` default
 - [ ] Nenhum `afterEach(cleanup)` local — o `src/setupTests.ts` já faz isso em toda suíte
+- [ ] Texto afirmado em `pt-BR`, nunca a chave; outro idioma só com `await setLanguage(...)` dentro do `it`
+- [ ] Nenhum mock de `react-i18next` e nenhum wrapper/provider de i18n no render
+- [ ] URL (`pushState`) e stubs de `navigator` restaurados no `afterEach` de quem os alterou
 - [ ] `user-event` na API v14 (`setup()` e `await`)
 - [ ] Sem comentário no código; nome de identificador em inglês, descrição do `it` em português
 - [ ] `npm test -- --run` passa, e a contagem de arquivos cresceu com o arquivo novo
