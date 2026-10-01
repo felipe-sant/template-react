@@ -1,5 +1,5 @@
 import SUPPORTED_LANGUAGES from "@/i18n/supportedLanguages"
-import type { SupportedLanguage } from "@/types/language.types"
+import type SupportedLanguage from "@/types/language/SupportedLanguage.types"
 
 const LANGUAGE_BY_PRIMARY_SUBTAG = new Map<string, SupportedLanguage>([
     ["pt", "pt-BR"],

@@ -1,4 +1,4 @@
-import type { SupportedLanguage } from "@/types/language.types"
+import type SupportedLanguage from "@/types/language/SupportedLanguage.types"
 
 const FALLBACK_LANGUAGE: SupportedLanguage = "en"
 
