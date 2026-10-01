@@ -441,11 +441,13 @@ novo, então repetir via hook no momento do push seria redundante.
   `sdd` (só planeja, escreve `spec.md`/`tasks.md` em `.docs/`, nunca toca em `src/`), `executor`
   (implementa um `tasks.md` já aprovado, em branch dedicada, com commits atômicos) e `reviewer`
   (audita o resultado contra este arquivo, somente leitura).
-- `.claude/skills/` — conhecimento carregável sob demanda. São três, separadas pela pasta do
+- `.claude/skills/` — conhecimento carregável sob demanda. São cinco, separadas pela pasta do
   artefato: `react-page-scaffold` (página em `src/pages/` + CSS Module + registro de rota),
   `react-component-scaffold` (componente reutilizável em `src/components/` + CSS Module em
-  `src/styles/components/`) e `vitest-specialist` (teste em `test/` por diretório com Vitest + Testing
-  Library, `src/setupTests.ts` e o bloco `test` do `vite.config.ts`).
+  `src/styles/components/`), `vitest-specialist` (teste em `test/` por diretório com Vitest +
+  Testing Library, `src/setupTests.ts` e o bloco `test` do `vite.config.ts`),
+  `redux-store-scaffold` (slice em `src/store/slices/` + registro no `rootReducer` + hooks tipados)
+  e `rtk-query-endpoint-scaffold` (endpoints em `src/store/api/` via `api.injectEndpoints`).
 - `.docs/` — specs por feature/bug (`.docs/features/<slug>/`, `.docs/bugs/<slug>/`), a partir de
   `.docs/_template/`. As pastas de spec são gitignored: planejamento local, fora do histórico.
   O estado vive no campo `**Status:**` do `spec.md` (`rascunho` → `em-revisao` → `aprovada` →
