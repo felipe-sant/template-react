@@ -42,8 +42,10 @@ describe("i18n", () => {
         expect(localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBeNull()
     })
 
-    it("mantém a escolha salva acima do idioma do navegador", async () => {
-        saveLanguage("en")
+    it("mantém a escolha feita por setLanguage acima do idioma do navegador", async () => {
+        await loadPage({ browserLanguages: ["en"] })
+        const { default: setLanguage } = await import("@/i18n/setLanguage")
+        await setLanguage("en")
 
         const i18n = await loadPage({ browserLanguages: ["es"] })
 
