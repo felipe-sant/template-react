@@ -429,7 +429,7 @@ e depois `prettier --write` nos arquivos `.ts`/`.tsx` staged, e aplica só `pret
 bloqueando o commit quando sobrar um erro de lint que o `oxlint` não sabe corrigir sozinho. O
 `.editorconfig` na raiz complementa isso para editores compatíveis: padroniza charset, final de
 linha, quebra de linha final, remoção de espaço em branco à direita e indentação (4 espaços em
-todos os tipos, como no `.prettierrc`, exceto `package-lock.json`, que o npm mantém em 2) antes mesmo
+todos os tipos, como no `.prettierrc`, exceto `package.json` e `package-lock.json`, que ficam em 2 para o npm não regravar o lockfile) antes mesmo
 de o Prettier rodar.
 
 O stylelint foi avaliado e recusado: a superfície de CSS é pequena, o `stylelint-config-standard`
