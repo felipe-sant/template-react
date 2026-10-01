@@ -36,7 +36,7 @@ quando precisar, seguindo as convenções abaixo.
    template (ou clone este repositório, se preferir).
 2. Instale as dependências: `npm install`.
 3. Renomeie o projeto: o campo `name` em `package.json`, o `<title>` e o `<meta
-   name="description">` em `index.html`, o heading `# Novo projeto` deste `README.md` e, junto
+name="description">` em `index.html`, o heading `# Novo projeto` deste `README.md` e, junto
    com o `name` do `package.json`, o valor de `LANGUAGE_STORAGE_KEY` em
    `src/i18n/languageStorageKey.ts` (`"template-react:language"` → `"<nome-do-projeto>:language"`).
 4. Suba o dev server (`npm run dev`) e confirme em `http://localhost:5173`.
@@ -47,10 +47,10 @@ quando precisar, seguindo as convenções abaixo.
 
 ## Documentação
 
-| Pasta | O que é |
-| --- | --- |
+| Pasta                     | O que é                                                                                                                                  |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | [`docs/`](docs/README.md) | Documentação versionada só deste frontend: arquitetura, decisões, diagramas e telas. O conteúdo atual é um exemplo fictício a substituir |
-| `.specs/` | Planejamento local (`spec.md` e `tasks.md` por feature ou bug), gitignored |
+| `.specs/`                 | Planejamento local (`spec.md` e `tasks.md` por feature ou bug), gitignored                                                               |
 
 `docs/` cobre apenas este frontend. O sistema inteiro fica no repositório pai, que reúne backend e frontend como submódulos, e o contrato da API fica no backend. O índice completo está em [`docs/README.md`](docs/README.md).
 
@@ -60,20 +60,20 @@ Cada pasta tem um papel definido, uma convenção de nome de arquivo e um tipo d
 Siga essa tabela ao adicionar código novo. As pastas que ainda não têm arquivo (`components/`,
 `hooks/`, `utils/`, `pages/hooks/`) são criadas no primeiro uso.
 
-| Pasta | Guarda | Nome do arquivo | Export |
-| --- | --- | --- | --- |
-| `components/` | Componentes de UI reutilizáveis, sem rota própria. | `<Nome>.tsx` (PascalCase, sem sufixo) | `export default` no final do arquivo |
-| `layouts/` | Estruturas de página compartilhadas (header/footer ao redor de `<Outlet />`). | `<Nome>.layout.tsx` | `export default` no final do arquivo |
-| `pages/` | Telas ligadas a uma rota. | `<Nome>.page.tsx` | `export default` no final do arquivo |
-| `routers/` | Registro das rotas da aplicação e módulos auxiliares de roteamento. | `Router.tsx`, `routes.tsx`, `paths.ts` | `export default` no final do arquivo |
-| `hooks/` | Hooks React reutilizáveis. | `use<Nome>.ts` | `export default` no final do arquivo |
-| `services/` | Acesso a dado externo (HTTP e afins). | `<nome>/<verbo>.ts` (camelCase) | `export default` no final do arquivo |
-| `types/` | Tipos compartilhados entre vários arquivos. | `<dominio>/<NomeDoTipo>.types.ts` / `<nome>.d.ts` | `export default` no final do arquivo (`.d.ts`: ver abaixo) |
-| `store/` | Estado global: `api.ts` (RTK Query), `rootReducer.ts`, `createStore.ts`, `store.ts`, hooks tipados, `slices/<nome>.slice.ts` e `api/<dominio>.api.ts`. | `<nome>.ts`, `<nome>.slice.ts`, `<dominio>.api.ts` | `export default` no final do arquivo |
-| `utils/` | Funções puras e auxiliares. | `<nome>.ts` (camelCase) | `export default` no final do arquivo |
-| `styles/` | `global.css` (custom properties + reset) e CSS Modules por pasta. | `<nome>.module.css` (camelCase) | — |
-| `i18n/` | Configuração da internacionalização: instância do i18next, constantes de idioma e a API `getLanguage`/`setLanguage`. | `<nome>.ts` (camelCase), `i18n.ts` para a instância | `export default` no final do arquivo |
-| `locales/` | Traduções: uma pasta por idioma, um JSON por namespace. | `<idioma>/<namespace>.json` (ex.: `pt-BR/home.json`) | — |
+| Pasta         | Guarda                                                                                                                                                 | Nome do arquivo                                      | Export                                                     |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- | ---------------------------------------------------------- |
+| `components/` | Componentes de UI reutilizáveis, sem rota própria.                                                                                                     | `<Nome>.tsx` (PascalCase, sem sufixo)                | `export default` no final do arquivo                       |
+| `layouts/`    | Estruturas de página compartilhadas (header/footer ao redor de `<Outlet />`).                                                                          | `<Nome>.layout.tsx`                                  | `export default` no final do arquivo                       |
+| `pages/`      | Telas ligadas a uma rota.                                                                                                                              | `<Nome>.page.tsx`                                    | `export default` no final do arquivo                       |
+| `routers/`    | Registro das rotas da aplicação e módulos auxiliares de roteamento.                                                                                    | `Router.tsx`, `routes.tsx`, `paths.ts`               | `export default` no final do arquivo                       |
+| `hooks/`      | Hooks React reutilizáveis.                                                                                                                             | `use<Nome>.ts`                                       | `export default` no final do arquivo                       |
+| `services/`   | Acesso a dado externo (HTTP e afins).                                                                                                                  | `<nome>/<verbo>.ts` (camelCase)                      | `export default` no final do arquivo                       |
+| `types/`      | Tipos compartilhados entre vários arquivos.                                                                                                            | `<dominio>/<NomeDoTipo>.types.ts` / `<nome>.d.ts`    | `export default` no final do arquivo (`.d.ts`: ver abaixo) |
+| `store/`      | Estado global: `api.ts` (RTK Query), `rootReducer.ts`, `createStore.ts`, `store.ts`, hooks tipados, `slices/<nome>.slice.ts` e `api/<dominio>.api.ts`. | `<nome>.ts`, `<nome>.slice.ts`, `<dominio>.api.ts`   | `export default` no final do arquivo                       |
+| `utils/`      | Funções puras e auxiliares.                                                                                                                            | `<nome>.ts` (camelCase)                              | `export default` no final do arquivo                       |
+| `styles/`     | `global.css` (custom properties + reset) e CSS Modules por pasta.                                                                                      | `<nome>.module.css` (camelCase)                      | —                                                          |
+| `i18n/`       | Configuração da internacionalização: instância do i18next, constantes de idioma e a API `getLanguage`/`setLanguage`.                                   | `<nome>.ts` (camelCase), `i18n.ts` para a instância  | `export default` no final do arquivo                       |
+| `locales/`    | Traduções: uma pasta por idioma, um JSON por namespace.                                                                                                | `<idioma>/<namespace>.json` (ex.: `pt-BR/home.json`) | —                                                          |
 
 ### Imports internos
 
@@ -304,11 +304,7 @@ interface LanguageOptionProps {
 
 function LanguageOption({ language, isActive }: LanguageOptionProps) {
     return (
-        <button
-            type="button"
-            aria-pressed={isActive}
-            onClick={() => void setLanguage(language)}
-        >
+        <button type="button" aria-pressed={isActive} onClick={() => void setLanguage(language)}>
             {language}
         </button>
     )

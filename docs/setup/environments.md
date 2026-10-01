@@ -4,18 +4,18 @@
 
 ## Ambientes
 
-| Ambiente | Para que serve | Como subir |
-| --- | --- | --- |
-| Local | Desenvolvimento no computador | `npm run dev` e abrir `http://localhost:5173` |
-| Homologação | Validação antes de publicar | Build com as variáveis de homologação, publicado pelo pipeline |
-| Produção | Usuários finais | Build com as variáveis de produção, publicado pelo pipeline |
+| Ambiente    | Para que serve                | Como subir                                                     |
+| ----------- | ----------------------------- | -------------------------------------------------------------- |
+| Local       | Desenvolvimento no computador | `npm run dev` e abrir `http://localhost:5173`                  |
+| Homologação | Validação antes de publicar   | Build com as variáveis de homologação, publicado pelo pipeline |
+| Produção    | Usuários finais               | Build com as variáveis de produção, publicado pelo pipeline    |
 
 ## Variáveis
 
 A fonte das variáveis é o `.env.example` da raiz. Só variáveis com prefixo `VITE_` chegam ao código do cliente, lidas com `import.meta.env.VITE_ALGO`.
 
-| Variável | Local | Homologação | Produção |
-| --- | --- | --- | --- |
+| Variável       | Local                   | Homologação                       | Produção                  |
+| -------------- | ----------------------- | --------------------------------- | ------------------------- |
 | `VITE_API_URL` | `http://localhost:3000` | `https://api.staging.example.com` | `https://api.example.com` |
 
 ## Segredos

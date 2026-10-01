@@ -9,11 +9,11 @@ description: Como criar um componente reutilizável neste template React, seguin
 
 Um componente é composto por **duas peças que precisam existir juntas** — mais o teste, que é obrigatório e está na terceira linha da tabela. O estilo **não** fica ao lado do componente; o teste fica em `src/components/test/`.
 
-| Peça | Caminho | Se faltar |
-| --- | --- | --- |
-| Componente | `src/components/<Nome>.tsx` (PascalCase, **sem sufixo** de papel) | — |
-| Estilo | `src/styles/components/<nome>.module.css` (camelCase) | `css.<classe>` vira `undefined`, o elemento renderiza sem `class` e sem erro nenhum |
-| Teste | `src/components/test/<Nome>.test.tsx` | o `reviewer` bloqueia a revisão — a falta de teste é reprovação incondicional |
+| Peça       | Caminho                                                           | Se faltar                                                                           |
+| ---------- | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| Componente | `src/components/<Nome>.tsx` (PascalCase, **sem sufixo** de papel) | —                                                                                   |
+| Estilo     | `src/styles/components/<nome>.module.css` (camelCase)             | `css.<classe>` vira `undefined`, o elemento renderiza sem `class` e sem erro nenhum |
+| Teste      | `src/components/test/<Nome>.test.tsx`                             | o `reviewer` bloqueia a revisão — a falta de teste é reprovação incondicional       |
 
 O template não traz componente pronto: `src/components/` é criada ao escrever o primeiro, e os trechos abaixo, com um `SaveButton` hipotético, ilustram o formato esperado das três peças.
 

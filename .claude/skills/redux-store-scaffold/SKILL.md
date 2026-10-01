@@ -9,11 +9,11 @@ Estado de cliente compartilhado entre telas vive num **slice** em `src/store/sli
 
 A infraestrutura já existe: `src/store/rootReducer.ts` (com `api.reducer`), `src/store/createStore.ts`, `src/store/store.ts`, `useAppDispatch`, `useAppSelector` e o `Provider` em `src/App.tsx`.
 
-| Peça | Caminho | Se faltar |
-| --- | --- | --- |
-| Slice | `src/store/slices/<nome>.slice.ts` | — |
-| Registro | entrada em `src/store/rootReducer.ts` | o slice existe mas `state.<nome>` não existe; o tipo `RootState` não o enxerga |
-| Teste | `src/store/slices/test/<nome>.slice.test.ts` | o `reviewer` bloqueia a revisão |
+| Peça     | Caminho                                      | Se faltar                                                                      |
+| -------- | -------------------------------------------- | ------------------------------------------------------------------------------ |
+| Slice    | `src/store/slices/<nome>.slice.ts`           | —                                                                              |
+| Registro | entrada em `src/store/rootReducer.ts`        | o slice existe mas `state.<nome>` não existe; o tipo `RootState` não o enxerga |
+| Teste    | `src/store/slices/test/<nome>.slice.test.ts` | o `reviewer` bloqueia a revisão                                                |
 
 ## Passo a passo
 

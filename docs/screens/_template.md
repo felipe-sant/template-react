@@ -12,12 +12,12 @@ Que problema do usuário esta tela resolve?
 
 O que a pessoa vê em cada situação?
 
-| Estado | O que aparece |
-| --- | --- |
-| Carregando | `<indicador e o que fica oculto>` |
-| Vazio | `<mensagem e ação sugerida>` |
-| Erro | `<mensagem, causa provável e como tentar de novo>` |
-| Sucesso | `<conteúdo principal>` |
+| Estado     | O que aparece                                      |
+| ---------- | -------------------------------------------------- |
+| Carregando | `<indicador e o que fica oculto>`                  |
+| Vazio      | `<mensagem e ação sugerida>`                       |
+| Erro       | `<mensagem, causa provável e como tentar de novo>` |
+| Sucesso    | `<conteúdo principal>`                             |
 
 ## Validações
 
