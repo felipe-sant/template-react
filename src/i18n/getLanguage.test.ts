@@ -1,10 +1,6 @@
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 import getLanguage from "@/i18n/getLanguage"
 import i18n from "@/i18n/i18n"
-
-afterEach(async () => {
-    await i18n.changeLanguage("pt-BR")
-})
 
 describe("getLanguage", () => {
     it.each(["pt-BR", "en", "es"] as const)(

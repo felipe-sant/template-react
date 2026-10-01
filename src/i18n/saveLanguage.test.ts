@@ -7,7 +7,5 @@ describe("saveLanguage", () => {
         saveLanguage("es")
 
         expect(localStorage.getItem(LANGUAGE_STORAGE_KEY)).toBe("es")
-
-        localStorage.removeItem(LANGUAGE_STORAGE_KEY)
     })
 })

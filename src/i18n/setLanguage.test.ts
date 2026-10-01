@@ -1,12 +1,7 @@
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 import i18n from "@/i18n/i18n"
 import LANGUAGE_STORAGE_KEY from "@/i18n/languageStorageKey"
 import setLanguage from "@/i18n/setLanguage"
-
-afterEach(async () => {
-    localStorage.removeItem(LANGUAGE_STORAGE_KEY)
-    await i18n.changeLanguage("pt-BR")
-})
 
 describe("setLanguage", () => {
     it("troca o texto devolvido por t()", async () => {
