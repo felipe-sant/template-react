@@ -462,6 +462,24 @@ gerando os formatos `text`, `json`, `json-summary` e `html` em `coverage/` (fora
 versão) e exigindo um mínimo de 80% em statements, branches, functions e lines (bloco
 `test.coverage` em `vite.config.ts`) — abaixo disso o comando falha.
 
+O bloco `test` usa `pool: "vmThreads"`: o Vitest cria o ambiente `jsdom` uma vez por worker e
+isola cada arquivo de teste num contexto de VM, em vez de criar um `jsdom` por arquivo. Medido
+nesta máquina (8 núcleos, Node 24, Vitest 5, 19 arquivos e 100 testes), média de 5 execuções
+com a primeira descartada:
+
+| Configuração        | `npm test -- --run` | Ganho | Resultado                                                              |
+| ------------------- | ------------------- | ----- | ---------------------------------------------------------------------- |
+| padrão (`forks`)    | 11,06 s             | -     | verde                                                                  |
+| `pool: "vmThreads"` | 3,88 s              | 65%   | verde, 3 execuções com `--sequence.shuffle` verdes, cobertura igual    |
+| `isolate: false`    | 4,05 s              | 63%   | falhou uma vez em 3 execuções com `--sequence.shuffle` (`get.test.ts`) |
+
+Adotou-se `vmThreads` porque passou em todas as checagens e preserva o isolamento por arquivo;
+`isolate: false` ficou de fora por depender da ordem de execução. O custo do `vmThreads` é
+memória (pico de cerca de 1,4 GB no `test:cov` contra cerca de 225 MB no padrão, na medição). Teste que
+usa `vi.stubGlobal` ou `vi.stubEnv` continua restaurando no `afterEach` com
+`vi.unstubAllGlobals()` e `vi.unstubAllEnvs()`, e `vi.resetModules()` segue valendo para recarregar
+um módulo dentro do arquivo.
+
 ### CI
 
 `.github/workflows/ci.yml` roda em todo push para `main` e em todo Pull Request, com três jobs:

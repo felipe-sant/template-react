@@ -79,6 +79,13 @@ Ficam sem teste `src/index.tsx`, que só chama `createRoot` num `#root` que não
 e lines — abaixo disso o comando termina com erro. `exclude` cobre os arquivos sem runtime
 relevante já citados acima, mais `vite.config.ts`, `src/setupTests.ts` e o glob `src/types/**`.
 
+O bloco `test` usa `pool: "vmThreads"` (o `jsdom` é criado uma vez por worker e cada arquivo roda
+num contexto de VM isolado). Média de 5 execuções, primeira descartada: 11,06 s no padrão, 3,88 s
+com `vmThreads` (-65%) e 4,05 s com `isolate: false` (-63%, mas falhou sob `--sequence.shuffle` e
+foi descartado); cobertura idêntica nas três. O custo é memória (cerca de 1,4 GB de pico no
+`test:cov` contra cerca de 225 MB). Teste que stuba com `vi.stubGlobal`/`vi.stubEnv` restaura no
+`afterEach` com `vi.unstubAllGlobals()`/`vi.unstubAllEnvs()`.
+
 `.github/workflows/ci.yml` roda em push para `main` e em todo Pull Request, com três jobs:
 `build` (`npm run build`) e `lint` (`npm run lint`) sempre completos, e `test`, cujo escopo
 depende do contexto — suíte completa + `npm run test:cov` (com o threshold de 80% acima) quando o

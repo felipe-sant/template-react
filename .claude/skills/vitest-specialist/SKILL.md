@@ -12,9 +12,12 @@ O stack é Vitest + `@testing-library/react` em ambiente `jsdom`, configurado no
 ```ts
 test: {
     environment: "jsdom",
+    pool: "vmThreads",
     setupFiles: ["./src/setupTests.ts"]
 }
 ```
+
+O `pool: "vmThreads"` reaproveita o `jsdom` por worker mantendo um contexto de VM por arquivo; mesmo assim, teste que usa `vi.stubGlobal` ou `vi.stubEnv` restaura no `afterEach` com `vi.unstubAllGlobals()` e `vi.unstubAllEnvs()`.
 
 Não há `globals: true` e não há `passWithNoTests` — as duas ausências têm consequência prática, abaixo.
 
