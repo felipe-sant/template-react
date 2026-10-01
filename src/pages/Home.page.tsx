@@ -1,26 +1,35 @@
+import { Trans, useTranslation } from "react-i18next"
 import css from "@/styles/pages/home.module.css"
 
 function HomePage() {
+    const { t } = useTranslation("home")
+
     return (
         <>
-            <title>Título da Página</title>
-            <meta name="description" content="Minha descrição personalizada." />
+            <title>{t("meta.title")}</title>
+            <meta name="description" content={t("meta.description")} />
             <main className={css.main}>
-                <h1>Hello World!</h1>
+                <h1>{t("heading")}</h1>
                 <section className={css.showcase}>
-                    <p className={css.label}>Rótulo de exemplo</p>
+                    <p className={css.label}>{t("showcase.label")}</p>
                     <p className={css.description}>
-                        Este parágrafo de exemplo demonstra a tipografia de corpo e a largura de
-                        leitura confortável dos tokens de design deste template, com um trecho em{" "}
-                        <strong>destaque</strong>.
+                        <Trans
+                            t={t}
+                            i18nKey="showcase.description"
+                            components={{ strong: <strong /> }}
+                        />
                     </p>
-                    <p className={css.caption}>
-                        Legenda de exemplo em texto secundário, para conteúdo complementar.
-                    </p>
+                    <p className={css.caption}>{t("showcase.caption")}</p>
                     <div className={css.chips}>
-                        <span className={`${css.chip} ${css.chipSuccess}`}>Sucesso</span>
-                        <span className={`${css.chip} ${css.chipWarning}`}>Aviso</span>
-                        <span className={`${css.chip} ${css.chipError}`}>Erro</span>
+                        <span className={`${css.chip} ${css.chipSuccess}`}>
+                            {t("showcase.status.success")}
+                        </span>
+                        <span className={`${css.chip} ${css.chipWarning}`}>
+                            {t("showcase.status.warning")}
+                        </span>
+                        <span className={`${css.chip} ${css.chipError}`}>
+                            {t("showcase.status.error")}
+                        </span>
                     </div>
                 </section>
             </main>

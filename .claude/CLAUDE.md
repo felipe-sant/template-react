@@ -9,9 +9,17 @@ Ainda está em construção e **não** está estruturado de forma definitiva. A 
 React App (`react-scripts`) para **Vite** já foi feita: o toolchain de dev server, build e teste
 é Vite + Vitest.
 
-Os textos de UI e o conteúdo de documentação (`README.md`, specs, mensagens de commit, descrição
-de PR) estão em **português**. Mantenha esse padrão. **Identificadores no código são em inglês** —
-ver "Estilo de código".
+O conteúdo de documentação (`README.md`, specs, mensagens de commit, descrição de PR) está em
+**português**. Mantenha esse padrão. **Identificadores no código são em inglês** — ver "Estilo de
+código".
+
+Texto de UI não é escrito no código: é referenciado por chave de tradução (`t("heading")`,
+`<Trans>`), e o valor de cada idioma fica em `src/locales/<idioma>/` (i18next + react-i18next,
+ver "Arquitetura"). Os idiomas suportados são `pt-BR`, `en` e `es`. **`pt-BR` é a língua de
+referência**: texto novo nasce primeiro em `src/locales/pt-BR/`, os JSON de `pt-BR` são a fonte
+do tipo das chaves e os testes de tela afirmam o texto em português. **O fallback de runtime é
+`en`**, o que o usuário vê quando nenhuma fonte de detecção dá um idioma suportado. As duas coisas
+são independentes.
 
 ## Comandos
 
@@ -36,6 +44,15 @@ sufixo `.spec.tsx`. Use `.test.ts` (sem `x`) para o que não renderiza JSX — h
 `src/setupTests.ts`, registrado em `test.setupFiles` do `vite.config.ts` — é ele que importa
 `@testing-library/jest-dom/vitest` (registrando matchers como `toBeInTheDocument()`) e que roda
 `afterEach(cleanup)`, porque sem `globals: true` o Testing Library não liga o cleanup sozinho.
+O mesmo setup roda um `beforeEach` que remove `LANGUAGE_STORAGE_KEY` do `localStorage` e aguarda
+`i18n.changeLanguage("pt-BR")` direto na instância: todo teste começa sem escolha salva e na
+língua de referência, independente do navegador do `jsdom` (que reporta `en-US`). O literal é
+`"pt-BR"`, não `FALLBACK_LANGUAGE`, e o reset não grava nada por causa do `caches: []`. Teste de
+tela afirma o texto em português, nunca a chave (o i18next devolve a própria chave quando falta
+tradução), não mocka `react-i18next` e troca de idioma com `setLanguage` dentro do `it`. Para
+simular uma nova carga de página (detecção do zero e persistência do `?lng=`), prepare URL,
+`navigator` e `localStorage`, rode `vi.resetModules()` e faça `await import("@/i18n/i18n")`,
+como em `src/i18n/i18n.test.ts`; restaure URL e stubs no fim.
 Os testes existentes servem de modelo para os formatos que o template já tem: render direto da
 página (`Home.page.test.tsx`), árvore de rotas em `createMemoryRouter` para verificar a rota `*`
 (`Router.test.tsx`), módulo com `fetch` stubado via `vi.stubGlobal` (`http.service.test.ts`) e
@@ -77,9 +94,55 @@ editores compatíveis, coerente com o `.prettierrc` já existente.
 
 Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` → `src/routers/Router.tsx` → páginas.
 
-- **`App.tsx`** renderiza o `Router` e importa o `global.css`. Metadados (`<title>`, `<meta>`) são
+- **`App.tsx`** renderiza o `Router` e importa, por efeito colateral, `@/i18n/i18n` (que
+  inicializa a instância do i18next) e o `global.css`; `@/i18n/i18n` está no `allow` de
+  `import/no-unassigned-import` no `.oxlintrc.json`. Metadados (`<title>`, `<meta>`) são
   declarados por cada página com as tags nativas do React 19, que sobem sozinhas para o `<head>`
-  (ver `NotFound.page.tsx`), sem biblioteca nem wrapper.
+  (ver `NotFound.page.tsx`), sem biblioteca nem wrapper, e com valor vindo de chave:
+  `<title>{t("meta.title")}</title>` e
+  `<meta name="description" content={t("meta.description")} />`.
+- **`src/i18n/`** — configuração de idioma (i18next 26, react-i18next 17,
+  i18next-browser-languagedetector 8), um símbolo público por arquivo com `export default`.
+  `i18n.ts` cria a instância com `createInstance()` (import nomeado de `i18next`; `i18next.use(...)`
+  no export default cai em `import/no-named-as-default-member`), registra `LanguageDetector` e
+  `initReactI18next` — que torna a instância global, sem provider nem wrapper de render — e inicia
+  de forma síncrona (`initAsync: false`) com `resources` (`resources.ts`), `defaultNS: "common"`,
+  `supportedLngs: SUPPORTED_LANGUAGES` (`supportedLanguages.ts`) e
+  `fallbackLng: FALLBACK_LANGUAGE` (`fallbackLanguage.ts`, valor `en`). Não existe constante de
+  "idioma padrão" nem de língua de referência: `pt-BR` é referência pelo tipo de `resources.ts`,
+  não pelo runtime. A detecção segue `["querystring", "localStorage", "navigator"]`, com
+  `?lng=` e `LANGUAGE_STORAGE_KEY` (`languageStorageKey.ts`, `"template-react:language"`), e
+  `convertDetectedLanguage` passa todo código por `resolveSupportedLanguage`
+  (`resolveSupportedLanguage.ts`: código exato, ou `es-*` → `es`, `en-*` → `en`, `pt`/`pt-*` →
+  `pt-BR`, ou `undefined`). A ordem efetiva é escolha salva (por `setLanguage` ou por um `?lng=`
+  válido) → idioma do navegador → `en`; navegador em `fr` abre em `en`.
+  - **`caches: []`: o detector nunca grava**, para que quem não escolheu idioma acompanhe o
+    idioma do navegador a cada carga.
+  - **`saveLanguage` é o único código que escreve em `LANGUAGE_STORAGE_KEY`**, interno à pasta,
+    chamado só por `setLanguage` e por `i18n.ts` logo depois do `init()`, quando a URL tem `?lng=`
+    suportado. `i18n.ts` não importa `setLanguage`, para não criar ciclo.
+  - **API de idioma:** `getLanguage(): SupportedLanguage` (idioma ativo, função comum, usável fora
+    de React) e `setLanguage(language): Promise<void>` (troca e salva a escolha). Componente e
+    página usam só essas duas, nunca `saveLanguage` nem `localStorage` direto.
+  - Um listener de `languageChanged`, registrado antes do `init()`, mantém
+    `document.documentElement.lang` sincronizado com o idioma ativo. O `lang="pt-BR"` do
+    `index.html` descreve o conteúdo estático daquele arquivo e é corrigido assim que o JS roda.
+  - `SupportedLanguage` vem de `src/types/language.types.ts`, derivado de `SUPPORTED_LANGUAGES`.
+    `src/types/i18next.d.ts` augmenta `CustomTypeOptions` com `defaultNS: "common"` e os recursos
+    de `pt-BR`: chave inexistente em `t()` é erro de compilação, e `en`/`es` são tipados como
+    `typeof` de `pt-BR` em `resources.ts`, então namespace ou chave faltando também não compila.
+- **`src/locales/`** — tradução é dado, separado da configuração em `src/i18n/`:
+  `src/locales/<idioma>/<namespace>.json`, JSON com 2 espaços, os mesmos namespaces e chaves nos
+  três idiomas. Um namespace por dono do texto, com o nome do CSS Module correspondente (`home`,
+  `notFound`, `error`, `mainLayout`); `common` guarda texto compartilhado (`backHome`, `loading`)
+  e texto fixo de componente de `src/components/`. Chave em inglês, lowerCamelCase, hierárquica por
+  papel (`meta.title`, `meta.description`, `heading`, `showcase.status.success`). Página com
+  namespace próprio chama `useTranslation("home")`; quem também usa chave de `common` carrega os
+  dois, `useTranslation(["notFound", "common"])`, e chama `t("common:backHome")`, senão a chave não
+  tipa. Texto com marcação no meio usa `<Trans>` com `t={t}`, `i18nKey` e
+  `components={{ strong: <strong /> }}`, com o `<strong>` escrito no próprio valor do JSON.
+  Namespace novo entra nos três idiomas, em `src/i18n/resources.ts` e no `ns` de
+  `src/i18n/i18n.ts`.
 - **`src/routers/Router.tsx`** — ponto único de registro de rotas. Exporta `routes`
   (`RouteObject[]`, com `MainLayout` como rota-pai e as páginas como filhas, os paths vindos de
   `ROUTES` em `src/routers/paths.ts`) e o `Router` (export default), que cria o data router com
@@ -107,9 +170,10 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   }
 
   function ProductListPage() {
+      const { t } = useTranslation()
       const { products, isLoading } = useProductList()
 
-      return isLoading ? <p>Carregando...</p> : <ProductTable products={products} />
+      return isLoading ? <p>{t("loading")}</p> : <ProductTable products={products} />
   }
   ```
 
@@ -147,10 +211,18 @@ e a entrada da aplicação é o `index.html` da raiz, que carrega `/src/index.ts
 atributo, interface/tipo, hook, arquivo e classe de CSS Module — tudo em inglês, sem mistura
 (`name`/`active`, nunca `nome`/`ativo`; `isLoading`, nunca `estaCarregando`).
 
-O que **continua em português** é o texto que o usuário lê: conteúdo de JSX, `label`, `placeholder`,
-`<title>`/`<meta>` de página, mensagem de `Error` e string literal de UI em geral. A regra separa
-a linguagem do código da linguagem do produto — `<SaveButton label="Salvar alterações" />` está correto:
-`SaveButton` e `label` em inglês, o texto visível em português.
+**Chave de tradução também é identificador**, em inglês. O texto que o usuário lê (conteúdo de
+JSX, `label`, `placeholder`, `alt`, `aria-label`, `<title>`/`<meta>` de página) não fica no código:
+vem de chave, por `t()` ou `<Trans>`, com o valor de cada idioma em `src/locales/` — escrito
+primeiro em `pt-BR` e presente em `pt-BR`, `en` e `es`. A regra separa a linguagem do código da
+linguagem do produto — `<SaveButton label={t("profile.saveChanges")} />` está correto:
+`SaveButton`, `label` e a chave `profile.saveChanges` em inglês, o texto visível em cada idioma no
+JSON correspondente.
+
+Duas exceções ao "texto vem de chave". Mensagem de `Error` lançada no código do cliente
+(`http.service.ts`, `src/index.tsx`) é literal em português, como diagnóstico. Mensagem de erro
+de API vem traduzida pelo backend, que recebe o idioma ativo (`getLanguage()`) via
+`Accept-Language` (#63). A descrição de `describe`/`it` nos testes é escrita em português.
 
 **Não escreva comentários no código.** Um bom código se explica sozinho: se um trecho só fica
 compreensível com um comentário, o problema é o trecho — renomeie a variável/função, extraia uma
@@ -191,6 +263,14 @@ Verificado automaticamente pelo oxlint:
   independente da categoria de severidade configurada.
 - Import interno usar o alias `@/` em vez de `../` → regra `import/no-relative-parent-imports`,
   ligada individualmente como `error` pelo mesmo motivo das demais regras pontuais desta lista.
+- Texto de UI literal em vez de chave de tradução → regra `react/jsx-no-literals`, ligada como
+  `error` com `noStrings: true`, `ignoreProps: true` e `restrictedAttributes` com `title`, `alt`,
+  `placeholder`, `aria-label`, `aria-description`, `label` e `content`. Acusa texto solto como
+  filho (`<p>Olá</p>`), string ou template literal em expressão como filho (`<p>{"Olá"}</p>`) e
+  string literal nos atributos listados (`alt="Foto"`, `content="Texto"`). `ignoreProps: true`
+  deixa passar prop que não é texto de UI (`type="button"`, `name="description"`,
+  `i18nKey="..."`, template literal de `className`). Um bloco `overrides` desliga a regra em
+  `**/*.test.ts` e `**/*.test.tsx`, onde texto literal é a asserção.
 
 Continua sendo revisão manual do `reviewer` (o oxlint não cobre):
 
@@ -200,6 +280,9 @@ Continua sendo revisão manual do `reviewer` (o oxlint não cobre):
   design, não mecânica.
 - Ausência de comentários no código — não existe regra de lint que proíba comentários.
 - Identificadores em inglês — não existe regra de lint que verifique o idioma de um identificador.
+- Texto de UI entre chaves num atributo da lista de `restrictedAttributes` (`title={"Dica"}`) — o
+  único formato de texto literal que `react/jsx-no-literals` com `ignoreProps: true` não acusa.
+  `alt={""}` de imagem decorativa não é texto de UI e não deve ser apontado.
 - Subpath import quando o pacote publica (`lodash/debounce` em vez de `lodash`) — não existe
   regra no oxlint para essa convenção.
 - `.map()` que renderiza JSX com corpo de mais de 3 linhas deve ser extraído para um componente
