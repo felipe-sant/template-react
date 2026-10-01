@@ -12,7 +12,7 @@ Toda página deste template é composta por **quatro peças que precisam existir
 | Componente | `src/pages/<Nome>.page.tsx` | — |
 | Estilo | `src/styles/pages/<nome>.module.css` | `css.<classe>` vira `undefined`, elemento renderiza sem estilo |
 | Namespace de tradução | `src/locales/{pt-BR,en,es}/<nome>.json` + registro em `src/i18n/resources.ts` e `src/i18n/i18n.ts` | `t("<chave>")` não compila; chave ausente em `en`/`es` também quebra o `npm run typecheck` |
-| Rota | entrada em `src/routers/Router.tsx` | a página existe mas é inalcançável; a URL cai no `NotFound` |
+| Rota | entrada em `src/routers/routes.tsx` | a página existe mas é inalcançável; a URL cai no `NotFound` |
 
 `Home.page.tsx` e `NotFound.page.tsx` são as páginas-base já no repositório e servem de modelo para as quatro peças. O projeto que usa o template substitui o conteúdo delas pelo seu.
 
