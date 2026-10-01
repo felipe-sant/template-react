@@ -54,11 +54,11 @@ Siga essa tabela ao adicionar código novo. As pastas que ainda não têm arquiv
 | `components/` | Componentes de UI reutilizáveis, sem rota própria. | `<Nome>.tsx` (PascalCase, sem sufixo) | `export default` no final do arquivo |
 | `layouts/` | Estruturas de página compartilhadas (header/footer ao redor de `<Outlet />`). | `<Nome>.layout.tsx` | `export default` no final do arquivo |
 | `pages/` | Telas ligadas a uma rota. | `<Nome>.page.tsx` | `export default` no final do arquivo |
-| `routers/` | Registro das rotas da aplicação e módulos auxiliares de roteamento. | `Router.tsx` (`export default`); `paths.ts` (export nomeado) | ver coluna anterior |
-| `hooks/` | Hooks React reutilizáveis. | `use<Nome>.ts` | export **nomeado** |
-| `services/` | Acesso a dado externo (HTTP e afins). | `<nome>.service.ts` | export **nomeado** |
-| `types/` | Tipos compartilhados entre vários arquivos. | `<nome>.types.ts` / `<nome>.d.ts` | ver abaixo |
-| `utils/` | Funções puras e auxiliares. | `<nome>.ts` (camelCase) | export **nomeado** |
+| `routers/` | Registro das rotas da aplicação e módulos auxiliares de roteamento. | `Router.tsx`, `routes.tsx`, `paths.ts` | `export default` no final do arquivo |
+| `hooks/` | Hooks React reutilizáveis. | `use<Nome>.ts` | `export default` no final do arquivo |
+| `services/` | Acesso a dado externo (HTTP e afins). | `<nome>/<verbo>.ts` (camelCase) | `export default` no final do arquivo |
+| `types/` | Tipos compartilhados entre vários arquivos. | `<dominio>/<NomeDoTipo>.types.ts` / `<nome>.d.ts` | `export default` no final do arquivo (`.d.ts`: ver abaixo) |
+| `utils/` | Funções puras e auxiliares. | `<nome>.ts` (camelCase) | `export default` no final do arquivo |
 | `styles/` | `global.css` (custom properties + reset) e CSS Modules por pasta. | `<nome>.module.css` (camelCase) | — |
 | `i18n/` | Configuração da internacionalização: instância do i18next, constantes de idioma e a API `getLanguage`/`setLanguage`. | `<nome>.ts` (camelCase), `i18n.ts` para a instância | `export default` no final do arquivo |
 | `locales/` | Traduções: uma pasta por idioma, um JSON por namespace. | `<idioma>/<namespace>.json` (ex.: `pt-BR/home.json`) | — |
@@ -109,13 +109,19 @@ nome já é o próprio papel ficam isentos: `src/App.tsx`, `src/index.tsx` e `sr
 
 ### `types/`: `*.types.ts` vs. `*.d.ts`
 
-- `<nome>.types.ts` — tipos de domínio com **export nomeado**, importados explicitamente por
-  outros arquivos (ex.: `product.types.ts`).
+- `<dominio>/<NomeDoTipo>.types.ts` — um tipo exportado por arquivo, nomeado pelo tipo, com
+  `export default` no final e importado com `import type` (ex.:
+  `import type SupportedLanguage from "@/types/language/SupportedLanguage.types"`). O domínio é
+  a área do código dona do tipo, em lowerCamelCase (`language`, `store`).
 - `<nome>.d.ts` — declaração de ambiente/global, **nunca importada**: o TypeScript a carrega
   sozinho por estar dentro de `src/` (ex.: `declarations.d.ts`, que tipa `*.module.css`).
 
-Props de um componente específico (ex.: `SaveButtonProps`) ficam no próprio arquivo do componente,
-não em `types/`.
+Tipo não exportado fica local ao arquivo que o usa, sem `export`: `<Nome>Props` de um componente
+(ex.: `SaveButtonProps`), `<Nome>State`, retorno de hook de página e tipos de request/response de
+um endpoint. Se outro arquivo precisar do tipo, ele sobe para `src/types/` em arquivo próprio.
+
+A regra geral vale para todo o `src/`: export sempre no final do arquivo, nunca inline, e um
+símbolo exportado por arquivo (valor ou tipo), sempre com `export default`. Só `*.d.ts` fica fora.
 
 ## Variáveis de ambiente
 
@@ -170,7 +176,7 @@ src/
   compilação. Chave sobrando não é pega pelo tipo, só por `src/i18n/test/resources.test.ts`, que também
   barra valor vazio.
 - A tipagem das chaves vem de `src/types/i18next.d.ts` (augmentação de `CustomTypeOptions`) e o
-  tipo `SupportedLanguage` de `src/types/language.types.ts`.
+  tipo `SupportedLanguage` de `src/types/language/SupportedLanguage.types.ts`.
 
 Na página, o namespace entra no `useTranslation`; quando ela também usa texto de `common`, os dois
 são declarados e a chave de `common` leva o prefixo:
@@ -251,7 +257,7 @@ assina a troca de idioma: envolvida em `memo`, ficaria com o estado antigo.
 
 ```tsx
 import setLanguage from "@/i18n/setLanguage"
-import type { SupportedLanguage } from "@/types/language.types"
+import type SupportedLanguage from "@/types/language/SupportedLanguage.types"
 
 interface LanguageOptionProps {
     language: SupportedLanguage

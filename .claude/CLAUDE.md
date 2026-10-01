@@ -129,7 +129,7 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   - Um listener de `languageChanged`, registrado antes do `init()`, mantém
     `document.documentElement.lang` sincronizado com o idioma ativo. O `lang="pt-BR"` do
     `index.html` descreve o conteúdo estático daquele arquivo e é corrigido assim que o JS roda.
-  - `SupportedLanguage` vem de `src/types/language.types.ts`, derivado de `SUPPORTED_LANGUAGES`.
+  - `SupportedLanguage` vem de `src/types/language/SupportedLanguage.types.ts`, derivado de `SUPPORTED_LANGUAGES`.
     `src/types/i18next.d.ts` augmenta `CustomTypeOptions` com `defaultNS: "common"` e os recursos
     de `pt-BR`: chave inexistente em `t()` é erro de compilação, e `en`/`es` são tipados como
     `typeof` de `pt-BR` em `resources.ts`, então namespace ou chave faltando também não compila.
@@ -145,12 +145,12 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   `components={{ strong: <strong /> }}`, com o `<strong>` escrito no próprio valor do JSON.
   Namespace novo entra nos três idiomas, em `src/i18n/resources.ts` e no `ns` de
   `src/i18n/i18n.ts`.
-- **`src/routers/Router.tsx`** — ponto único de registro de rotas. Exporta `routes`
-  (`RouteObject[]`, com `MainLayout` como rota-pai e as páginas como filhas, os paths vindos de
-  `ROUTES` em `src/routers/paths.ts`) e o `Router` (export default), que cria o data router com
-  `createBrowserRouter(routes)` e renderiza um `RouterProvider`. A rota `*` cai em `NotFound` e
-  fica por último. Toda página nova entra aqui. O teste renderiza `routes` com
-  `createMemoryRouter(routes, { initialEntries })` e `RouterProvider`.
+- **`src/routers/`** — ponto único de registro de rotas. `routes.tsx` tem `routes`
+  (`RouteObject[]`, export default, com `MainLayout` como rota-pai e as páginas como filhas, os
+  paths vindos de `ROUTES` em `paths.ts`) e `Router.tsx` tem o `Router` (export default), que cria
+  o data router com `createBrowserRouter(routes)` e renderiza um `RouterProvider`. A rota `*` cai
+  em `NotFound` e fica por último. Toda página nova entra em `routes.tsx`. O teste renderiza
+  `routes` com `createMemoryRouter(routes, { initialEntries })` e `RouterProvider`.
   As rotas-filhas de `MainLayout` são `lazy` e o único `<Suspense>` fica em volta do `<Outlet />`
   de `src/layouts/Main.layout.tsx`: página nova não precisa (nem deve) ter o próprio `<Suspense>`.
 - **`src/pages/`** — convenção de nome `Nome.page.tsx`, componente `function NomePage()` com
@@ -225,6 +225,24 @@ Duas exceções ao "texto vem de chave". Mensagem de `Error` lançada no código
 (`http.service.ts`, `src/index.tsx`) é literal em português, como diagnóstico. Mensagem de erro
 de API vem traduzida pelo backend, que recebe o idioma ativo (`getLanguage()`) via
 `Accept-Language` (#63). A descrição de `describe`/`it` nos testes é escrita em português.
+
+**Export no final e um símbolo exportado por arquivo.** Cinco regras:
+
+1. **Export sempre no final do arquivo**, nunca inline (`export function`, `export const`,
+   `export default function`, `export type`, `export interface`).
+2. **Um arquivo, um símbolo exportado**, seja valor (função, componente, hook, constante) ou tipo,
+   sempre com `export default`. Arquivo que precisa exportar dois símbolos vira dois arquivos.
+3. **Tipo exportado vive em `src/types/`, em arquivo próprio, nomeado pelo tipo**:
+   `src/types/<dominio>/<NomeDoTipo>.types.ts` (PascalCase, igual ao tipo), com `export default`
+   do tipo no final, importado com `import type <NomeDoTipo> from "@/types/<dominio>/<NomeDoTipo>.types"`.
+   O domínio é a área do código dona do tipo, em lowerCamelCase (`language`, `store`), e a pasta
+   nasce no primeiro tipo que precisar dela.
+4. **Tipo não exportado fica no arquivo que o usa**, declarado sem `export`: `<Nome>Props` de um
+   componente, `<Nome>State` e o retorno de um hook de página, tipos de request/response de um
+   endpoint. Se outro arquivo precisar importar o tipo, ele deixa de ser local e vai para
+   `src/types/` (regra 3). Não há exceção para "tipo que acompanha o valor".
+5. **Fora da regra:** declaração de ambiente (`*.d.ts`: `declarations.d.ts`, `i18next.d.ts`,
+   `vite-env.d.ts`), que não exporta símbolo próprio, mas augmenta/declara módulos e globais.
 
 **Não escreva comentários no código.** Um bom código se explica sozinho: se um trecho só fica
 compreensível com um comentário, o problema é o trecho — renomeie a variável/função, extraia uma
