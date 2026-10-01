@@ -112,7 +112,7 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   ```
 
   Isso é distinto de `src/hooks/`, que é reservado a hooks reutilizáveis entre páginas e
-  componentes, não específicos de uma única página (por exemplo, um `useToggle` ou `useAuth`).
+  componentes, não específicos de uma única página (por exemplo, um `useDebounce` ou `useMediaQuery`).
   Nenhuma das duas pastas existe ainda: `src/pages/hooks/` e `src/hooks/` são criadas no primeiro uso.
 - **`src/styles/`** — `global.css` guarda os CSS custom properties (escala de cinza `--g1-color`
   … `--g10-color`, `--sans-font`) e o reset. Estilos de página ficam em

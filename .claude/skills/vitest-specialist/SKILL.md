@@ -41,11 +41,12 @@ Rodar `npm test` puro dentro de um agente trava a sessão até o timeout: o proc
 | Arquivo testado | Arquivo de teste |
 | --- | --- |
 | `src/pages/Home.page.tsx` | `src/pages/Home.page.test.tsx` |
-| `src/components/Button.tsx` | `src/components/Button.test.tsx` |
+| `src/services/http.service.ts` | `src/services/http.service.test.ts` |
 | `src/routers/Router.tsx` | `src/routers/Router.test.tsx` |
-| `src/hooks/useToggle.ts` | `src/hooks/useToggle.test.ts` |
+| `src/components/SaveButton.tsx` | `src/components/SaveButton.test.tsx` |
+| `src/hooks/useCounter.ts` | `src/hooks/useCounter.test.ts` |
 
-As três primeiras linhas existem no repositório; a última é só a regra aplicada — `useToggle.ts` ainda não tem teste.
+As três primeiras linhas existem no repositório; as duas últimas são só a regra aplicada a arquivos hipotéticos.
 
 Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service. `.test.tsx` só quando o arquivo tem JSX dentro.
 
@@ -98,27 +99,27 @@ Import interno com `@/`, nunca `../`. O nome do `describe` é o identificador te
 
 ### Mais de um `render` no mesmo arquivo
 
-Não precisa de nada: o `afterEach(cleanup)` do `src/setupTests.ts` desmonta o DOM entre um `it` e o seguinte, em toda suíte. `src/components/Button.test.tsx` tem dois `render` e nenhum boilerplate de limpeza:
+Não precisa de nada: o `afterEach(cleanup)` do `src/setupTests.ts` desmonta o DOM entre um `it` e o seguinte, em toda suíte. Um teste com dois `render` não precisa de boilerplate de limpeza:
 
 ```tsx
 import { describe, expect, it, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import Button from "@/components/Button"
+import SaveButton from "@/components/SaveButton"
 
-describe("Button", () => {
+describe("SaveButton", () => {
     it("renderiza o label recebido", () => {
-        render(<Button label="Botão de exemplo" />)
+        render(<SaveButton label="Salvar alterações" />)
 
-        expect(screen.getByRole("button", { name: "Botão de exemplo" })).toBeInTheDocument()
+        expect(screen.getByRole("button", { name: "Salvar alterações" })).toBeInTheDocument()
     })
 
     it("dispara o onClick ao ser clicado", async () => {
         const user = userEvent.setup()
         const onClick = vi.fn()
-        render(<Button label="Botão de exemplo" onClick={onClick} />)
+        render(<SaveButton label="Salvar alterações" onClick={onClick} />)
 
-        await user.click(screen.getByRole("button", { name: "Botão de exemplo" }))
+        await user.click(screen.getByRole("button", { name: "Salvar alterações" }))
 
         expect(onClick).toHaveBeenCalledTimes(1)
     })
@@ -126,6 +127,64 @@ describe("Button", () => {
 ```
 
 Isso só funciona por causa da linha no setup — ver item 4.
+
+### Hook com `renderHook`
+
+Hook não renderiza JSX, então o arquivo é `.test.ts`. `renderHook` roda o hook dentro de um componente descartável, e `act` envolve a chamada que muda estado:
+
+```ts
+import { describe, expect, it } from "vitest"
+import { act, renderHook } from "@testing-library/react"
+import { useCounter } from "@/hooks/useCounter"
+
+describe("useCounter", () => {
+    it("incrementa o valor a cada chamada", () => {
+        const { result } = renderHook(() => useCounter(0))
+
+        act(() => result.current.increment())
+
+        expect(result.current.value).toBe(1)
+    })
+})
+```
+
+### Função pura
+
+Sem render e sem `setup`: chame a função e afirme o retorno, com um `it` por regra.
+
+```ts
+import { describe, expect, it } from "vitest"
+import { formatPrice } from "@/utils/formatPrice"
+
+describe("formatPrice", () => {
+    it("formata o valor em reais", () => {
+        expect(formatPrice(10)).toBe("R$ 10,00")
+    })
+})
+```
+
+### Módulo que chama `fetch`
+
+Troque o `fetch` global por um `vi.fn()` com `vi.stubGlobal` e desfaça o stub depois de cada teste, para ele não vazar para o seguinte. `src/services/http.service.test.ts` segue este formato:
+
+```ts
+import { afterEach, describe, expect, it, vi } from "vitest"
+import { get } from "@/services/http.service"
+
+afterEach(() => {
+    vi.unstubAllGlobals()
+})
+
+describe("get", () => {
+    it("devolve o corpo da resposta em JSON", async () => {
+        const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ id: "1" }) })
+        vi.stubGlobal("fetch", fetchMock)
+
+        await expect(get<{ id: string }>("/api/items")).resolves.toEqual({ id: "1" })
+        expect(fetchMock).toHaveBeenCalledTimes(1)
+    })
+})
+```
 
 ## 6. Testar algo que depende de rota
 

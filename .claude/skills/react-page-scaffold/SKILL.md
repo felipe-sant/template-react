@@ -13,7 +13,7 @@ Toda página deste template é composta por **três peças que precisam existir 
 | Estilo | `src/styles/pages/<nome>.module.css` | `css.<classe>` vira `undefined`, elemento renderiza sem estilo |
 | Rota | entrada em `src/routers/Router.tsx` | a página existe mas é inalcançável; a URL cai no `NotFound` |
 
-`Home.page.tsx` e `NotFound.page.tsx` são os exemplos de referência já no repositório. Como todo exemplo de template, existem para serem copiados e depois substituídos pelas páginas reais do projeto — não são peça permanente da aplicação.
+`Home.page.tsx` e `NotFound.page.tsx` são as páginas-base já no repositório e servem de modelo para as três peças. O projeto que usa o template substitui o conteúdo delas pelo seu.
 
 Há uma quarta peça, mas **condicional**: se a página tiver lógica de estado/efeito (fetch, `useState`, `useEffect`), essa lógica vai para um hook dedicado em `src/pages/hooks/use<Nome>.ts` — ver passo 2. Página só apresentacional, como `Home.page.tsx` e `NotFound.page.tsx`, não tem essa peça.
 
@@ -47,11 +47,10 @@ exportando `use<Nome>()`. O `.page.tsx` só chama o hook e renderiza o retorno �
 `useState`/`useEffect` nem chamada a service dentro do componente.
 
 Isso é diferente de `src/hooks/`, reservado a hooks reutilizáveis entre páginas e componentes
-(`useToggle`, `useAuth`). `src/pages/hooks/` é para lógica específica de uma única página, que não
+(um `useDebounce` ou um `useMediaQuery`, por exemplo; a pasta é criada no primeiro uso). `src/pages/hooks/` é para lógica específica de uma única página, que não
 faz sentido reaproveitar em outro lugar.
 
-`src/pages/hooks/useExampleList.ts` é o exemplo real já no repositório, consumido por
-`src/pages/ExampleList.page.tsx`. Versão simplificada da mesma ideia:
+Exemplo com carregamento, erro e sucesso (a pasta `src/pages/hooks/` também é criada no primeiro uso):
 
 ```ts
 import { useEffect, useState } from "react"
@@ -66,7 +65,7 @@ export function useExample(): ExampleState {
     const [state, setState] = useState<ExampleState>({ status: "loading" })
 
     useEffect(() => {
-        get<string[]>("/mock/example.json")
+        get<string[]>(`${import.meta.env.VITE_API_URL}/items`)
             .then((items) => setState({ status: "success", items }))
             .catch((error: unknown) => {
                 const message = error instanceof Error ? error.message : "Erro ao carregar."

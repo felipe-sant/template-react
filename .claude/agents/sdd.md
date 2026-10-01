@@ -17,7 +17,7 @@ tools: Read, Grep, Glob, Write, Bash
 
 ## Convenções deste repositório
 
-Siga o `CLAUDE.md` do projeto. Este é um **template** React + TypeScript em construção: o objetivo de quase toda mudança aqui é servir a quem vai clonar o repositório, não a um produto final. Uma spec que adiciona uma peça de exemplo deve deixar explícito que ela é exemplo (e portanto descartável por quem usar o template), como o `CLAUDE.md` já faz.
+Siga o `CLAUDE.md` do projeto. Este é um **template** React + TypeScript em construção: o objetivo de quase toda mudança aqui é servir a quem vai clonar o repositório, não a um produto final. O template não carrega peças de exemplo descartáveis: o que a spec adiciona é base real e precisa se justificar como tal, com a convenção explicada no próprio `CLAUDE.md` ou na skill correspondente, não por apontar para um arquivo-modelo.
 
 Ao descrever tarefas/critérios de aceite que envolvam código, considere estas convenções como vigentes:
 
