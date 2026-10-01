@@ -7,9 +7,13 @@ function ThrowingPage(): never {
     throw new Error("Falha proposital de teste")
 }
 
-function renderErrorPage() {
+function ThrowingNonErrorPage(): never {
+    throw "falha que não é um Error"
+}
+
+function renderErrorPage(Page: () => never = ThrowingPage) {
     const router = createMemoryRouter(
-        [{ path: "/", element: <ThrowingPage />, errorElement: <ErrorPage /> }],
+        [{ path: "/", element: <Page />, errorElement: <ErrorPage /> }],
         { initialEntries: ["/"] }
     )
 
@@ -24,6 +28,12 @@ describe("ErrorPage", () => {
             screen.getByRole("heading", { name: "Ocorreu um erro inesperado." })
         ).toBeInTheDocument()
         expect(screen.getByText("Falha proposital de teste")).toBeInTheDocument()
+    })
+
+    it("mostra a mensagem genérica quando o valor lançado não é um Error", () => {
+        renderErrorPage(ThrowingNonErrorPage)
+
+        expect(screen.getByText("Erro desconhecido.")).toBeInTheDocument()
     })
 
     it("oferece um link de volta para a página inicial", () => {
