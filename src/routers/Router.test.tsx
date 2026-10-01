@@ -27,7 +27,9 @@ describe("routes", () => {
     it("renderiza a página de NotFound em uma rota inexistente", async () => {
         renderRoutes(["/rota-que-nao-existe"])
 
-        expect(await screen.findByRole("heading", { name: "404 - Not Found" })).toBeInTheDocument()
+        expect(
+            await screen.findByRole("heading", { name: "404 - Página não encontrada" })
+        ).toBeInTheDocument()
     })
 
     it("navega da NotFound para a Home ao clicar no link, sem full reload", async () => {

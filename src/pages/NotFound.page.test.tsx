@@ -11,7 +11,9 @@ describe("NotFoundPage", () => {
             </MemoryRouter>
         )
 
-        expect(screen.getByRole("heading", { name: "404 - Not Found" })).toBeInTheDocument()
+        expect(
+            screen.getByRole("heading", { name: "404 - Página não encontrada" })
+        ).toBeInTheDocument()
     })
 
     it("oferece um link de volta para a página inicial", () => {
@@ -34,9 +36,9 @@ describe("NotFoundPage", () => {
             </MemoryRouter>
         )
 
-        expect(screen.getByRole("heading", { name: "404 - Not Found" })).not.toHaveAttribute(
-            "class"
-        )
+        expect(
+            screen.getByRole("heading", { name: "404 - Página não encontrada" })
+        ).not.toHaveAttribute("class")
     })
 
     it("define o title e a meta description da página", () => {

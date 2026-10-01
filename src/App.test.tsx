@@ -24,7 +24,9 @@ describe("App", () => {
 
         render(<App />)
 
-        expect(await screen.findByRole("heading", { name: "404 - Not Found" })).toBeInTheDocument()
+        expect(
+            await screen.findByRole("heading", { name: "404 - Página não encontrada" })
+        ).toBeInTheDocument()
         expect(document.title).toBe("Página não encontrada.")
         expect(document.querySelector('meta[name="description"]')?.getAttribute("content")).toBe(
             "A página não existe ou você não possui acesso."
