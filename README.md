@@ -337,11 +337,11 @@ use uma chave por idioma.
 
 ### Mensagens de `Error`
 
-Mensagem de `Error` lançada no código do cliente (`src/services/http.service.ts`, `src/index.tsx`)
+Mensagem de `Error` lançada no código do cliente (`src/services/http/parseResponse.ts`, `src/index.tsx`)
 **não é traduzida**: continua literal, em português, como diagnóstico. O erro que chega ao usuário
 vindo de uma API deve vir traduzido pelo backend — para isso, a
 [#63](https://github.com/felipe-sant/template-react/issues/63) passa a enviar o header
-`Accept-Language` com `getLanguage()` em toda requisição do `http.service`. A convenção fica:
+`Accept-Language` com `getLanguage()` em toda requisição de `get`/`post` em `src/services/http/`. A convenção fica:
 texto que a UI mostra vem de chave; mensagem de `Error` lançada no cliente é literal em português;
 mensagem de erro de API vem traduzida pelo backend.
 
@@ -413,7 +413,7 @@ Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service.
 
 Cada formato tem seu jeito: página renderizada direto, árvore de rotas sob um router em memória,
 componente com interação (`user-event`), hook com `renderHook`, função pura e módulo com `fetch`
-stubado via `vi.stubGlobal` (como em `src/services/test/http.service.test.ts`). A skill
+stubado via `vi.stubGlobal` (como em `src/services/http/test/get.test.ts`). A skill
 `vitest-specialist` em `.claude/skills/` traz um trecho de cada um.
 
 `npm run test:cov` roda a suíte inteira com relatório de cobertura (`@vitest/coverage-v8`),

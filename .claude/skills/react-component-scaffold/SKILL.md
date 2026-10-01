@@ -46,9 +46,9 @@ Import interno sempre com o alias `@/`, nunca subindo de pasta com `../`.
 
 O `SaveButton` não chama `t()`: o `label` muda a cada uso, então chega por prop **já traduzido** por quem renderiza o componente (ver "Consumindo o componente"). Texto fixo do componente, que é igual em todo uso, é o caso da seção 5.
 
-### 2. Props — interface `<Nome>Props` no próprio arquivo
+### 2. Props — interface `<Nome>Props` local e sem `export`
 
-A interface de props fica **no arquivo do componente**, não em `src/types/`. `src/types/<nome>.types.ts` é para tipo compartilhado entre vários arquivos; props de um componente específico não são isso, e movê-las para lá só adiciona um import e um lugar a mais para desatualizar. A regra vem da #10 e está no `README.md`.
+A interface de props fica **no arquivo do componente, sem `export`**: tipo não exportado é local por padrão. Só se outro arquivo precisar importar o tipo ele deixa de ser local e vai para `src/types/<dominio>/<Nome>Props.types.ts`, em arquivo próprio com `export default` no final. Mover props para `src/types/` sem necessidade só adiciona um import e um lugar a mais para desatualizar. A regra está no `CLAUDE.md` e no `README.md`.
 
 - Prop opcional com `?` (`onClick?: () => void`), e o valor padrão no destructuring quando fizer sentido.
 - `strict` está ativo: nada de `any` explícito nem de cast para calar o compilador. Se o tipo for difícil, use `unknown` com checagem.
@@ -81,7 +81,7 @@ export default Example
 
 Quando a terceira prop booleana aparecer (`isCompact`, `hasBorder`, `withIcon`) e as combinações começarem a se excluir, o sinal é para expor um slot (`children`, ou uma prop de nó) em vez de somar mais um booleano.
 
-Componente cuida de **renderização e interação**. Ele não busca dado nem guarda regra de negócio: acesso a dado externo vai para `src/services/` (como `src/services/http.service.ts`) e lógica reutilizável vira hook em `src/hooks/` (um `useDebounce`, por exemplo). Um componente que faz `fetch` direto não dá erro de compilação — dá trabalho de teste e de reuso.
+Componente cuida de **renderização e interação**. Ele não busca dado nem guarda regra de negócio: acesso a dado externo vai para `src/services/` (como `src/services/http/get.ts`) e lógica reutilizável vira hook em `src/hooks/` (um `useDebounce`, por exemplo). Um componente que faz `fetch` direto não dá erro de compilação — dá trabalho de teste e de reuso.
 
 ### 4. Estilo — `src/styles/components/<nome>.module.css`
 
@@ -183,7 +183,8 @@ Componente com texto fixo (seção 5) não pede nada de quem consome: `<CloseBut
 ## Checklist
 
 - [ ] `src/components/<Nome>.tsx` criado, PascalCase e sem sufixo, com `export default` no final
-- [ ] Interface `<Nome>Props` no próprio arquivo do componente, sem `any`
+- [ ] Interface `<Nome>Props` no próprio arquivo do componente, sem `export` e sem `any`
+- [ ] Um único símbolo exportado (`export default` no final); tipo exportado só em `src/types/<dominio>/<Nome>.types.ts`
 - [ ] Nome de prop e chave de tradução em inglês
 - [ ] Texto que varia por uso chega por prop, já traduzido por quem chama com `t()`
 - [ ] Texto fixo do componente via `t("<componente>.<papel>")` (namespace `common`), com o valor em `src/locales/pt-BR/common.json`, `en/common.json` e `es/common.json`

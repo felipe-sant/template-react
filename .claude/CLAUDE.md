@@ -42,7 +42,7 @@ O teste fica em **`test/` dentro do diretório do arquivo testado**:
 sufixo `.spec.tsx`. O arquivo testado é importado pelo alias `@/` (`import HomePage from
 "@/pages/Home.page"`), nunca por `../`; `vi.mock`, `vi.doMock` e `import()` dinâmico também usam
 alias. Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service
-(`src/services/test/http.service.test.ts`). O ambiente é `jsdom` e o setup é
+(`src/services/http/test/get.test.ts`). O ambiente é `jsdom` e o setup é
 `src/setupTests.ts`, registrado em `test.setupFiles` do `vite.config.ts` — é ele que importa
 `@testing-library/jest-dom/vitest` (registrando matchers como `toBeInTheDocument()`) e que roda
 `afterEach(cleanup)`, porque sem `globals: true` o Testing Library não liga o cleanup sozinho.
@@ -57,7 +57,7 @@ simular uma nova carga de página (detecção do zero e persistência do `?lng=`
 como em `src/i18n/test/i18n.test.ts`; restaure URL e stubs no fim.
 Os testes existentes servem de modelo para os formatos que o template já tem: render direto da
 página (`src/pages/test/Home.page.test.tsx`), árvore de rotas em `createMemoryRouter` para verificar a rota `*`
-(`src/routers/test/Router.test.tsx`), módulo com `fetch` stubado via `vi.stubGlobal` (`src/services/test/http.service.test.ts`) e
+(`src/routers/test/Router.test.tsx`), módulo com `fetch` stubado via `vi.stubGlobal` (`src/services/http/test/get.test.ts`) e
 layout com `<Outlet />` preenchido por rota-filha (`src/layouts/test/Main.layout.test.tsx`). Componente com
 interação, hook com `renderHook` e função pura não têm teste-modelo no repositório: a skill
 `vitest-specialist` traz um trecho de cada formato.
@@ -222,7 +222,7 @@ linguagem do produto — `<SaveButton label={t("profile.saveChanges")} />` está
 JSON correspondente.
 
 Duas exceções ao "texto vem de chave". Mensagem de `Error` lançada no código do cliente
-(`http.service.ts`, `src/index.tsx`) é literal em português, como diagnóstico. Mensagem de erro
+(`src/services/http/parseResponse.ts`, `src/index.tsx`) é literal em português, como diagnóstico. Mensagem de erro
 de API vem traduzida pelo backend, que recebe o idioma ativo (`getLanguage()`) via
 `Accept-Language` (#63). A descrição de `describe`/`it` nos testes é escrita em português.
 

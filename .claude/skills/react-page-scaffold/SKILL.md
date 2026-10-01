@@ -77,29 +77,31 @@ Exemplo com carregamento, erro e sucesso (a pasta `src/pages/hooks/` também é 
 
 ```ts
 import { useEffect, useState } from "react"
-import { get } from "@/services/http.service"
+import get from "@/services/http/get"
 
 type ItemsState =
     | { status: "loading" }
     | { status: "error" }
     | { status: "success"; items: string[] }
 
-export function useItems(): ItemsState {
+function useItems(): ItemsState {
     const [state, setState] = useState<ItemsState>({ status: "loading" })
 
     useEffect(() => {
-        get<string[]>(`${import.meta.env.VITE_API_URL}/items`)
+        get<string[]>("/items")
             .then((items) => setState({ status: "success", items }))
             .catch(() => setState({ status: "error" }))
     }, [])
 
     return state
 }
+
+export default useItems
 ```
 
 ```tsx
 import { useTranslation } from "react-i18next"
-import { useItems } from "@/pages/hooks/useItems"
+import useItems from "@/pages/hooks/useItems"
 
 function AboutPage() {
     const { t } = useTranslation(["about", "common"])
@@ -180,20 +182,24 @@ O namespace tem o mesmo nome do CSS Module da página (`about.module.css` → `a
 
 `en` e `es` são tipados como `typeof ptBR`: namespace ou chave que existe em `pt-BR` e falta em `en`/`es` quebra o `npm run typecheck`. Chave sobrando em `en`/`es` não é pega pelo tipo, só por `src/i18n/test/resources.test.ts`.
 
-### 5. Rota — `src/routers/paths.ts` e `src/routers/Router.tsx`
+### 5. Rota — `src/routers/paths.ts` e `src/routers/routes.tsx`
 
-Adicione o path em `ROUTES` (`src/routers/paths.ts`) e registre a página como filha do `MainLayout` em `routes` (`RouteObject[]`, em `src/routers/Router.tsx`). A página é importada com `lazy` — o único `<Suspense>` já fica no `MainLayout`, em volta do `<Outlet />` — e a rota `*` (NotFound) tem que continuar sendo a **última**:
+Adicione o path em `ROUTES` (`src/routers/paths.ts`) e registre a página como filha do `MainLayout` em `routes` (`RouteObject[]`, em `src/routers/routes.tsx`). A página é importada com `lazy` — o único `<Suspense>` já fica no `MainLayout`, em volta do `<Outlet />` — e a rota `*` (NotFound) tem que continuar sendo a **última**:
 
 ```tsx
-export const ROUTES = {
+const ROUTES = {
     home: "/",
     about: "/about",
     notFound: "*"
 } as const
 
+export default ROUTES
+```
+
+```tsx
 const About = lazy(() => import("@/pages/About.page"))
 
-export const routes: RouteObject[] = [
+const routes: RouteObject[] = [
     {
         element: <MainLayout />,
         errorElement: <ErrorPage />,
@@ -204,6 +210,8 @@ export const routes: RouteObject[] = [
         ]
     }
 ]
+
+export default routes
 ```
 
 ### 6. Metadados da página (quando necessário)
@@ -220,13 +228,21 @@ Cada página declara os próprios `<title>` e `<meta>` direto no JSX, com as tag
 </>
 ```
 
+## Regra de export
+
+- Export sempre no final do arquivo, nunca inline (`export function`, `export const`, `export type`).
+- Um arquivo, um símbolo exportado, valor ou tipo, sempre com `export default`.
+- Tipo exportado vive em `src/types/<dominio>/<NomeDoTipo>.types.ts`, um por arquivo, importado com `import type <NomeDoTipo> from "@/types/<dominio>/<NomeDoTipo>.types"`.
+- Tipo não exportado fica local ao arquivo, sem `export` (`<Nome>Props`, `<Nome>State`, tipos de request/response); só sobe para `src/types/` se outro arquivo precisar.
+- `*.d.ts` de ambiente fica fora da regra.
+
 ## Navegação entre páginas
 
 Sempre `<Link to="/rota">` ou `useNavigate()` do `react-router-dom`. Nunca `<a href="/rota">` para rota interna: a âncora crua faz reload completo e descarta todo o estado da aplicação (issue #5). `<a href>` só para link externo.
 
 ## Checklist
 
-- [ ] `src/pages/<Nome>.page.tsx` criado, com `export default`
+- [ ] `src/pages/<Nome>.page.tsx` criado, com `export default` no final e sem tipo exportado (`State` do hook local, sem `export`)
 - [ ] Se a página tiver lógica de estado/efeito, ela está em `src/pages/hooks/use<Nome>.ts`
       (exportando `use<Nome>()`) — o `.page.tsx` só chama o hook e renderiza o retorno
 - [ ] `src/styles/pages/<nome>.module.css` criado, e **toda** classe usada como `css.<algo>` existe nele

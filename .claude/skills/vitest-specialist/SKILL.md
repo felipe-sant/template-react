@@ -41,7 +41,7 @@ Rodar `npm test` puro dentro de um agente trava a sessão até o timeout: o proc
 | Arquivo testado | Arquivo de teste |
 | --- | --- |
 | `src/pages/Home.page.tsx` | `src/pages/test/Home.page.test.tsx` |
-| `src/services/http.service.ts` | `src/services/test/http.service.test.ts` |
+| `src/services/http/get.ts` | `src/services/http/test/get.test.ts` |
 | `src/routers/Router.tsx` | `src/routers/test/Router.test.tsx` |
 | `src/components/SaveButton.tsx` | `src/components/test/SaveButton.test.tsx` |
 | `src/hooks/useCounter.ts` | `src/hooks/test/useCounter.test.ts` |
@@ -178,11 +178,11 @@ describe("formatPrice", () => {
 
 ### Módulo que chama `fetch`
 
-Troque o `fetch` global por um `vi.fn()` com `vi.stubGlobal` e desfaça o stub depois de cada teste, para ele não vazar para o seguinte. `src/services/test/http.service.test.ts` segue este formato:
+Troque o `fetch` global por um `vi.fn()` com `vi.stubGlobal` e desfaça o stub depois de cada teste, para ele não vazar para o seguinte. `src/services/http/test/get.test.ts` segue este formato:
 
 ```ts
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { get } from "@/services/http.service"
+import get from "@/services/http/get"
 
 afterEach(() => {
     vi.unstubAllGlobals()
@@ -201,13 +201,13 @@ describe("get", () => {
 
 ## 6. Testar algo que depende de rota
 
-`src/routers/Router.tsx` exporta duas coisas: `routes` (export **nomeado**, um `RouteObject[]`) e `Router` (export **default**, que faz `createBrowserRouter(routes)` e renderiza um `RouterProvider`). No teste você cria o router em memória com **`createMemoryRouter(routes, { initialEntries })`** e o renderiza com `RouterProvider`, como em `src/routers/test/Router.test.tsx`. As páginas são `lazy`, então a primeira asserção usa `findBy*` com `await`:
+`src/routers/routes.tsx` tem `routes` (export default, um `RouteObject[]`) e `src/routers/Router.tsx` tem `Router` (export default, que faz `createBrowserRouter(routes)` e renderiza um `RouterProvider`). No teste você cria o router em memória com **`createMemoryRouter(routes, { initialEntries })`** e o renderiza com `RouterProvider`, como em `src/routers/test/Router.test.tsx`. As páginas são `lazy`, então a primeira asserção usa `findBy*` com `await`:
 
 ```tsx
 import { describe, expect, it } from "vitest"
 import { createMemoryRouter, RouterProvider } from "react-router-dom"
 import { render, screen } from "@testing-library/react"
-import { routes } from "@/routers/Router"
+import routes from "@/routers/routes"
 
 describe("routes", () => {
     it("renderiza a página de NotFound em uma rota inexistente", async () => {
@@ -221,7 +221,7 @@ describe("routes", () => {
 })
 ```
 
-**Fallback do `<Suspense>`:** o `lazy()` guarda o módulo carregado no próprio `Router.tsx`, então depois que qualquer teste do arquivo renderizou a página, o fallback (`Carregando...`) não aparece mais e um teste dele passa ou falha conforme a ordem. O teste do fallback chama `vi.resetModules()` e importa `routes` de novo com `await import("@/routers/Router")`, recebendo um `lazy()` ainda não resolvido — como em `src/routers/test/Router.test.tsx`.
+**Fallback do `<Suspense>`:** o `lazy()` guarda o módulo carregado no próprio `routes.tsx`, então depois que qualquer teste do arquivo renderizou a página, o fallback (`Carregando...`) não aparece mais e um teste dele passa ou falha conforme a ordem. O teste do fallback chama `vi.resetModules()` e importa `routes` de novo com `const { default: freshRoutes } = await import("@/routers/routes")`, recebendo um `lazy()` ainda não resolvido — como em `src/routers/test/Router.test.tsx`.
 
 **Por que não renderizar o `Router` (export default):** ele usa `createBrowserRouter`, que lê a URL real do jsdom (`/`) e não aceita entrada inicial — não há como testar outra rota. O `createMemoryRouter` recebe as mesmas `routes` e deixa escolher a URL de partida.
 
