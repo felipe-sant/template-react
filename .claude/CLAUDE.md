@@ -55,6 +55,14 @@ tradução), não mocka `react-i18next` e troca de idioma com `setLanguage` dent
 simular uma nova carga de página (detecção do zero e persistência do `?lng=`), prepare URL,
 `navigator` e `localStorage`, rode `vi.resetModules()` e faça `await import("@/i18n/i18n")`,
 como em `src/i18n/test/i18n.test.ts`; restaure URL e stubs no fim.
+Teste de componente ou hook que lê a store usa `renderWithStore(ui, { preloadedState })` de
+`src/testUtils/renderWithStore.tsx`, que cria `createStore(preloadedState)` por chamada (estado e
+cache do RTK Query isolados) e devolve o `render` junto da `store`. Como não há endpoint em `src/`,
+o teste injeta um com `api.injectEndpoints`, stuba o `fetch` com `vi.stubGlobal` e define
+`VITE_API_URL` absoluta com `vi.stubEnv` (o `Request` do Node não aceita URL relativa), com
+`vi.resetModules()` e import dinâmico para a constante ser relida; o endpoint injetado persiste
+enquanto o módulo vive, então o nome é único por arquivo (ver `src/store/test/api.test.ts` e
+`src/testUtils/test/renderWithStore.test.tsx`).
 Os testes existentes servem de modelo para os formatos que o template já tem: render direto da
 página (`src/pages/test/Home.page.test.tsx`), árvore de rotas em `createMemoryRouter` para verificar a rota `*`
 (`src/routers/test/Router.test.tsx`), módulo com `fetch` stubado via `vi.stubGlobal` (`src/services/http/test/get.test.ts`) e
@@ -94,9 +102,9 @@ editores compatíveis, coerente com o `.prettierrc` já existente.
 
 ## Arquitetura
 
-Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` → `src/routers/Router.tsx` → páginas.
+Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` (`Provider` da store) → `src/routers/Router.tsx` → páginas.
 
-- **`App.tsx`** renderiza o `Router` e importa, por efeito colateral, `@/i18n/i18n` (que
+- **`App.tsx`** renderiza o `Router` dentro do `<Provider store={store}>` do react-redux e importa, por efeito colateral, `@/i18n/i18n` (que
   inicializa a instância do i18next) e o `global.css`; `@/i18n/i18n` está no `allow` de
   `import/no-unassigned-import` no `.oxlintrc.json`. Metadados (`<title>`, `<meta>`) são
   declarados por cada página com as tags nativas do React 19, que sobem sozinhas para o `<head>`
@@ -153,6 +161,33 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   `routes` com `createMemoryRouter(routes, { initialEntries })` e `RouterProvider`.
   As rotas-filhas de `MainLayout` são `lazy` e o único `<Suspense>` fica em volta do `<Outlet />`
   de `src/layouts/Main.layout.tsx`: página nova não precisa (nem deve) ter o próprio `<Suspense>`.
+- **`src/store/`** — estado global: **Redux Toolkit + react-redux** para estado de cliente e
+  **RTK Query** (`@reduxjs/toolkit/query/react`, sem dependência extra) para estado de servidor.
+  Um símbolo público por arquivo, `export default` no final:
+  - `api.ts`: `createApi` com `reducerPath: "api"`, `baseQuery` com
+    `fetchBaseQuery({ baseUrl: API_URL, prepareHeaders })` (`API_URL` de `@/services/http/apiUrl`,
+    `Accept-Language` com `getLanguage()`), `tagTypes: []` e `endpoints: () => ({})`. Sem endpoint
+    de exemplo: o template não tem chamada de API real. Não importa a store. O RTK Query não usa o
+    `http` como `baseQuery` (o `fetchBaseQuery` já entrega o contrato que ele espera); os dois
+    clientes compartilham `apiUrl.ts` e o idioma.
+  - `api/<dominio>.api.ts`: endpoints de um domínio via `api.injectEndpoints`, com tipos de
+    request/response locais e sem `export`; exporta só a API injetada, e os hooks gerados são
+    consumidos por ela (`<dominio>Api.useGetXQuery`). `tagTypes` é preenchido em `api.ts` quando o
+    projeto precisar de invalidação.
+  - `rootReducer.ts` (`combineReducers` com `[api.reducerPath]: api.reducer`, onde slices entram),
+    `createStore.ts` (`createStore(preloadedState?)`, `configureStore` com `api.middleware`
+    concatenado, store nova a cada chamada) e `store.ts` (a instância da aplicação).
+  - `useAppDispatch.ts` e `useAppSelector.ts`: `useDispatch.withTypes<AppDispatch>()` e
+    `useSelector.withTypes<RootState>()`; código de aplicação usa só esses, com seletor estreito
+    (`useAppSelector((state) => state.x.y)`), nunca o estado inteiro.
+  - `slices/<nome>.slice.ts`: `createSlice`, export default do próprio slice, `<Nome>State` local.
+  - Tipos em `src/types/store/RootState.types.ts` (`ReturnType<typeof rootReducer>`),
+    `AppStore.types.ts` (`ReturnType<typeof createStore>`) e `AppDispatch.types.ts`
+    (`AppStore["dispatch"]`), um por arquivo, importados com `import type`.
+  - O `<Provider store={store}>` fica em `App.tsx`, em volta do `<Router />`. Estado que só uma
+    página usa continua `useState` no hook da página; estado compartilhado vai para um slice;
+    dado do servidor vai para um endpoint do RTK Query. Idioma continua em `src/i18n/`.
+  - Refetch on focus/reconnect (`setupListeners`) segue desligado, o padrão do RTK Query.
 - **`src/pages/`** — convenção de nome `Nome.page.tsx`, componente `function NomePage()` com
   `export default`. Lógica de estado/efeito específica de uma página (`useState`, `useEffect`,
   chamada a service) não fica no componente: vive em `src/pages/hooks/use<Nome>.ts`, exportando
@@ -197,7 +232,7 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   placeholder, sem produto definido, seria pior que não ter manifest — cada projeto derivado
   adiciona isso quando precisar.
 
-Não há camada de estado global configurada. **`src/services/http/`** é o cliente HTTP, um símbolo
+**`src/services/http/`** é o cliente HTTP (fetch cru, usado fora do RTK Query), um símbolo
 por arquivo com `export default`: `apiUrl.ts` (a constante da URL da API, a **única** leitura de
 `import.meta.env.VITE_API_URL` no código, vazia quando a variável não existe, para a URL poder ser
 relativa e funcionar com proxy do Vite), `get.ts` e `post.ts` (`get<T>(path, options?)` e
