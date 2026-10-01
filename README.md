@@ -1,6 +1,12 @@
 # Novo projeto
 
-Template base de frontend em React + TypeScript.
+Template base de frontend em React + TypeScript, ponto de partida para novos projetos.
+
+Ele serve a quem quer começar um frontend já com toolchain, roteamento, testes, lint e convenções
+de código definidos, sem decidir tudo do zero. Traz só a base mínima: uma `Home`, uma `NotFound`,
+uma página de erro, um layout com header e footer e um serviço HTTP genérico. Não traz estado
+global, autenticação nem componentes de UI prontos — o projeto que usa o template adiciona isso
+quando precisar, seguindo as convenções abaixo.
 
 ## Stack
 
@@ -27,20 +33,21 @@ Template base de frontend em React + TypeScript.
 3. Renomeie o projeto: o campo `name` em `package.json`, o `<title>` e o `<meta
    name="description">` em `index.html`, e o heading `# Novo projeto` deste `README.md`.
 4. Suba o dev server (`npm run dev`) e confirme em `http://localhost:5173`.
-5. Remova ou substitua os arquivos de exemplo pelo código real do projeto — ver a seção
-   "[Arquivos de exemplo (descartáveis)](#arquivos-de-exemplo-descartáveis)" abaixo.
+5. Substitua o conteúdo da `Home` (`src/pages/Home.page.tsx`) e da `NotFound`
+   (`src/pages/NotFound.page.tsx`) pelo do projeto real.
 
 ## Estrutura de `src/`
 
 Cada pasta tem um papel definido, uma convenção de nome de arquivo e um tipo de export esperado.
-Siga essa tabela ao adicionar código novo.
+Siga essa tabela ao adicionar código novo. As pastas que ainda não têm arquivo (`components/`,
+`hooks/`, `utils/`, `pages/hooks/`) são criadas no primeiro uso.
 
 | Pasta | Guarda | Nome do arquivo | Export |
 | --- | --- | --- | --- |
 | `components/` | Componentes de UI reutilizáveis, sem rota própria. | `<Nome>.tsx` (PascalCase, sem sufixo) | `export default` no final do arquivo |
 | `layouts/` | Estruturas de página compartilhadas (header/footer ao redor de `<Outlet />`). | `<Nome>.layout.tsx` | `export default` no final do arquivo |
 | `pages/` | Telas ligadas a uma rota. | `<Nome>.page.tsx` | `export default` no final do arquivo |
-| `routers/` | Registro das rotas da aplicação e módulos auxiliares de roteamento. | `Router.tsx` / `RequireAuth.tsx` (`export default`); `paths.ts` (export nomeado) | ver coluna anterior |
+| `routers/` | Registro das rotas da aplicação e módulos auxiliares de roteamento. | `Router.tsx` (`export default`); `paths.ts` (export nomeado) | ver coluna anterior |
 | `hooks/` | Hooks React reutilizáveis. | `use<Nome>.ts` | export **nomeado** |
 | `services/` | Acesso a dado externo (HTTP e afins). | `<nome>.service.ts` | export **nomeado** |
 | `types/` | Tipos compartilhados entre vários arquivos. | `<nome>.types.ts` / `<nome>.d.ts` | ver abaixo |
@@ -52,7 +59,7 @@ Siga essa tabela ao adicionar código novo.
 Use o alias `@/`, que resolve para `src/`:
 
 ```ts
-import Button from "@/components/Button"
+import { ROUTES } from "@/routers/paths"
 import css from "@/styles/pages/home.module.css"
 ```
 
@@ -64,8 +71,8 @@ em `src/App.tsx`) continua válido.
 ### CSS Modules
 
 Os estilos não ficam co-localizados: o CSS Module de uma peça vive em
-`src/styles/<pasta>/<nome>.module.css` (ex.: `src/components/Button.tsx` →
-`src/styles/components/button.module.css`) e é importado como `import css from "..."`.
+`src/styles/<pasta>/<nome>.module.css` (ex.: `src/pages/Home.page.tsx` →
+`src/styles/pages/home.module.css`) e é importado como `import css from "..."`.
 
 **Toda classe usada como `css.<algo>` no JSX precisa existir no `.module.css` importado.** A
 tipagem em `src/types/declarations.d.ts` é `{ [key: string]: string }`, então uma classe
@@ -94,62 +101,12 @@ nome já é o próprio papel ficam isentos: `src/App.tsx`, `src/index.tsx` e `sr
 ### `types/`: `*.types.ts` vs. `*.d.ts`
 
 - `<nome>.types.ts` — tipos de domínio com **export nomeado**, importados explicitamente por
-  outros arquivos (ex.: `example.types.ts`).
+  outros arquivos (ex.: `product.types.ts`).
 - `<nome>.d.ts` — declaração de ambiente/global, **nunca importada**: o TypeScript a carrega
   sozinho por estar dentro de `src/` (ex.: `declarations.d.ts`, que tipa `*.module.css`).
 
-Props de um componente específico (ex.: `ButtonProps`) ficam no próprio arquivo do componente,
+Props de um componente específico (ex.: `SaveButtonProps`) ficam no próprio arquivo do componente,
 não em `types/`.
-
-### Arquivos de exemplo (descartáveis)
-
-Os arquivos abaixo existem **apenas para ensinar a convenção** e devem ser substituídos ou
-removidos pelo projeto real que usar este template:
-
-- `src/components/Button.tsx` + `src/styles/components/button.module.css` +
-  `src/components/Button.test.tsx` (consumido em `src/pages/Home.page.tsx`, também como exemplo).
-- `src/components/ErrorMessage.tsx` + `src/styles/components/errorMessage.module.css` +
-  `src/components/ErrorMessage.test.tsx` (consumido em `ExampleList.page.tsx` para o estado de
-  erro).
-- `src/components/EmptyState.tsx` + `src/styles/components/emptyState.module.css` +
-  `src/components/EmptyState.test.tsx` (consumido em `ExampleList.page.tsx` para o estado de lista
-  vazia).
-- `src/layouts/Main.layout.tsx` + `src/styles/layouts/main.module.css` — já registrado como rota de
-  layout em `src/routers/Router.tsx` (issue #24); o `<Outlet />` já tem conteúdo de exemplo próprio,
-  preenchido pela rota `/exemplos` (`ExampleList.page.tsx`, issue #32); também provê o único
-  `<Suspense>` (fallback `Carregando...`) das rotas-filhas lazy, em volta do `<Outlet />`.
-- `src/hooks/useToggle.ts`
-- `src/services/http.service.ts` (consumido em `src/pages/ExampleList.page.tsx`, também como
-  exemplo).
-- `src/types/example.types.ts` (consumido em `src/pages/ExampleList.page.tsx`, também como
-  exemplo).
-- `src/utils/formatDate.ts` (consumido em `src/pages/ExampleList.page.tsx`, também como exemplo).
-- `src/pages/Home.page.tsx` + `src/pages/Home.page.test.tsx`.
-- `src/pages/NotFound.page.tsx` + `src/pages/NotFound.page.test.tsx`. `src/routers/Router.test.tsx`
-  também depende do `NotFoundPage` de exemplo (cobre a rota-fallback renderizando-o) — ao
-  substituir essa página, revise esse teste em vez de apagá-lo inteiro.
-- `src/hooks/useAuth.ts` + `src/hooks/useAuth.test.ts`, `src/routers/RequireAuth.tsx` +
-  `src/routers/RequireAuth.test.tsx`, `src/pages/ProtectedExample.page.tsx` +
-  `src/pages/ProtectedExample.page.test.tsx`, `src/pages/Forbidden.page.tsx` +
-  `src/pages/Forbidden.page.test.tsx` — juntos formam um exemplo do **padrão** de bloqueio de rota
-  (guard) para o data router, não um sistema de autenticação real; `useAuth.ts` é o único ponto a
-  substituir por uma implementação real de login.
-- `src/pages/ExampleList.page.tsx` + `src/styles/pages/exampleList.module.css` +
-  `src/pages/ExampleList.page.test.tsx` + `src/pages/hooks/useExampleList.ts` +
-  `src/pages/hooks/useExampleList.test.ts` — fluxo de exemplo integrado, registrado na rota
-  `/exemplos`: busca uma lista de `ExampleEntity` com `http.service`, formata a data de cada item
-  com `formatDate` e trata carregamento/erro/lista vazia. Consome um mock estático em
-  `public/mock/example-entities.json`, não `VITE_API_URL` — ver nota abaixo sobre o motivo.
-
-> [!NOTE]
-> `ExampleList.page.tsx` busca dados de `public/mock/example-entities.json` (servido pelo Vite como
-> está, sem passar pelo bundler — mesmo mecanismo do `favicon.svg`), e não de `VITE_API_URL`. O
-> valor padrão de `VITE_API_URL` em `.env.example` é um domínio reservado que não resolve
-> (`https://api.example.com`), então apontar o exemplo para ele faria a página mostrar erro por
-> padrão logo após um `git clone`, sem `.env` configurado. O mock estático funciona offline, sem
-> setup, e ainda exercita o `fetch` real de `http.service` no navegador — só o destino da URL é
-> local. Ao substituir este exemplo por uma feature real, troque a URL do mock por algo como
-> `` `${import.meta.env.VITE_API_URL}/examples` ``.
 
 ## Variáveis de ambiente
 
@@ -215,12 +172,10 @@ ele que registra os matchers do `jest-dom` (`toBeInTheDocument()` e companhia).
 
 Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service.
 
-Os testes que vêm no template servem de modelo, um por formato: `Home.page.test.tsx` renderiza a
-página direto, `Router.test.tsx` renderiza a árvore de rotas (`AppRoutes`) sob `MemoryRouter` para
-verificar que uma URL inexistente cai no `NotFound`, `Button.test.tsx` cobre um componente com
-interação (clique disparando `onClick`), `useToggle.test.ts` usa `renderHook` para um hook,
-`formatDate.test.ts` cobre uma função pura, `http.service.test.ts` stuba o `fetch` com
-`vi.stubGlobal` e `Main.layout.test.tsx` preenche o `<Outlet />` com uma rota-filha.
+Cada formato tem seu jeito: página renderizada direto, árvore de rotas sob um router em memória,
+componente com interação (`user-event`), hook com `renderHook`, função pura e módulo com `fetch`
+stubado via `vi.stubGlobal` (como em `src/services/http.service.test.ts`). A skill
+`vitest-specialist` em `.claude/skills/` traz um trecho de cada um.
 
 `npm run test:cov` roda a suíte inteira com relatório de cobertura (`@vitest/coverage-v8`),
 gerando os formatos `text`, `json`, `json-summary` e `html` em `coverage/` (fora do controle de
