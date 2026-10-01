@@ -14,7 +14,9 @@ quando precisar, seguindo as convenções abaixo.
 - **TypeScript** — tipagem estática em modo `strict`, sem `any` explícito.
 - **Vite** — dev server, build de produção e bundler (substitui o `react-scripts` do Create React App).
 - **Vitest** (+ **Testing Library**) — execução de teste em ambiente `jsdom`, integrado ao mesmo `vite.config.ts`.
-- **react-router-dom** — roteamento client-side, registrado em `src/routers/Router.tsx`.
+- **react-router-dom** — roteamento client-side, registrado em `src/routers/routes.tsx`.
+- **Redux Toolkit** (+ **react-redux** e **RTK Query**) — estado de cliente (slices) e de servidor
+  (endpoints), em `src/store/`; sem endpoint nem slice de exemplo, a infraestrutura vem pronta.
 - **CSS Modules** — estilo com escopo por arquivo, em `src/styles/`.
 - **i18next** (+ **react-i18next** e **i18next-browser-languagedetector**) — internacionalização,
   com traduções em `src/locales/` e configuração em `src/i18n/` (ver
@@ -58,6 +60,7 @@ Siga essa tabela ao adicionar código novo. As pastas que ainda não têm arquiv
 | `hooks/` | Hooks React reutilizáveis. | `use<Nome>.ts` | `export default` no final do arquivo |
 | `services/` | Acesso a dado externo (HTTP e afins). | `<nome>/<verbo>.ts` (camelCase) | `export default` no final do arquivo |
 | `types/` | Tipos compartilhados entre vários arquivos. | `<dominio>/<NomeDoTipo>.types.ts` / `<nome>.d.ts` | `export default` no final do arquivo (`.d.ts`: ver abaixo) |
+| `store/` | Estado global: `api.ts` (RTK Query), `rootReducer.ts`, `createStore.ts`, `store.ts`, hooks tipados, `slices/<nome>.slice.ts` e `api/<dominio>.api.ts`. | `<nome>.ts`, `<nome>.slice.ts`, `<dominio>.api.ts` | `export default` no final do arquivo |
 | `utils/` | Funções puras e auxiliares. | `<nome>.ts` (camelCase) | `export default` no final do arquivo |
 | `styles/` | `global.css` (custom properties + reset) e CSS Modules por pasta. | `<nome>.module.css` (camelCase) | — |
 | `i18n/` | Configuração da internacionalização: instância do i18next, constantes de idioma e a API `getLanguage`/`setLanguage`. | `<nome>.ts` (camelCase), `i18n.ts` para a instância | `export default` no final do arquivo |

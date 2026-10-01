@@ -255,7 +255,7 @@ Sempre `<Link to="/rota">` ou `useNavigate()` do `react-router-dom`. Nunca `<a h
 - [ ] Nenhum texto de UI literal no JSX: tudo vem de `t()`/`<Trans>` (`npm run lint` passando)
 - [ ] Namespace `<nome>` criado em `src/locales/pt-BR/`, `src/locales/en/` e `src/locales/es/`, com as mesmas chaves nos três
 - [ ] Namespace importado e registrado nos objetos `ptBR`, `en` e `es` de `src/i18n/resources.ts` e no array `ns` de `src/i18n/i18n.ts`
-- [ ] Rota registrada em `src/routers/Router.tsx`, com `*` ainda por último
+- [ ] Rota registrada em `src/routers/routes.tsx`, com `*` ainda por último
 - [ ] Navegação interna usando `<Link>`, não `<a href>`
 - [ ] Metadados declarados com `t("meta.title")`/`t("meta.description")` se a página precisar substituir os placeholders do `index.html`
 - [ ] Valores de cor/fonte vindos das custom properties de `global.css`
@@ -264,6 +264,6 @@ Sempre `<Link to="/rota">` ou `useNavigate()` do `react-router-dom`. Nunca `<a h
 
 ## Ao remover ou renomear uma página
 
-Remova as quatro peças juntas — componente, CSS Module, namespace e entrada no `Router.tsx`. O namespace sai dos três idiomas (`src/locales/pt-BR/`, `src/locales/en/`, `src/locales/es/`), dos imports e dos objetos `ptBR`, `en` e `es` de `src/i18n/resources.ts` e do array `ns` de `src/i18n/i18n.ts`. Um import órfão no `Router.tsx` ou no `resources.ts` quebra o build; um CSS Module ou um JSON de tradução órfão não quebra nada e por isso fica esquecido no repositório.
+Remova as quatro peças juntas — componente, CSS Module, namespace e entrada no `routes.tsx`. O namespace sai dos três idiomas (`src/locales/pt-BR/`, `src/locales/en/`, `src/locales/es/`), dos imports e dos objetos `ptBR`, `en` e `es` de `src/i18n/resources.ts` e do array `ns` de `src/i18n/i18n.ts`. Um import órfão no `routes.tsx` ou no `resources.ts` quebra o build; um CSS Module ou um JSON de tradução órfão não quebra nada e por isso fica esquecido no repositório.
 
 Ao renomear, o namespace acompanha o novo nome do CSS Module: renomeie os três JSON e atualize `resources.ts`, `ns` e o `useTranslation` da página.
