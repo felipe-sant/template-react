@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { render, screen } from "@testing-library/react"
+import { act, render, screen } from "@testing-library/react"
 import setLanguage from "@/i18n/setLanguage"
 import HomePage from "@/pages/Home.page"
 
@@ -43,5 +43,19 @@ describe("HomePage", () => {
 
         expect(document.title).toBe("Título de la página")
         expect(screen.getByText("destacado").tagName).toBe("STRONG")
+    })
+
+    it("atualiza texto, metadados e lang do html ao trocar o idioma com a página aberta", async () => {
+        renderHomePage()
+        expect(screen.getByRole("heading", { name: "Olá, mundo!" })).toBeInTheDocument()
+
+        await act(() => setLanguage("es"))
+
+        expect(screen.getByRole("heading", { name: "¡Hola, mundo!" })).toBeInTheDocument()
+        expect(document.title).toBe("Título de la página")
+        expect(document.querySelector('meta[name="description"]')?.getAttribute("content")).toBe(
+            "Mi descripción personalizada."
+        )
+        expect(document.documentElement.lang).toBe("es")
     })
 })
