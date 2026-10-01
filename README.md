@@ -108,10 +108,13 @@ espaçamento, forma, movimento) em vez de valores hardcoded.
 > definidos em `src/styles/global.css` são escolha pessoal de
 > [@felipe-sant](https://github.com/felipe-sant), baseada no design system do portfólio pessoal
 > dele — não convenção da comunidade React/TypeScript. Troque esses valores livremente: nada no
-> restante do template depende dos tokens específicos escolhidos aqui. A tipografia depende de um
-> `@import` do Google Fonts (dependência de rede nova); para evitá-la, basta trocar
-> `--font-heading`/`--font-body`/`--font-mono` por fontes locais ou de sistema e remover o
-> `@import`.
+> restante do template depende dos tokens específicos escolhidos aqui. As fontes são
+> self-hospedadas: os `woff2` (subconjunto `latin`) e as licenças OFL ficam em `public/fonts/`, os
+> `@font-face` em `src/styles/global.css` e dois `preload` em `index.html`, sem requisição a
+> terceiros (LGPD/GDPR) nem dependência de CDN. Para trocar a fonte, substitua os `woff2` em
+> `public/fonts/`, os `@font-face` e os `preload`; para remover, apague `public/fonts/`, os
+> `@font-face` e os `preload` e aponte `--font-heading`/`--font-body`/`--font-mono` para fontes de
+> sistema.
 
 ### Exceção de sufixo: arquivos raiz/singulares
 

@@ -231,8 +231,10 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` (`P
   `vite.config.ts` (para o dev server e o build). Mexer em um sem o outro deixa o `tsc -b`
   verde e quebra o build, ou vice-versa. O Vitest herda o alias do mesmo `vite.config.ts`.
 - **`public/`** — assets estáticos que o Vite copia como estão para a raiz de `dist/` no build, sem
-  passar pelo bundler. Hoje contém só `favicon.svg`, referenciado em `index.html` via
-  `<link rel="icon">`; arquivo estático novo (imagem, dado mock) entra aqui. O template não inclui
+  passar pelo bundler. Hoje contém `favicon.svg`, referenciado em `index.html` via
+  `<link rel="icon">`, e `fonts/` (`woff2` latin e licenças OFL das três famílias, referenciados
+  pelos `@font-face` de `global.css` e por dois `preload` do `index.html`, sem fonte de terceiros);
+  arquivo estático novo (imagem, dado mock) entra aqui. O template não inclui
   `manifest.json` nem ícones de PWA por decisão de projeto: um manifest com `name`/ícones
   placeholder, sem produto definido, seria pior que não ter manifest — cada projeto derivado
   adiciona isso quando precisar.
