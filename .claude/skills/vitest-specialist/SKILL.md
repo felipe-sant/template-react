@@ -1,6 +1,6 @@
 ---
 name: vitest-specialist
-description: Como escrever, rodar e depurar teste co-localizado neste template React com Vitest + Testing Library (jsdom). Use quando for criar, alterar, mover ou depurar qualquer arquivo *.test.tsx / *.test.ts em src/, ou mexer em src/setupTests.ts ou no bloco test do vite.config.ts.
+description: Como escrever, rodar e depurar teste em `test/` por diretório neste template React com Vitest + Testing Library (jsdom). Use quando for criar, alterar, mover ou depurar qualquer arquivo *.test.tsx / *.test.ts em src/, ou mexer em src/setupTests.ts ou no bloco test do vite.config.ts.
 ---
 
 # Vitest Specialist
@@ -24,7 +24,7 @@ Não há `globals: true` e não há `passWithNoTests` — as duas ausências tê
 | --- | --- |
 | `npm test` | **watch mode** (o script é `vitest`, sem `run`). Não termina. |
 | `npm test -- --run` | execução one-shot. **É esta que você usa** num agente, em CI ou em terminal não-interativo. |
-| `npm test -- --run src/pages/Home.page.test.tsx` | um arquivo só, one-shot. |
+| `npm test -- --run src/pages/test/Home.page.test.tsx` | um arquivo só, one-shot. |
 | `npm run typecheck` | checagem de tipos isolada, inclusive dos arquivos de teste. |
 | `npm run build` | `typecheck` + build de produção. Não roda teste. |
 
@@ -36,15 +36,15 @@ Rodar `npm test` puro dentro de um agente trava a sessão até o timeout: o proc
 
 ## 3. Nome e localização
 
-`<arquivo>.test.tsx` **ao lado** do arquivo testado. Nunca uma pasta `__tests__/`, nunca o sufixo `.spec.tsx` — nenhum dos dois é coletado nem reconhecido como convenção aqui.
+`<diretório>/test/<arquivo>.test.tsx`: o teste vive numa pasta `test/` dentro do diretório do arquivo testado, com o mesmo nome do arquivo mais `.test.ts(x)`. O arquivo testado é importado pelo alias `@/` (`import HomePage from "@/pages/Home.page"`), nunca por `../` — a regra `import/no-relative-parent-imports` proíbe —, e `vi.mock`, `vi.doMock` e `import()` dinâmico também usam alias. Nunca uma pasta `__tests__/`, nunca o sufixo `.spec.tsx` — nenhum dos dois é coletado nem reconhecido como convenção aqui. `src/setupTests.ts` não é teste: é setup e fica onde está.
 
 | Arquivo testado | Arquivo de teste |
 | --- | --- |
-| `src/pages/Home.page.tsx` | `src/pages/Home.page.test.tsx` |
-| `src/services/http.service.ts` | `src/services/http.service.test.ts` |
-| `src/routers/Router.tsx` | `src/routers/Router.test.tsx` |
-| `src/components/SaveButton.tsx` | `src/components/SaveButton.test.tsx` |
-| `src/hooks/useCounter.ts` | `src/hooks/useCounter.test.ts` |
+| `src/pages/Home.page.tsx` | `src/pages/test/Home.page.test.tsx` |
+| `src/services/http/get.ts` | `src/services/http/test/get.test.ts` |
+| `src/routers/Router.tsx` | `src/routers/test/Router.test.tsx` |
+| `src/components/SaveButton.tsx` | `src/components/test/SaveButton.test.tsx` |
+| `src/hooks/useCounter.ts` | `src/hooks/test/useCounter.test.ts` |
 
 As três primeiras linhas existem no repositório; as duas últimas são só a regra aplicada a arquivos hipotéticos.
 
@@ -90,7 +90,7 @@ Se você encontrar este arquivo e algo nele parecer errado, não está: deixe co
 
 `describe`, `it`, `expect` e `vi` vêm de um `import` explícito de `vitest` — **não** existe `globals: true` na config, então eles não estão no escopo global. Esquecer o import dá `describe is not defined`.
 
-Render direto da página, como em `src/pages/Home.page.test.tsx`:
+Render direto da página, como em `src/pages/test/Home.page.test.tsx`:
 
 ```tsx
 import { describe, expect, it } from "vitest"
@@ -178,11 +178,11 @@ describe("formatPrice", () => {
 
 ### Módulo que chama `fetch`
 
-Troque o `fetch` global por um `vi.fn()` com `vi.stubGlobal` e desfaça o stub depois de cada teste, para ele não vazar para o seguinte. `src/services/http.service.test.ts` segue este formato:
+Troque o `fetch` global por um `vi.fn()` com `vi.stubGlobal` e desfaça o stub depois de cada teste, para ele não vazar para o seguinte. `src/services/http/test/get.test.ts` segue este formato:
 
 ```ts
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { get } from "@/services/http.service"
+import get from "@/services/http/get"
 
 afterEach(() => {
     vi.unstubAllGlobals()
@@ -201,13 +201,13 @@ describe("get", () => {
 
 ## 6. Testar algo que depende de rota
 
-`src/routers/Router.tsx` exporta duas coisas: `routes` (export **nomeado**, um `RouteObject[]`) e `Router` (export **default**, que faz `createBrowserRouter(routes)` e renderiza um `RouterProvider`). No teste você cria o router em memória com **`createMemoryRouter(routes, { initialEntries })`** e o renderiza com `RouterProvider`, como em `src/routers/Router.test.tsx`. As páginas são `lazy`, então a primeira asserção usa `findBy*` com `await`:
+`src/routers/routes.tsx` tem `routes` (export default, um `RouteObject[]`) e `src/routers/Router.tsx` tem `Router` (export default, que faz `createBrowserRouter(routes)` e renderiza um `RouterProvider`). No teste você cria o router em memória com **`createMemoryRouter(routes, { initialEntries })`** e o renderiza com `RouterProvider`, como em `src/routers/test/Router.test.tsx`. As páginas são `lazy`, então a primeira asserção usa `findBy*` com `await`:
 
 ```tsx
 import { describe, expect, it } from "vitest"
 import { createMemoryRouter, RouterProvider } from "react-router-dom"
 import { render, screen } from "@testing-library/react"
-import { routes } from "@/routers/Router"
+import routes from "@/routers/routes"
 
 describe("routes", () => {
     it("renderiza a página de NotFound em uma rota inexistente", async () => {
@@ -221,7 +221,7 @@ describe("routes", () => {
 })
 ```
 
-**Fallback do `<Suspense>`:** o `lazy()` guarda o módulo carregado no próprio `Router.tsx`, então depois que qualquer teste do arquivo renderizou a página, o fallback (`Carregando...`) não aparece mais e um teste dele passa ou falha conforme a ordem. O teste do fallback chama `vi.resetModules()` e importa `routes` de novo com `await import("@/routers/Router")`, recebendo um `lazy()` ainda não resolvido — como em `src/routers/Router.test.tsx`.
+**Fallback do `<Suspense>`:** o `lazy()` guarda o módulo carregado no próprio `routes.tsx`, então depois que qualquer teste do arquivo renderizou a página, o fallback (`Carregando...`) não aparece mais e um teste dele passa ou falha conforme a ordem. O teste do fallback chama `vi.resetModules()` e importa `routes` de novo com `const { default: freshRoutes } = await import("@/routers/routes")`, recebendo um `lazy()` ainda não resolvido — como em `src/routers/test/Router.test.tsx`.
 
 **Por que não renderizar o `Router` (export default):** ele usa `createBrowserRouter`, que lê a URL real do jsdom (`/`) e não aceita entrada inicial — não há como testar outra rota. O `createMemoryRouter` recebe as mesmas `routes` e deixa escolher a URL de partida.
 
@@ -229,13 +229,61 @@ describe("routes", () => {
 
 Componente que usa `<Link>` ou `useNavigate` também precisa de um router em volta — sem ele o render estoura na hora.
 
+## 6b. Testar algo que usa a store (Redux / RTK Query)
+
+`renderWithStore(ui, { preloadedState })`, de `@/testUtils/renderWithStore`, cria `createStore(preloadedState)` por chamada, envolve o `ui` em `Provider` e devolve o resultado do `render` junto da `store`. Cada chamada tem estado e cache do RTK Query isolados, então um teste não vaza para o outro. Para estado de slice, passe `preloadedState` em vez de despachar actions na mão.
+
+Não há endpoint em `src/`, então o teste injeta o dele com `api.injectEndpoints`, stuba o `fetch` com `vi.stubGlobal` e define `VITE_API_URL` absoluta com `vi.stubEnv` (o `Request` do Node não aceita URL relativa). A constante da URL é lida na carga do módulo: use `vi.resetModules()` e import dinâmico, e restaure no `afterEach`. O endpoint injetado persiste enquanto o módulo vive, então use nome único por arquivo ou `resetModules` por teste. Modelos: `src/store/test/api.test.ts` e `src/testUtils/test/renderWithStore.test.tsx`.
+
+```tsx
+import { afterEach, expect, it, vi } from "vitest"
+import { screen } from "@testing-library/react"
+
+afterEach(() => {
+    vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
+    vi.resetModules()
+})
+
+it("mostra o dado do endpoint injetado", async () => {
+    vi.stubEnv("VITE_API_URL", "https://api.example.com")
+    vi.resetModules()
+    const { default: api } = await import("@/store/api")
+    const { default: renderWithStore } = await import("@/testUtils/renderWithStore")
+    vi.stubGlobal(
+        "fetch",
+        vi.fn().mockImplementation(
+            async () =>
+                new Response(JSON.stringify({ name: "Exemplo" }), {
+                    status: 200,
+                    headers: { "Content-Type": "application/json" }
+                })
+        )
+    )
+    const profileApi = api.injectEndpoints({
+        endpoints: (build) => ({
+            getProfile: build.query<{ name: string }, void>({ query: () => "/profile" })
+        })
+    })
+
+    function Profile() {
+        const { data } = profileApi.useGetProfileQuery()
+        return <p>{data?.name}</p>
+    }
+
+    renderWithStore(<Profile />)
+
+    expect(await screen.findByText("Exemplo")).toBeInTheDocument()
+})
+```
+
 ## 7. Texto traduzido
 
 Todo texto de UI vem de chave (`t()`/`<Trans>`), com valor por idioma em `src/locales/`. O teste não precisa de nada para isso funcionar: **não há wrapper de render nem provider**, porque o `initReactI18next` registra a instância de `src/i18n/i18n.ts` globalmente, e o `src/setupTests.ts` deixa todo teste começando em `pt-BR` e sem escolha salva (item 4).
 
 **Afirme o texto em `pt-BR`, nunca a chave.** `pt-BR` é a língua de referência e o idioma do reset — não o fallback `en`. Uma asserção sobre a chave (`getByRole("heading", { name: "heading" })`) passaria mesmo com a tradução vazia ou ausente, porque o i18next devolve a própria chave quando não acha valor. O texto em português é o que prova que a tradução existe e chegou à tela.
 
-**Para testar outro idioma, troque dentro do `it` com `await setLanguage(...)`**, antes do `render`, como no cenário `es` de `src/pages/Home.page.test.tsx`:
+**Para testar outro idioma, troque dentro do `it` com `await setLanguage(...)`**, antes do `render`, como no cenário `es` de `src/pages/test/Home.page.test.tsx`:
 
 ```tsx
 import { describe, expect, it } from "vitest"
@@ -263,7 +311,7 @@ Não precisa desfazer a troca: o `beforeEach` do setup volta para `pt-BR` e apag
 
 ### Simular uma nova carga de página
 
-A detecção de idioma (`?lng=` → escolha salva → navegador → `en`) e a persistência do `?lng=` rodam uma vez só, quando `src/i18n/i18n.ts` é importado. `i18n.changeLanguage()` sem argumento não serve para reproduzir isso: ele não executa a persistência do `?lng=`. Para testar a inicialização, prepare a URL, o navegador e o `localStorage`, descarte o cache de módulos com `vi.resetModules()` e importe a instância de novo com `await import("@/i18n/i18n")` — como o `i18n.ts` cria a instância com `createInstance()`, cada import depois do reset é uma instância nova, sem estado da anterior. É o helper de `src/i18n/i18n.test.ts`:
+A detecção de idioma (`?lng=` → escolha salva → navegador → `en`) e a persistência do `?lng=` rodam uma vez só, quando `src/i18n/i18n.ts` é importado. `i18n.changeLanguage()` sem argumento não serve para reproduzir isso: ele não executa a persistência do `?lng=`. Para testar a inicialização, prepare a URL, o navegador e o `localStorage`, descarte o cache de módulos com `vi.resetModules()` e importe a instância de novo com `await import("@/i18n/i18n")` — como o `i18n.ts` cria a instância com `createInstance()`, cada import depois do reset é uma instância nova, sem estado da anterior. É o helper de `src/i18n/test/i18n.test.ts`:
 
 ```ts
 import { afterEach, describe, expect, it, vi } from "vitest"
@@ -301,7 +349,7 @@ describe("i18n", () => {
 })
 ```
 
-O `?lng=` é stubado com `window.history.pushState` e o `navigator` com `vi.spyOn` no getter. **Restaure os dois no `afterEach`**: `vi.restoreAllMocks()` desfaz os spies e `pushState` de volta para `"/"` limpa a URL, senão o `?lng=` e o idioma do navegador vazam para o teste seguinte (inclusive o `App.test.tsx`, que lê a URL real). Um teste que muda a URL por outro motivo, como o cenário de rota desconhecida em `src/App.test.tsx`, segue a mesma regra.
+O `?lng=` é stubado com `window.history.pushState` e o `navigator` com `vi.spyOn` no getter. **Restaure os dois no `afterEach`**: `vi.restoreAllMocks()` desfaz os spies e `pushState` de volta para `"/"` limpa a URL, senão o `?lng=` e o idioma do navegador vazam para o teste seguinte (inclusive o `App.test.tsx`, que lê a URL real). Um teste que muda a URL por outro motivo, como o cenário de rota desconhecida em `src/test/App.test.tsx`, segue a mesma regra.
 
 ## 8. Queries do Testing Library
 
@@ -342,10 +390,11 @@ Ordem de preferência: **`getByRole` com `name`** > `getByLabelText` / `getByTex
 
 ## Checklist
 
-- [ ] Arquivo em `<caminho-do-arquivo-testado>.test.tsx`, ao lado do arquivo testado
+- [ ] Arquivo em `<diretório-do-arquivo-testado>/test/<arquivo>.test.tsx`
 - [ ] `describe`/`it`/`expect`/`vi` importados de `vitest`
 - [ ] Import do arquivo testado com `@/`, nunca `../`
 - [ ] Query por `getByRole` com `name` sempre que possível; `getByTestId` só como último recurso
+- [ ] Componente que lê a store renderizado com `renderWithStore` (nunca um `Provider` montado à mão); endpoint injetado com `fetch` stubado e `VITE_API_URL` absoluta
 - [ ] Router em memória em volta do que depende de rota (`createMemoryRouter(routes, ...)` + `RouterProvider`), não o `Router` default
 - [ ] Nenhum `afterEach(cleanup)` local — o `src/setupTests.ts` já faz isso em toda suíte
 - [ ] Texto afirmado em `pt-BR`, nunca a chave; outro idioma só com `await setLanguage(...)` dentro do `it`

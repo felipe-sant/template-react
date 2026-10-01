@@ -1,9 +1,10 @@
-import { afterEach, describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { render, screen } from "@testing-library/react"
 import App from "@/App"
 
 afterEach(() => {
     window.history.pushState({}, "", "/")
+    vi.restoreAllMocks()
 })
 
 describe("App", () => {
@@ -11,6 +12,17 @@ describe("App", () => {
         render(<App />)
 
         expect(await screen.findByRole("heading", { name: "Olá, mundo!" })).toBeInTheDocument()
+    })
+
+    it("renderiza dentro do Provider da store sem avisos no console", async () => {
+        const errorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined)
+        const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined)
+
+        render(<App />)
+
+        expect(await screen.findByRole("heading", { name: "Olá, mundo!" })).toBeInTheDocument()
+        expect(errorSpy).not.toHaveBeenCalled()
+        expect(warnSpy).not.toHaveBeenCalled()
     })
 
     it("define título e meta description da página no head", async () => {

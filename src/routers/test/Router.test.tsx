@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 import { createMemoryRouter, RouterProvider } from "react-router-dom"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { routes } from "@/routers/Router"
+import routes from "@/routers/routes"
 
 function renderRoutes(initialEntries: string[]) {
     const router = createMemoryRouter(routes, { initialEntries })
@@ -12,7 +12,7 @@ function renderRoutes(initialEntries: string[]) {
 describe("routes", () => {
     it("mostra o fallback de carregamento antes da página lazy resolver", async () => {
         vi.resetModules()
-        const { routes: freshRoutes } = await import("@/routers/Router")
+        const { default: freshRoutes } = await import("@/routers/routes")
         const router = createMemoryRouter(freshRoutes, { initialEntries: ["/"] })
 
         render(<RouterProvider router={router} />)

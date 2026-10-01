@@ -1,19 +1,19 @@
 ---
 name: react-component-scaffold
-description: Como criar um componente reutilizável neste template React, seguindo a convenção Componente + CSS Module + teste co-localizado. Use quando for adicionar, alterar, renomear ou remover um componente em src/components/.
+description: Como criar um componente reutilizável neste template React, seguindo a convenção Componente + CSS Module + teste em test/. Use quando for adicionar, alterar, renomear ou remover um componente em src/components/.
 ---
 
 # React Component Scaffold
 
 **Tem rota própria → é página** (use a skill `react-page-scaffold`). **É reaproveitado dentro de outras telas e não tem rota → é componente**, e esta skill é a certa. Estrutura de página compartilhada (header/footer em volta de um `<Outlet />`) é `src/layouts/`, que não é assunto desta skill nem tem convenção fechada ainda (issue #24).
 
-Um componente é composto por **duas peças que precisam existir juntas** — mais o teste, que é obrigatório e está na terceira linha da tabela. O estilo **não** é co-localizado; o teste **é**.
+Um componente é composto por **duas peças que precisam existir juntas** — mais o teste, que é obrigatório e está na terceira linha da tabela. O estilo **não** fica ao lado do componente; o teste fica em `src/components/test/`.
 
 | Peça | Caminho | Se faltar |
 | --- | --- | --- |
 | Componente | `src/components/<Nome>.tsx` (PascalCase, **sem sufixo** de papel) | — |
 | Estilo | `src/styles/components/<nome>.module.css` (camelCase) | `css.<classe>` vira `undefined`, o elemento renderiza sem `class` e sem erro nenhum |
-| Teste | `src/components/<Nome>.test.tsx` | o `reviewer` bloqueia a revisão — a falta de teste co-localizado é reprovação incondicional |
+| Teste | `src/components/test/<Nome>.test.tsx` | o `reviewer` bloqueia a revisão — a falta de teste é reprovação incondicional |
 
 O template não traz componente pronto: `src/components/` é criada ao escrever o primeiro, e os trechos abaixo, com um `SaveButton` hipotético, ilustram o formato esperado das três peças.
 
@@ -46,9 +46,9 @@ Import interno sempre com o alias `@/`, nunca subindo de pasta com `../`.
 
 O `SaveButton` não chama `t()`: o `label` muda a cada uso, então chega por prop **já traduzido** por quem renderiza o componente (ver "Consumindo o componente"). Texto fixo do componente, que é igual em todo uso, é o caso da seção 5.
 
-### 2. Props — interface `<Nome>Props` no próprio arquivo
+### 2. Props — interface `<Nome>Props` local e sem `export`
 
-A interface de props fica **no arquivo do componente**, não em `src/types/`. `src/types/<nome>.types.ts` é para tipo compartilhado entre vários arquivos; props de um componente específico não são isso, e movê-las para lá só adiciona um import e um lugar a mais para desatualizar. A regra vem da #10 e está no `README.md`.
+A interface de props fica **no arquivo do componente, sem `export`**: tipo não exportado é local por padrão. Só se outro arquivo precisar importar o tipo ele deixa de ser local e vai para `src/types/<dominio>/<Nome>Props.types.ts`, em arquivo próprio com `export default` no final. Mover props para `src/types/` sem necessidade só adiciona um import e um lugar a mais para desatualizar. A regra está no `CLAUDE.md` e no `README.md`.
 
 - Prop opcional com `?` (`onClick?: () => void`), e o valor padrão no destructuring quando fizer sentido.
 - `strict` está ativo: nada de `any` explícito nem de cast para calar o compilador. Se o tipo for difícil, use `unknown` com checagem.
@@ -81,7 +81,7 @@ export default Example
 
 Quando a terceira prop booleana aparecer (`isCompact`, `hasBorder`, `withIcon`) e as combinações começarem a se excluir, o sinal é para expor um slot (`children`, ou uma prop de nó) em vez de somar mais um booleano.
 
-Componente cuida de **renderização e interação**. Ele não busca dado nem guarda regra de negócio: acesso a dado externo vai para `src/services/` (como `src/services/http.service.ts`) e lógica reutilizável vira hook em `src/hooks/` (um `useDebounce`, por exemplo). Um componente que faz `fetch` direto não dá erro de compilação — dá trabalho de teste e de reuso.
+Componente cuida de **renderização e interação**. Ele não busca dado nem guarda regra de negócio: acesso a dado externo vai para `src/services/` (como `src/services/http/get.ts`) e lógica reutilizável vira hook em `src/hooks/` (um `useDebounce`, por exemplo). Um componente que faz `fetch` direto não dá erro de compilação — dá trabalho de teste e de reuso.
 
 ### 4. Estilo — `src/styles/components/<nome>.module.css`
 
@@ -151,9 +151,9 @@ export default CloseButton
 - **`alt` em toda imagem** — descritivo e traduzido (`alt={t("<componente>.<papel>")}`, ou vindo de prop quando varia por uso), ou `alt={""}` quando a imagem for puramente decorativa — escrito como expressão, porque `alt=""` é string literal num atributo restrito e o lint acusa.
 - Navegação interna com `<Link to="...">`/`useNavigate` do `react-router-dom`, nunca `<a href>` para rota interna: a âncora crua força reload completo e descarta o estado da aplicação (issue #5). Componente com `<Link>` dentro só renderiza sob um router — o teste dele precisa de `MemoryRouter` em volta.
 
-### 7. Teste — `src/components/<Nome>.test.tsx`
+### 7. Teste — `src/components/test/<Nome>.test.tsx`
 
-Todo componente novo ou alterado precisa do teste co-localizado, no mesmo commit. Não é tarefa para depois: o `reviewer` trata a ausência como bloqueante incondicional.
+Todo componente novo ou alterado precisa do teste em `src/components/test/`, no mesmo commit. Não é tarefa para depois: o `reviewer` trata a ausência como bloqueante incondicional.
 
 **Como escrever e rodar o teste está na skill `vitest-specialist`** (`.claude/skills/vitest-specialist/SKILL.md`) — esta skill não repete a receita. A skill traz um trecho de teste de componente com render e clique.
 
@@ -180,10 +180,15 @@ export default ProfilePage
 
 Componente com texto fixo (seção 5) não pede nada de quem consome: `<CloseButton onClick={close} />`.
 
+## Estado compartilhado
+
+Componente reutilizável recebe dado por prop. Quando precisar ler a store, use `useAppSelector` com seletor estreito e `useAppDispatch` (skill `redux-store-scaffold`); dado do servidor entra por endpoint do RTK Query (skill `rtk-query-endpoint-scaffold`), de preferência consumido pela página e passado por prop. O teste usa `renderWithStore` (skill `vitest-specialist`).
+
 ## Checklist
 
 - [ ] `src/components/<Nome>.tsx` criado, PascalCase e sem sufixo, com `export default` no final
-- [ ] Interface `<Nome>Props` no próprio arquivo do componente, sem `any`
+- [ ] Interface `<Nome>Props` no próprio arquivo do componente, sem `export` e sem `any`
+- [ ] Um único símbolo exportado (`export default` no final); tipo exportado só em `src/types/<dominio>/<Nome>.types.ts`
 - [ ] Nome de prop e chave de tradução em inglês
 - [ ] Texto que varia por uso chega por prop, já traduzido por quem chama com `t()`
 - [ ] Texto fixo do componente via `t("<componente>.<papel>")` (namespace `common`), com o valor em `src/locales/pt-BR/common.json`, `en/common.json` e `es/common.json`
@@ -191,7 +196,7 @@ Componente com texto fixo (seção 5) não pede nada de quem consome: `<CloseBut
 - [ ] `src/styles/components/<nome>.module.css` criado, e **toda** classe usada como `css.<algo>` existe nele
 - [ ] Cores e fonte vindas das custom properties de `global.css`
 - [ ] Elemento semântico correto, com nome acessível traduzido (`aria-label={t(...)}` em controle só com ícone, `alt` em imagem)
-- [ ] `src/components/<Nome>.test.tsx` criado, cobrindo render e interação e afirmando o texto em `pt-BR` (ver `vitest-specialist`)
+- [ ] `src/components/test/<Nome>.test.tsx` criado, cobrindo render e interação e afirmando o texto em `pt-BR` (ver `vitest-specialist`)
 - [ ] Sem comentário no código, import interno com `@/` e nunca `../`
 - [ ] `npm run typecheck`, `npm run lint`, `npm test -- --run` e `npm run build` passando
 - [ ] O componente foi visto renderizado (`npm run dev`) — o build passar não prova que o estilo foi aplicado
@@ -204,4 +209,4 @@ Remova ou renomeie as três peças juntas — componente, CSS Module e teste —
 grep -rn "components/<Nome>" src/
 ```
 
-Um import órfão quebra o build e aparece logo. Um **CSS Module órfão não quebra nada** e fica esquecido no repositório; um **teste que ficou para trás** ou deixa de ser coletado (se o nome saiu da convenção) ou passa a testar um import morto e derruba o build. Ao renomear, o arquivo de estilo acompanha em camelCase (`Example.tsx` → `example.module.css`) e o teste em PascalCase (`Example.test.tsx`).
+Um import órfão quebra o build e aparece logo. Um **CSS Module órfão não quebra nada** e fica esquecido no repositório; um **teste que ficou para trás** ou deixa de ser coletado (se o nome saiu da convenção) ou passa a testar um import morto e derruba o build. Ao renomear, o arquivo de estilo acompanha em camelCase (`Example.tsx` → `example.module.css`) e o teste em PascalCase (`src/components/test/Example.test.tsx`).

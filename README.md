@@ -14,7 +14,9 @@ quando precisar, seguindo as convenções abaixo.
 - **TypeScript** — tipagem estática em modo `strict`, sem `any` explícito.
 - **Vite** — dev server, build de produção e bundler (substitui o `react-scripts` do Create React App).
 - **Vitest** (+ **Testing Library**) — execução de teste em ambiente `jsdom`, integrado ao mesmo `vite.config.ts`.
-- **react-router-dom** — roteamento client-side, registrado em `src/routers/Router.tsx`.
+- **react-router-dom** — roteamento client-side, registrado em `src/routers/routes.tsx`.
+- **Redux Toolkit** (+ **react-redux** e **RTK Query**) — estado de cliente (slices) e de servidor
+  (endpoints), em `src/store/`; sem endpoint nem slice de exemplo, a infraestrutura vem pronta.
 - **CSS Modules** — estilo com escopo por arquivo, em `src/styles/`.
 - **i18next** (+ **react-i18next** e **i18next-browser-languagedetector**) — internacionalização,
   com traduções em `src/locales/` e configuração em `src/i18n/` (ver
@@ -54,11 +56,12 @@ Siga essa tabela ao adicionar código novo. As pastas que ainda não têm arquiv
 | `components/` | Componentes de UI reutilizáveis, sem rota própria. | `<Nome>.tsx` (PascalCase, sem sufixo) | `export default` no final do arquivo |
 | `layouts/` | Estruturas de página compartilhadas (header/footer ao redor de `<Outlet />`). | `<Nome>.layout.tsx` | `export default` no final do arquivo |
 | `pages/` | Telas ligadas a uma rota. | `<Nome>.page.tsx` | `export default` no final do arquivo |
-| `routers/` | Registro das rotas da aplicação e módulos auxiliares de roteamento. | `Router.tsx` (`export default`); `paths.ts` (export nomeado) | ver coluna anterior |
-| `hooks/` | Hooks React reutilizáveis. | `use<Nome>.ts` | export **nomeado** |
-| `services/` | Acesso a dado externo (HTTP e afins). | `<nome>.service.ts` | export **nomeado** |
-| `types/` | Tipos compartilhados entre vários arquivos. | `<nome>.types.ts` / `<nome>.d.ts` | ver abaixo |
-| `utils/` | Funções puras e auxiliares. | `<nome>.ts` (camelCase) | export **nomeado** |
+| `routers/` | Registro das rotas da aplicação e módulos auxiliares de roteamento. | `Router.tsx`, `routes.tsx`, `paths.ts` | `export default` no final do arquivo |
+| `hooks/` | Hooks React reutilizáveis. | `use<Nome>.ts` | `export default` no final do arquivo |
+| `services/` | Acesso a dado externo (HTTP e afins). | `<nome>/<verbo>.ts` (camelCase) | `export default` no final do arquivo |
+| `types/` | Tipos compartilhados entre vários arquivos. | `<dominio>/<NomeDoTipo>.types.ts` / `<nome>.d.ts` | `export default` no final do arquivo (`.d.ts`: ver abaixo) |
+| `store/` | Estado global: `api.ts` (RTK Query), `rootReducer.ts`, `createStore.ts`, `store.ts`, hooks tipados, `slices/<nome>.slice.ts` e `api/<dominio>.api.ts`. | `<nome>.ts`, `<nome>.slice.ts`, `<dominio>.api.ts` | `export default` no final do arquivo |
+| `utils/` | Funções puras e auxiliares. | `<nome>.ts` (camelCase) | `export default` no final do arquivo |
 | `styles/` | `global.css` (custom properties + reset) e CSS Modules por pasta. | `<nome>.module.css` (camelCase) | — |
 | `i18n/` | Configuração da internacionalização: instância do i18next, constantes de idioma e a API `getLanguage`/`setLanguage`. | `<nome>.ts` (camelCase), `i18n.ts` para a instância | `export default` no final do arquivo |
 | `locales/` | Traduções: uma pasta por idioma, um JSON por namespace. | `<idioma>/<namespace>.json` (ex.: `pt-BR/home.json`) | — |
@@ -68,7 +71,7 @@ Siga essa tabela ao adicionar código novo. As pastas que ainda não têm arquiv
 Use o alias `@/`, que resolve para `src/`:
 
 ```ts
-import { ROUTES } from "@/routers/paths"
+import ROUTES from "@/routers/paths"
 import css from "@/styles/pages/home.module.css"
 ```
 
@@ -109,13 +112,19 @@ nome já é o próprio papel ficam isentos: `src/App.tsx`, `src/index.tsx` e `sr
 
 ### `types/`: `*.types.ts` vs. `*.d.ts`
 
-- `<nome>.types.ts` — tipos de domínio com **export nomeado**, importados explicitamente por
-  outros arquivos (ex.: `product.types.ts`).
+- `<dominio>/<NomeDoTipo>.types.ts` — um tipo exportado por arquivo, nomeado pelo tipo, com
+  `export default` no final e importado com `import type` (ex.:
+  `import type SupportedLanguage from "@/types/language/SupportedLanguage.types"`). O domínio é
+  a área do código dona do tipo, em lowerCamelCase (`language`, `store`).
 - `<nome>.d.ts` — declaração de ambiente/global, **nunca importada**: o TypeScript a carrega
   sozinho por estar dentro de `src/` (ex.: `declarations.d.ts`, que tipa `*.module.css`).
 
-Props de um componente específico (ex.: `SaveButtonProps`) ficam no próprio arquivo do componente,
-não em `types/`.
+Tipo não exportado fica local ao arquivo que o usa, sem `export`: `<Nome>Props` de um componente
+(ex.: `SaveButtonProps`), `<Nome>State`, retorno de hook de página e tipos de request/response de
+um endpoint. Se outro arquivo precisar do tipo, ele sobe para `src/types/` em arquivo próprio.
+
+A regra geral vale para todo o `src/`: export sempre no final do arquivo, nunca inline, e um
+símbolo exportado por arquivo (valor ou tipo), sempre com `export default`. Só `*.d.ts` fica fora.
 
 ## Variáveis de ambiente
 
@@ -137,6 +146,29 @@ arquivos, nenhuma configuração adicional é necessária.
 Toda variável nova declarada em `.env.example` precisa de uma entrada correspondente em
 `src/vite-env.d.ts`, na interface `ImportMetaEnv`, para que `import.meta.env` tenha
 autocomplete e checagem de tipo.
+
+### `VITE_API_URL`
+
+`.env.example` é o modelo: nele `VITE_API_URL` aponta para `https://api.example.com`. Para usar a
+API real, troque o valor no seu `.env` pela URL base dela, sem barra no final. Só variável com
+prefixo `VITE_` chega ao código do cliente.
+
+`src/services/http/apiUrl.ts` é o único arquivo que lê `import.meta.env.VITE_API_URL`. `get` e
+`post` (em `src/services/http/`) recebem **só o caminho relativo** e montam a URL final com
+`apiUrl + path`:
+
+```ts
+import get from "@/services/http/get"
+
+const controller = new AbortController()
+const items = await get<string[]>("/items", { signal: controller.signal })
+```
+
+- `signal` é opcional e cancela a requisição, que rejeita com `AbortError`. Para timeout, use
+  `AbortSignal.timeout(ms)` como `signal`.
+- Com a variável vazia ou ausente, o caminho segue relativo (`/items`), útil com proxy do Vite.
+- Resposta não-ok vira `Error` com o status e o corpo, quando houver.
+- `get` e `post` enviam `Accept-Language` com o idioma ativo (`getLanguage()`).
 
 ## Internacionalização
 
@@ -167,10 +199,10 @@ src/
   `meta.description`, `heading`, `showcase.status.success`). Os JSON usam 2 espaços de indentação.
 - `src/i18n/resources.ts` monta `{ "pt-BR": ..., en: ..., es: ... }` a partir dos JSON e tipa `en`
   e `es` como `typeof` dos recursos de `pt-BR`: namespace ou chave faltando em `en`/`es` vira erro de
-  compilação. Chave sobrando não é pega pelo tipo, só por `src/i18n/resources.test.ts`, que também
+  compilação. Chave sobrando não é pega pelo tipo, só por `src/i18n/test/resources.test.ts`, que também
   barra valor vazio.
 - A tipagem das chaves vem de `src/types/i18next.d.ts` (augmentação de `CustomTypeOptions`) e o
-  tipo `SupportedLanguage` de `src/types/language.types.ts`.
+  tipo `SupportedLanguage` de `src/types/language/SupportedLanguage.types.ts`.
 
 Na página, o namespace entra no `useTranslation`; quando ela também usa texto de `common`, os dois
 são declarados e a chave de `common` leva o prefixo:
@@ -251,7 +283,7 @@ assina a troca de idioma: envolvida em `memo`, ficaria com o estado antigo.
 
 ```tsx
 import setLanguage from "@/i18n/setLanguage"
-import type { SupportedLanguage } from "@/types/language.types"
+import type SupportedLanguage from "@/types/language/SupportedLanguage.types"
 
 interface LanguageOptionProps {
     language: SupportedLanguage
@@ -326,16 +358,16 @@ use uma chave por idioma.
    em `resources`.
 4. Para que variantes regionais caiam no idioma novo (`fr-CA` → `fr`), adicione o mapeamento em
    `LANGUAGE_BY_PRIMARY_SUBTAG` (`src/i18n/resolveSupportedLanguage.ts`).
-5. Atualize os testes que listam os idiomas (`src/i18n/resources.test.ts`,
-   `src/i18n/resolveSupportedLanguage.test.ts`, `src/i18n/getLanguage.test.ts`).
+5. Atualize os testes que listam os idiomas (`src/i18n/test/resources.test.ts`,
+   `src/i18n/test/resolveSupportedLanguage.test.ts`, `src/i18n/test/getLanguage.test.ts`).
 
 ### Mensagens de `Error`
 
-Mensagem de `Error` lançada no código do cliente (`src/services/http.service.ts`, `src/index.tsx`)
+Mensagem de `Error` lançada no código do cliente (`src/services/http/parseResponse.ts`, `src/index.tsx`)
 **não é traduzida**: continua literal, em português, como diagnóstico. O erro que chega ao usuário
 vindo de uma API deve vir traduzido pelo backend — para isso, a
 [#63](https://github.com/felipe-sant/template-react/issues/63) passa a enviar o header
-`Accept-Language` com `getLanguage()` em toda requisição do `http.service`. A convenção fica:
+`Accept-Language` com `getLanguage()` em toda requisição de `get`/`post` em `src/services/http/`. A convenção fica:
 texto que a UI mostra vem de chave; mensagem de `Error` lançada no cliente é literal em português;
 mensagem de erro de API vem traduzida pelo backend.
 
@@ -391,8 +423,9 @@ padrão, 4 para `.ts`/`.tsx`/`.css`) antes mesmo de o Prettier rodar.
 
 ### Testes
 
-O teste fica **co-localizado**: `<arquivo>.test.tsx` ao lado do arquivo testado
-(`src/pages/Home.page.test.tsx`), nunca em `__tests__/` nem com sufixo `.spec.tsx`. O ambiente é
+O teste fica em **`test/` dentro do diretório do arquivo testado**: `src/pages/Home.page.tsx` ->
+`src/pages/test/Home.page.test.tsx`, nunca em `__tests__/` nem com sufixo `.spec.tsx`. O arquivo
+testado é importado pelo alias `@/`, nunca por `../`. O ambiente é
 `jsdom` e o setup é `src/setupTests.ts`, registrado em `test.setupFiles` do `vite.config.ts` — é
 ele que registra os matchers do `jest-dom` (`toBeInTheDocument()` e companhia).
 
@@ -406,7 +439,7 @@ Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service.
 
 Cada formato tem seu jeito: página renderizada direto, árvore de rotas sob um router em memória,
 componente com interação (`user-event`), hook com `renderHook`, função pura e módulo com `fetch`
-stubado via `vi.stubGlobal` (como em `src/services/http.service.test.ts`). A skill
+stubado via `vi.stubGlobal` (como em `src/services/http/test/get.test.ts`). A skill
 `vitest-specialist` em `.claude/skills/` traz um trecho de cada um.
 
 `npm run test:cov` roda a suíte inteira com relatório de cobertura (`@vitest/coverage-v8`),

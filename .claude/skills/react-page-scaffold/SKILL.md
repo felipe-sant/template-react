@@ -12,7 +12,7 @@ Toda página deste template é composta por **quatro peças que precisam existir
 | Componente | `src/pages/<Nome>.page.tsx` | — |
 | Estilo | `src/styles/pages/<nome>.module.css` | `css.<classe>` vira `undefined`, elemento renderiza sem estilo |
 | Namespace de tradução | `src/locales/{pt-BR,en,es}/<nome>.json` + registro em `src/i18n/resources.ts` e `src/i18n/i18n.ts` | `t("<chave>")` não compila; chave ausente em `en`/`es` também quebra o `npm run typecheck` |
-| Rota | entrada em `src/routers/Router.tsx` | a página existe mas é inalcançável; a URL cai no `NotFound` |
+| Rota | entrada em `src/routers/routes.tsx` | a página existe mas é inalcançável; a URL cai no `NotFound` |
 
 `Home.page.tsx` e `NotFound.page.tsx` são as páginas-base já no repositório e servem de modelo para as quatro peças. O projeto que usa o template substitui o conteúdo delas pelo seu.
 
@@ -77,29 +77,31 @@ Exemplo com carregamento, erro e sucesso (a pasta `src/pages/hooks/` também é 
 
 ```ts
 import { useEffect, useState } from "react"
-import { get } from "@/services/http.service"
+import get from "@/services/http/get"
 
 type ItemsState =
     | { status: "loading" }
     | { status: "error" }
     | { status: "success"; items: string[] }
 
-export function useItems(): ItemsState {
+function useItems(): ItemsState {
     const [state, setState] = useState<ItemsState>({ status: "loading" })
 
     useEffect(() => {
-        get<string[]>(`${import.meta.env.VITE_API_URL}/items`)
+        get<string[]>("/items")
             .then((items) => setState({ status: "success", items }))
             .catch(() => setState({ status: "error" }))
     }, [])
 
     return state
 }
+
+export default useItems
 ```
 
 ```tsx
 import { useTranslation } from "react-i18next"
-import { useItems } from "@/pages/hooks/useItems"
+import useItems from "@/pages/hooks/useItems"
 
 function AboutPage() {
     const { t } = useTranslation(["about", "common"])
@@ -178,22 +180,26 @@ O namespace tem o mesmo nome do CSS Module da página (`about.module.css` → `a
 
 4. Acrescente o nome ao array `ns` do `init()` em `src/i18n/i18n.ts`.
 
-`en` e `es` são tipados como `typeof ptBR`: namespace ou chave que existe em `pt-BR` e falta em `en`/`es` quebra o `npm run typecheck`. Chave sobrando em `en`/`es` não é pega pelo tipo, só por `src/i18n/resources.test.ts`.
+`en` e `es` são tipados como `typeof ptBR`: namespace ou chave que existe em `pt-BR` e falta em `en`/`es` quebra o `npm run typecheck`. Chave sobrando em `en`/`es` não é pega pelo tipo, só por `src/i18n/test/resources.test.ts`.
 
-### 5. Rota — `src/routers/paths.ts` e `src/routers/Router.tsx`
+### 5. Rota — `src/routers/paths.ts` e `src/routers/routes.tsx`
 
-Adicione o path em `ROUTES` (`src/routers/paths.ts`) e registre a página como filha do `MainLayout` em `routes` (`RouteObject[]`, em `src/routers/Router.tsx`). A página é importada com `lazy` — o único `<Suspense>` já fica no `MainLayout`, em volta do `<Outlet />` — e a rota `*` (NotFound) tem que continuar sendo a **última**:
+Adicione o path em `ROUTES` (`src/routers/paths.ts`) e registre a página como filha do `MainLayout` em `routes` (`RouteObject[]`, em `src/routers/routes.tsx`). A página é importada com `lazy` — o único `<Suspense>` já fica no `MainLayout`, em volta do `<Outlet />` — e a rota `*` (NotFound) tem que continuar sendo a **última**:
 
 ```tsx
-export const ROUTES = {
+const ROUTES = {
     home: "/",
     about: "/about",
     notFound: "*"
 } as const
 
+export default ROUTES
+```
+
+```tsx
 const About = lazy(() => import("@/pages/About.page"))
 
-export const routes: RouteObject[] = [
+const routes: RouteObject[] = [
     {
         element: <MainLayout />,
         errorElement: <ErrorPage />,
@@ -204,6 +210,8 @@ export const routes: RouteObject[] = [
         ]
     }
 ]
+
+export default routes
 ```
 
 ### 6. Metadados da página (quando necessário)
@@ -220,28 +228,42 @@ Cada página declara os próprios `<title>` e `<meta>` direto no JSX, com as tag
 </>
 ```
 
+## Regra de export
+
+- Export sempre no final do arquivo, nunca inline (`export function`, `export const`, `export type`).
+- Um arquivo, um símbolo exportado, valor ou tipo, sempre com `export default`.
+- Tipo exportado vive em `src/types/<dominio>/<NomeDoTipo>.types.ts`, um por arquivo, importado com `import type <NomeDoTipo> from "@/types/<dominio>/<NomeDoTipo>.types"`.
+- Tipo não exportado fica local ao arquivo, sem `export` (`<Nome>Props`, `<Nome>State`, tipos de request/response); só sobe para `src/types/` se outro arquivo precisar.
+- `*.d.ts` de ambiente fica fora da regra.
+
+## Estado: `useState`, slice ou RTK Query
+
+- Estado que só esta página usa fica em `useState` no hook da página.
+- Estado de cliente compartilhado entre telas vai para um slice (skill `redux-store-scaffold`), lido com `useAppSelector` e escrito com `useAppDispatch`.
+- Dado vindo do servidor vai para um endpoint do RTK Query (skill `rtk-query-endpoint-scaffold`), consumido pelo hook de página `src/pages/hooks/use<Nome>.ts` com `isLoading` e `error`; o `get`/`post` de `src/services/http/` fica para o que não passa pelo RTK Query.
+
 ## Navegação entre páginas
 
 Sempre `<Link to="/rota">` ou `useNavigate()` do `react-router-dom`. Nunca `<a href="/rota">` para rota interna: a âncora crua faz reload completo e descarta todo o estado da aplicação (issue #5). `<a href>` só para link externo.
 
 ## Checklist
 
-- [ ] `src/pages/<Nome>.page.tsx` criado, com `export default`
+- [ ] `src/pages/<Nome>.page.tsx` criado, com `export default` no final e sem tipo exportado (`State` do hook local, sem `export`)
 - [ ] Se a página tiver lógica de estado/efeito, ela está em `src/pages/hooks/use<Nome>.ts`
       (exportando `use<Nome>()`) — o `.page.tsx` só chama o hook e renderiza o retorno
 - [ ] `src/styles/pages/<nome>.module.css` criado, e **toda** classe usada como `css.<algo>` existe nele
 - [ ] Nenhum texto de UI literal no JSX: tudo vem de `t()`/`<Trans>` (`npm run lint` passando)
 - [ ] Namespace `<nome>` criado em `src/locales/pt-BR/`, `src/locales/en/` e `src/locales/es/`, com as mesmas chaves nos três
 - [ ] Namespace importado e registrado nos objetos `ptBR`, `en` e `es` de `src/i18n/resources.ts` e no array `ns` de `src/i18n/i18n.ts`
-- [ ] Rota registrada em `src/routers/Router.tsx`, com `*` ainda por último
+- [ ] Rota registrada em `src/routers/routes.tsx`, com `*` ainda por último
 - [ ] Navegação interna usando `<Link>`, não `<a href>`
 - [ ] Metadados declarados com `t("meta.title")`/`t("meta.description")` se a página precisar substituir os placeholders do `index.html`
 - [ ] Valores de cor/fonte vindos das custom properties de `global.css`
-- [ ] `npm run typecheck`, `npm run build` e `npm test -- --run src/i18n/resources.test.ts` passando
+- [ ] `npm run typecheck`, `npm run build` e `npm test -- --run src/i18n/test/resources.test.ts` passando
 - [ ] A rota foi aberta no navegador e renderiza a página certa (o build passar não prova isso)
 
 ## Ao remover ou renomear uma página
 
-Remova as quatro peças juntas — componente, CSS Module, namespace e entrada no `Router.tsx`. O namespace sai dos três idiomas (`src/locales/pt-BR/`, `src/locales/en/`, `src/locales/es/`), dos imports e dos objetos `ptBR`, `en` e `es` de `src/i18n/resources.ts` e do array `ns` de `src/i18n/i18n.ts`. Um import órfão no `Router.tsx` ou no `resources.ts` quebra o build; um CSS Module ou um JSON de tradução órfão não quebra nada e por isso fica esquecido no repositório.
+Remova as quatro peças juntas — componente, CSS Module, namespace e entrada no `routes.tsx`. O namespace sai dos três idiomas (`src/locales/pt-BR/`, `src/locales/en/`, `src/locales/es/`), dos imports e dos objetos `ptBR`, `en` e `es` de `src/i18n/resources.ts` e do array `ns` de `src/i18n/i18n.ts`. Um import órfão no `routes.tsx` ou no `resources.ts` quebra o build; um CSS Module ou um JSON de tradução órfão não quebra nada e por isso fica esquecido no repositório.
 
 Ao renomear, o namespace acompanha o novo nome do CSS Module: renomeie os três JSON e atualize `resources.ts`, `ns` e o `useTranslation` da página.

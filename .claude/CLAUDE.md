@@ -29,7 +29,7 @@ npm run build    # typecheck + build de produção em dist/
 npm run preview  # serve o conteúdo de dist/ já gerado — depende de um npm run build anterior
 npm test         # Vitest em watch mode (o script é `vitest`, sem `run`)
 npm test -- --run                            # execução one-shot (CI, agente, terminal não-interativo)
-npm test -- --run src/pages/Home.page.test.tsx   # um arquivo específico
+npm test -- --run src/pages/test/Home.page.test.tsx   # um arquivo específico
 npm run typecheck # checagem de tipos (tsc -b) de src/ e vite.config.ts
 npm run lint      # oxlint sobre o projeto (configuração em .oxlintrc.json)
 npm run lint:fix  # mesma coisa, aplicando as correções automáticas possíveis (oxlint --fix)
@@ -37,10 +37,12 @@ npm run format    # prettier --write em src/**/*.{ts,tsx} e vite.config.ts, conf
 npm run test:cov  # vitest run --coverage — suíte inteira + relatório de cobertura
 ```
 
-O teste é **co-localizado**: `<arquivo>.test.tsx` ao lado do arquivo testado
-(`src/pages/Home.page.test.tsx`), nunca em `__tests__/` nem com
-sufixo `.spec.tsx`. Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service
-(`src/services/http.service.test.ts`). O ambiente é `jsdom` e o setup é
+O teste fica em **`test/` dentro do diretório do arquivo testado**:
+`src/pages/Home.page.tsx` -> `src/pages/test/Home.page.test.tsx`, nunca em `__tests__/` nem com
+sufixo `.spec.tsx`. O arquivo testado é importado pelo alias `@/` (`import HomePage from
+"@/pages/Home.page"`), nunca por `../`; `vi.mock`, `vi.doMock` e `import()` dinâmico também usam
+alias. Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service
+(`src/services/http/test/get.test.ts`). O ambiente é `jsdom` e o setup é
 `src/setupTests.ts`, registrado em `test.setupFiles` do `vite.config.ts` — é ele que importa
 `@testing-library/jest-dom/vitest` (registrando matchers como `toBeInTheDocument()`) e que roda
 `afterEach(cleanup)`, porque sem `globals: true` o Testing Library não liga o cleanup sozinho.
@@ -52,11 +54,19 @@ tela afirma o texto em português, nunca a chave (o i18next devolve a própria c
 tradução), não mocka `react-i18next` e troca de idioma com `setLanguage` dentro do `it`. Para
 simular uma nova carga de página (detecção do zero e persistência do `?lng=`), prepare URL,
 `navigator` e `localStorage`, rode `vi.resetModules()` e faça `await import("@/i18n/i18n")`,
-como em `src/i18n/i18n.test.ts`; restaure URL e stubs no fim.
+como em `src/i18n/test/i18n.test.ts`; restaure URL e stubs no fim.
+Teste de componente ou hook que lê a store usa `renderWithStore(ui, { preloadedState })` de
+`src/testUtils/renderWithStore.tsx`, que cria `createStore(preloadedState)` por chamada (estado e
+cache do RTK Query isolados) e devolve o `render` junto da `store`. Como não há endpoint em `src/`,
+o teste injeta um com `api.injectEndpoints`, stuba o `fetch` com `vi.stubGlobal` e define
+`VITE_API_URL` absoluta com `vi.stubEnv` (o `Request` do Node não aceita URL relativa), com
+`vi.resetModules()` e import dinâmico para a constante ser relida; o endpoint injetado persiste
+enquanto o módulo vive, então o nome é único por arquivo (ver `src/store/test/api.test.ts` e
+`src/testUtils/test/renderWithStore.test.tsx`).
 Os testes existentes servem de modelo para os formatos que o template já tem: render direto da
-página (`Home.page.test.tsx`), árvore de rotas em `createMemoryRouter` para verificar a rota `*`
-(`Router.test.tsx`), módulo com `fetch` stubado via `vi.stubGlobal` (`http.service.test.ts`) e
-layout com `<Outlet />` preenchido por rota-filha (`Main.layout.test.tsx`). Componente com
+página (`src/pages/test/Home.page.test.tsx`), árvore de rotas em `createMemoryRouter` para verificar a rota `*`
+(`src/routers/test/Router.test.tsx`), módulo com `fetch` stubado via `vi.stubGlobal` (`src/services/http/test/get.test.ts`) e
+layout com `<Outlet />` preenchido por rota-filha (`src/layouts/test/Main.layout.test.tsx`). Componente com
 interação, hook com `renderHook` e função pura não têm teste-modelo no repositório: a skill
 `vitest-specialist` traz um trecho de cada formato.
 
@@ -92,9 +102,9 @@ editores compatíveis, coerente com o `.prettierrc` já existente.
 
 ## Arquitetura
 
-Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` → `src/routers/Router.tsx` → páginas.
+Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` (`Provider` da store) → `src/routers/Router.tsx` → páginas.
 
-- **`App.tsx`** renderiza o `Router` e importa, por efeito colateral, `@/i18n/i18n` (que
+- **`App.tsx`** renderiza o `Router` dentro do `<Provider store={store}>` do react-redux e importa, por efeito colateral, `@/i18n/i18n` (que
   inicializa a instância do i18next) e o `global.css`; `@/i18n/i18n` está no `allow` de
   `import/no-unassigned-import` no `.oxlintrc.json`. Metadados (`<title>`, `<meta>`) são
   declarados por cada página com as tags nativas do React 19, que sobem sozinhas para o `<head>`
@@ -127,7 +137,7 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   - Um listener de `languageChanged`, registrado antes do `init()`, mantém
     `document.documentElement.lang` sincronizado com o idioma ativo. O `lang="pt-BR"` do
     `index.html` descreve o conteúdo estático daquele arquivo e é corrigido assim que o JS roda.
-  - `SupportedLanguage` vem de `src/types/language.types.ts`, derivado de `SUPPORTED_LANGUAGES`.
+  - `SupportedLanguage` vem de `src/types/language/SupportedLanguage.types.ts`, derivado de `SUPPORTED_LANGUAGES`.
     `src/types/i18next.d.ts` augmenta `CustomTypeOptions` com `defaultNS: "common"` e os recursos
     de `pt-BR`: chave inexistente em `t()` é erro de compilação, e `en`/`es` são tipados como
     `typeof` de `pt-BR` em `resources.ts`, então namespace ou chave faltando também não compila.
@@ -143,14 +153,41 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   `components={{ strong: <strong /> }}`, com o `<strong>` escrito no próprio valor do JSON.
   Namespace novo entra nos três idiomas, em `src/i18n/resources.ts` e no `ns` de
   `src/i18n/i18n.ts`.
-- **`src/routers/Router.tsx`** — ponto único de registro de rotas. Exporta `routes`
-  (`RouteObject[]`, com `MainLayout` como rota-pai e as páginas como filhas, os paths vindos de
-  `ROUTES` em `src/routers/paths.ts`) e o `Router` (export default), que cria o data router com
-  `createBrowserRouter(routes)` e renderiza um `RouterProvider`. A rota `*` cai em `NotFound` e
-  fica por último. Toda página nova entra aqui. O teste renderiza `routes` com
-  `createMemoryRouter(routes, { initialEntries })` e `RouterProvider`.
+- **`src/routers/`** — ponto único de registro de rotas. `routes.tsx` tem `routes`
+  (`RouteObject[]`, export default, com `MainLayout` como rota-pai e as páginas como filhas, os
+  paths vindos de `ROUTES` em `paths.ts`) e `Router.tsx` tem o `Router` (export default), que cria
+  o data router com `createBrowserRouter(routes)` e renderiza um `RouterProvider`. A rota `*` cai
+  em `NotFound` e fica por último. Toda página nova entra em `routes.tsx`. O teste renderiza
+  `routes` com `createMemoryRouter(routes, { initialEntries })` e `RouterProvider`.
   As rotas-filhas de `MainLayout` são `lazy` e o único `<Suspense>` fica em volta do `<Outlet />`
   de `src/layouts/Main.layout.tsx`: página nova não precisa (nem deve) ter o próprio `<Suspense>`.
+- **`src/store/`** — estado global: **Redux Toolkit + react-redux** para estado de cliente e
+  **RTK Query** (`@reduxjs/toolkit/query/react`, sem dependência extra) para estado de servidor.
+  Um símbolo público por arquivo, `export default` no final:
+  - `api.ts`: `createApi` com `reducerPath: "api"`, `baseQuery` com
+    `fetchBaseQuery({ baseUrl: API_URL, prepareHeaders })` (`API_URL` de `@/services/http/apiUrl`,
+    `Accept-Language` com `getLanguage()`), `tagTypes: []` e `endpoints: () => ({})`. Sem endpoint
+    de exemplo: o template não tem chamada de API real. Não importa a store. O RTK Query não usa o
+    `http` como `baseQuery` (o `fetchBaseQuery` já entrega o contrato que ele espera); os dois
+    clientes compartilham `apiUrl.ts` e o idioma.
+  - `api/<dominio>.api.ts`: endpoints de um domínio via `api.injectEndpoints`, com tipos de
+    request/response locais e sem `export`; exporta só a API injetada, e os hooks gerados são
+    consumidos por ela (`<dominio>Api.useGetXQuery`). `tagTypes` é preenchido em `api.ts` quando o
+    projeto precisar de invalidação.
+  - `rootReducer.ts` (`combineReducers` com `[api.reducerPath]: api.reducer`, onde slices entram),
+    `createStore.ts` (`createStore(preloadedState?)`, `configureStore` com `api.middleware`
+    concatenado, store nova a cada chamada) e `store.ts` (a instância da aplicação).
+  - `useAppDispatch.ts` e `useAppSelector.ts`: `useDispatch.withTypes<AppDispatch>()` e
+    `useSelector.withTypes<RootState>()`; código de aplicação usa só esses, com seletor estreito
+    (`useAppSelector((state) => state.x.y)`), nunca o estado inteiro.
+  - `slices/<nome>.slice.ts`: `createSlice`, export default do próprio slice, `<Nome>State` local.
+  - Tipos em `src/types/store/RootState.types.ts` (`ReturnType<typeof rootReducer>`),
+    `AppStore.types.ts` (`ReturnType<typeof createStore>`) e `AppDispatch.types.ts`
+    (`AppStore["dispatch"]`), um por arquivo, importados com `import type`.
+  - O `<Provider store={store}>` fica em `App.tsx`, em volta do `<Router />`. Estado que só uma
+    página usa continua `useState` no hook da página; estado compartilhado vai para um slice;
+    dado do servidor vai para um endpoint do RTK Query. Idioma continua em `src/i18n/`.
+  - Refetch on focus/reconnect (`setupListeners`) segue desligado, o padrão do RTK Query.
 - **`src/pages/`** — convenção de nome `Nome.page.tsx`, componente `function NomePage()` com
   `export default`. Lógica de estado/efeito específica de uma página (`useState`, `useEffect`,
   chamada a service) não fica no componente: vive em `src/pages/hooks/use<Nome>.ts`, exportando
@@ -195,8 +232,17 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   placeholder, sem produto definido, seria pior que não ter manifest — cada projeto derivado
   adiciona isso quando precisar.
 
-Não há camada de estado global nem cliente HTTP configurados. A convenção de variáveis de
-ambiente é a do Vite: só variáveis com prefixo `VITE_`
+**`src/services/http/`** é o cliente HTTP (fetch cru, usado fora do RTK Query), um símbolo
+por arquivo com `export default`: `apiUrl.ts` (a constante da URL da API, a **única** leitura de
+`import.meta.env.VITE_API_URL` no código, vazia quando a variável não existe, para a URL poder ser
+relativa e funcionar com proxy do Vite), `get.ts` e `post.ts` (`get<T>(path, options?)` e
+`post<T>(path, body, options?)`, que chamam `fetch` com `apiUrl + path`, enviam `Accept-Language`
+com `getLanguage()` a cada chamada e aceitam `options.signal` (`AbortSignal`); uma requisição
+cancelada rejeita com o `AbortError` do `fetch`, sem embrulho) e `parseResponse.ts` (resposta
+não-ok vira `Error` literal em português com o status e, quando há, o corpo). O chamador passa só
+o caminho relativo. Timeout próprio não existe: quem quiser usa `AbortSignal.timeout(ms)`.
+
+A convenção de variáveis de ambiente é a do Vite: só variáveis com prefixo `VITE_`
 são expostas ao código do cliente, e a leitura é `import.meta.env.VITE_ALGO` — não
 `process.env.REACT_APP_ALGO`, que era a convenção do Create React App e não existe mais aqui —
 materializada em `.env.example` (na raiz, com `VITE_API_URL` como exemplo) e na augmentação de
@@ -220,9 +266,27 @@ linguagem do produto — `<SaveButton label={t("profile.saveChanges")} />` está
 JSON correspondente.
 
 Duas exceções ao "texto vem de chave". Mensagem de `Error` lançada no código do cliente
-(`http.service.ts`, `src/index.tsx`) é literal em português, como diagnóstico. Mensagem de erro
+(`src/services/http/parseResponse.ts`, `src/index.tsx`) é literal em português, como diagnóstico. Mensagem de erro
 de API vem traduzida pelo backend, que recebe o idioma ativo (`getLanguage()`) via
 `Accept-Language` (#63). A descrição de `describe`/`it` nos testes é escrita em português.
+
+**Export no final e um símbolo exportado por arquivo.** Cinco regras:
+
+1. **Export sempre no final do arquivo**, nunca inline (`export function`, `export const`,
+   `export default function`, `export type`, `export interface`).
+2. **Um arquivo, um símbolo exportado**, seja valor (função, componente, hook, constante) ou tipo,
+   sempre com `export default`. Arquivo que precisa exportar dois símbolos vira dois arquivos.
+3. **Tipo exportado vive em `src/types/`, em arquivo próprio, nomeado pelo tipo**:
+   `src/types/<dominio>/<NomeDoTipo>.types.ts` (PascalCase, igual ao tipo), com `export default`
+   do tipo no final, importado com `import type <NomeDoTipo> from "@/types/<dominio>/<NomeDoTipo>.types"`.
+   O domínio é a área do código dona do tipo, em lowerCamelCase (`language`, `store`), e a pasta
+   nasce no primeiro tipo que precisar dela.
+4. **Tipo não exportado fica no arquivo que o usa**, declarado sem `export`: `<Nome>Props` de um
+   componente, `<Nome>State` e o retorno de um hook de página, tipos de request/response de um
+   endpoint. Se outro arquivo precisar importar o tipo, ele deixa de ser local e vai para
+   `src/types/` (regra 3). Não há exceção para "tipo que acompanha o valor".
+5. **Fora da regra:** declaração de ambiente (`*.d.ts`: `declarations.d.ts`, `i18next.d.ts`,
+   `vite-env.d.ts`), que não exporta símbolo próprio, mas augmenta/declara módulos e globais.
 
 **Não escreva comentários no código.** Um bom código se explica sozinho: se um trecho só fica
 compreensível com um comentário, o problema é o trecho — renomeie a variável/função, extraia uma
@@ -377,11 +441,13 @@ novo, então repetir via hook no momento do push seria redundante.
   `sdd` (só planeja, escreve `spec.md`/`tasks.md` em `.docs/`, nunca toca em `src/`), `executor`
   (implementa um `tasks.md` já aprovado, em branch dedicada, com commits atômicos) e `reviewer`
   (audita o resultado contra este arquivo, somente leitura).
-- `.claude/skills/` — conhecimento carregável sob demanda. São três, separadas pela pasta do
+- `.claude/skills/` — conhecimento carregável sob demanda. São cinco, separadas pela pasta do
   artefato: `react-page-scaffold` (página em `src/pages/` + CSS Module + registro de rota),
   `react-component-scaffold` (componente reutilizável em `src/components/` + CSS Module em
-  `src/styles/components/`) e `vitest-specialist` (teste co-localizado com Vitest + Testing
-  Library, `src/setupTests.ts` e o bloco `test` do `vite.config.ts`).
+  `src/styles/components/`), `vitest-specialist` (teste em `test/` por diretório com Vitest +
+  Testing Library, `src/setupTests.ts` e o bloco `test` do `vite.config.ts`),
+  `redux-store-scaffold` (slice em `src/store/slices/` + registro no `rootReducer` + hooks tipados)
+  e `rtk-query-endpoint-scaffold` (endpoints em `src/store/api/` via `api.injectEndpoints`).
 - `.docs/` — specs por feature/bug (`.docs/features/<slug>/`, `.docs/bugs/<slug>/`), a partir de
   `.docs/_template/`. As pastas de spec são gitignored: planejamento local, fora do histórico.
   O estado vive no campo `**Status:**` do `spec.md` (`rascunho` → `em-revisao` → `aprovada` →
