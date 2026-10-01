@@ -24,17 +24,17 @@ Há uma quarta peça, mas **condicional**: se a página tiver lógica de estado/
 Nome do arquivo em PascalCase com sufixo `.page.tsx`. Componente `function <Nome>Page()`, com `export default` no final (não `export default function`, para seguir o padrão das páginas-base `Home` e `NotFound`).
 
 ```tsx
-import css from "@/styles/pages/exemplo.module.css"
+import css from "@/styles/pages/about.module.css"
 
-function ExemploPage() {
+function AboutPage() {
     return (
         <main className={css.main}>
-            <h1>Exemplo</h1>
+            <h1>Sobre</h1>
         </main>
     )
 }
 
-export default ExemploPage
+export default AboutPage
 ```
 
 A tag raiz é `<main>` — `src/styles/global.css` já aplica `min-height: 100dvh` nela.
@@ -57,13 +57,13 @@ Exemplo com carregamento, erro e sucesso (a pasta `src/pages/hooks/` também é 
 import { useEffect, useState } from "react"
 import { get } from "@/services/http.service"
 
-type ExampleState =
+type ItemsState =
     | { status: "loading" }
     | { status: "error"; message: string }
     | { status: "success"; items: string[] }
 
-export function useExample(): ExampleState {
-    const [state, setState] = useState<ExampleState>({ status: "loading" })
+export function useItems(): ItemsState {
+    const [state, setState] = useState<ItemsState>({ status: "loading" })
 
     useEffect(() => {
         get<string[]>(`${import.meta.env.VITE_API_URL}/items`)
@@ -79,10 +79,10 @@ export function useExample(): ExampleState {
 ```
 
 ```tsx
-import { useExample } from "@/pages/hooks/useExample"
+import { useItems } from "@/pages/hooks/useItems"
 
-function ExemploPage() {
-    const state = useExample()
+function AboutPage() {
+    const state = useItems()
 
     return (
         <main>
@@ -99,7 +99,7 @@ function ExemploPage() {
     )
 }
 
-export default ExemploPage
+export default AboutPage
 ```
 
 Página só apresentacional, sem estado nem efeito (como `Home.page.tsx` e `NotFound.page.tsx`), não
@@ -109,7 +109,7 @@ tem hook — este passo não se aplica.
 
 Nome do arquivo em camelCase, correspondendo ao componente (`NotFound.page.tsx` → `notFound.module.css`).
 
-**Toda classe usada como `css.<algo>` no JSX precisa existir aqui.** `src/types/declarations.d.ts` tipa o módulo como `{ [key: string]: string }`, ou seja, qualquer chave compila — `css.naoExiste` não é erro de tipo, é `undefined` em runtime e o elemento sai sem `class`. Foi exatamente o caso da issue #3 (`home.module.css` vazio com `css.main` em uso), já corrigida. Confira o par JSX ↔ CSS a olho antes de dar a tarefa por concluída.
+**Toda classe usada como `css.<algo>` no JSX precisa existir aqui.** `src/types/declarations.d.ts` tipa o módulo como `{ [key: string]: string }`, ou seja, qualquer chave compila — `css.missingClass` não é erro de tipo, é `undefined` em runtime e o elemento sai sem `class`. Foi exatamente o caso da issue #3 (`home.module.css` vazio com `css.main` em uso), já corrigida. Confira o par JSX ↔ CSS a olho antes de dar a tarefa por concluída.
 
 Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-color`, `--sans-font`) em vez de repetir valor hardcoded.
 
