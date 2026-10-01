@@ -166,10 +166,16 @@ Quem renderiza traduz o texto que varia por uso com o próprio `t()` e passa o r
 ```tsx
 import { useTranslation } from "react-i18next"
 import SaveButton from "@/components/SaveButton"
+import useProfile from "@/pages/hooks/useProfile"
 
-const { t } = useTranslation("profile")
+function ProfilePage() {
+    const { t } = useTranslation("profile")
+    const { save } = useProfile()
 
-<SaveButton label={t("saveChanges")} onClick={() => save()} />
+    return <SaveButton label={t("saveChanges")} onClick={save} />
+}
+
+export default ProfilePage
 ```
 
 Componente com texto fixo (seção 5) não pede nada de quem consome: `<CloseButton onClick={close} />`.

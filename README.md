@@ -244,24 +244,25 @@ JavaScript roda, o `lang` é corrigido.
   só aceita `SupportedLanguage`, então passar um idioma não suportado é erro de tipo. Texto,
   `<title>`, `<meta name="description">` e `<html lang>` atualizam sem recarregar.
 
-O template não traz seletor de idioma, só a API que ele usaria. Um seletor é um componente que
-chama `useTranslation()` (para re-renderizar na troca), lê `getLanguage()`, lista
-`SUPPORTED_LANGUAGES` e chama `setLanguage()`:
+O template não traz seletor de idioma, só a API que ele usaria. O seletor chama `useTranslation()`
+(para re-renderizar na troca), lê `getLanguage()` e lista `SUPPORTED_LANGUAGES`; cada opção recebe
+`isActive` por prop e chama `setLanguage()`. A opção não lê `getLanguage()` sozinha porque não
+assina a troca de idioma: envolvida em `memo`, ficaria com o estado antigo.
 
 ```tsx
-import getLanguage from "@/i18n/getLanguage"
 import setLanguage from "@/i18n/setLanguage"
 import type { SupportedLanguage } from "@/types/language.types"
 
 interface LanguageOptionProps {
     language: SupportedLanguage
+    isActive: boolean
 }
 
-function LanguageOption({ language }: LanguageOptionProps) {
+function LanguageOption({ language, isActive }: LanguageOptionProps) {
     return (
         <button
             type="button"
-            aria-pressed={language === getLanguage()}
+            aria-pressed={isActive}
             onClick={() => void setLanguage(language)}
         >
             {language}
@@ -275,15 +276,21 @@ export default LanguageOption
 ```tsx
 import { useTranslation } from "react-i18next"
 import LanguageOption from "@/components/LanguageOption"
+import getLanguage from "@/i18n/getLanguage"
 import SUPPORTED_LANGUAGES from "@/i18n/supportedLanguages"
 
 function LanguageSelector() {
     const { t } = useTranslation()
+    const activeLanguage = getLanguage()
 
     return (
         <nav aria-label={t("languageSelector.label")}>
             {SUPPORTED_LANGUAGES.map((language) => (
-                <LanguageOption key={language} language={language} />
+                <LanguageOption
+                    key={language}
+                    language={language}
+                    isActive={language === activeLanguage}
+                />
             ))}
         </nav>
     )
