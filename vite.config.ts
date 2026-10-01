@@ -18,8 +18,7 @@ export default defineConfig({
             exclude: [
                 ...coverageConfigDefaults.exclude,
                 "src/index.tsx",
-                "src/types/example.types.ts",
-                "src/types/declarations.d.ts",
+                "src/types/**",
                 "vite.config.ts",
                 "src/setupTests.ts"
             ],

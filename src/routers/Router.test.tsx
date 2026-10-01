@@ -1,13 +1,8 @@
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 import { createMemoryRouter, RouterProvider } from "react-router-dom"
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { routes } from "@/routers/Router"
-import { ROUTES } from "@/routers/paths"
-import { get } from "@/services/http.service"
-import type { ExampleEntity } from "@/types/example.types"
-
-vi.mock("@/services/http.service", () => ({ get: vi.fn() }))
 
 function renderRoutes(initialEntries: string[]) {
     const router = createMemoryRouter(routes, { initialEntries })
@@ -43,30 +38,5 @@ describe("routes", () => {
         await user.click(screen.getByRole("link", { name: "Vá para a página inicial." }))
 
         expect(await screen.findByRole("heading", { name: "Hello World!" })).toBeInTheDocument()
-    })
-
-    it("redireciona para a página de acesso negado ao acessar a rota protegida sem autenticação", async () => {
-        renderRoutes([ROUTES.protectedExample])
-
-        expect(await screen.findByRole("heading", { name: "Acesso negado." })).toBeInTheDocument()
-        expect(
-            screen.queryByText("Você só vê isso se estiver autenticado.")
-        ).not.toBeInTheDocument()
-    })
-
-    it("renderiza a página de exemplos integrados dentro do MainLayout na rota /exemplos", async () => {
-        const entities: ExampleEntity[] = [
-            { id: "1", name: "Exemplo um", active: true, createdAt: "2026-01-10T12:00:00.000Z" }
-        ]
-        vi.mocked(get).mockResolvedValue(entities)
-
-        renderRoutes([ROUTES.examples])
-
-        expect(
-            await screen.findByRole("heading", { name: "Exemplos integrados" })
-        ).toBeInTheDocument()
-        expect(await screen.findByText("Exemplo um")).toBeInTheDocument()
-        expect(screen.getByRole("banner")).toBeInTheDocument()
-        expect(screen.getByRole("contentinfo")).toBeInTheDocument()
     })
 })

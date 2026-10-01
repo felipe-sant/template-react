@@ -1,18 +1,12 @@
-import { useNavigate } from "react-router-dom"
-import Button from "@/components/Button"
-import { ROUTES } from "@/routers/paths"
 import css from "@/styles/pages/home.module.css"
 
 function HomePage() {
-    const navigate = useNavigate()
-
     return (
         <>
             <title>Título da Página</title>
             <meta name="description" content="Minha descrição personalizada." />
             <main className={css.main}>
                 <h1>Hello World!</h1>
-                <Button label="Ver exemplos integrados" onClick={() => navigate(ROUTES.examples)} />
                 <section className={css.showcase}>
                     <p className={css.label}>Rótulo de exemplo</p>
                     <p className={css.description}>

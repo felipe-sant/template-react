@@ -1,18 +1,9 @@
 import { describe, expect, it } from "vitest"
 import { render, screen } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
-import { MemoryRouter, Route, Routes as Switch } from "react-router-dom"
 import HomePage from "@/pages/Home.page"
 
 function renderHomePage() {
-    return render(
-        <MemoryRouter initialEntries={["/"]}>
-            <Switch>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/exemplos" element={<p>Página de exemplos</p>} />
-            </Switch>
-        </MemoryRouter>
-    )
+    return render(<HomePage />)
 }
 
 describe("HomePage", () => {
@@ -42,14 +33,5 @@ describe("HomePage", () => {
         expect(screen.getByText("Sucesso")).toBeInTheDocument()
         expect(screen.getByText("Aviso")).toBeInTheDocument()
         expect(screen.getByText("Erro")).toBeInTheDocument()
-    })
-
-    it("navega para a página de exemplos ao clicar no botão", async () => {
-        const user = userEvent.setup()
-        renderHomePage()
-
-        await user.click(screen.getByRole("button", { name: "Ver exemplos integrados" }))
-
-        expect(screen.getByText("Página de exemplos")).toBeInTheDocument()
     })
 })
