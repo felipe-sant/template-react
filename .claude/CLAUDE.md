@@ -77,13 +77,15 @@ editores compatíveis, coerente com o `.prettierrc` já existente.
 
 Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` → `src/routers/Router.tsx` → páginas.
 
-- **`App.tsx`** define os metadados padrão do site (`react-helmet`) e importa o `global.css`.
-  Páginas que precisam de título próprio declaram o próprio `<Helmet>`, que sobrescreve o do App
-  (ver `NotFound.page.tsx`).
-- **`src/routers/Router.tsx`** — ponto único de registro de rotas (`BrowserRouter`). `Routes` é
-  importado com alias `Switch`. A rota `*` cai em `NotFound`. Toda página nova entra aqui. O
-  arquivo exporta `AppRoutes` (só as `<Route>`) separado do `Router` (export default, que envolve
-  `AppRoutes` com `BrowserRouter`) — é `AppRoutes` que o teste renderiza sob `MemoryRouter`.
+- **`App.tsx`** renderiza o `Router` e importa o `global.css`. Metadados (`<title>`, `<meta>`) são
+  declarados por cada página com as tags nativas do React 19, que sobem sozinhas para o `<head>`
+  (ver `NotFound.page.tsx`), sem biblioteca nem wrapper.
+- **`src/routers/Router.tsx`** — ponto único de registro de rotas. Exporta `routes`
+  (`RouteObject[]`, com `MainLayout` como rota-pai e as páginas como filhas, os paths vindos de
+  `ROUTES` em `src/routers/paths.ts`) e o `Router` (export default), que cria o data router com
+  `createBrowserRouter(routes)` e renderiza um `RouterProvider`. A rota `*` cai em `NotFound` e
+  fica por último. Toda página nova entra aqui. O teste renderiza `routes` com
+  `createMemoryRouter(routes, { initialEntries })` e `RouterProvider`.
   As rotas-filhas de `MainLayout` são `lazy` e o único `<Suspense>` fica em volta do `<Outlet />`
   de `src/layouts/Main.layout.tsx`: página nova não precisa (nem deve) ter o próprio `<Suspense>`.
 - **`src/pages/`** — convenção de nome `Nome.page.tsx`, componente `function NomePage()` com
@@ -124,9 +126,10 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   verde e quebra o build, ou vice-versa. O Vitest herda o alias do mesmo `vite.config.ts`.
 - **`public/`** — assets estáticos que o Vite copia como estão para a raiz de `dist/` no build, sem
   passar pelo bundler. Hoje contém só `favicon.svg`, referenciado em `index.html` via
-  `<link rel="icon">`; arquivo estático novo (imagem, dado mock) entra aqui. O template não inclui `manifest.json` nem ícones de PWA por decisão de
-  projeto: um manifest com `name`/ícones placeholder, sem produto definido, seria pior que não ter
-  manifest — cada projeto derivado adiciona isso quando precisar.
+  `<link rel="icon">`; arquivo estático novo (imagem, dado mock) entra aqui. O template não inclui
+  `manifest.json` nem ícones de PWA por decisão de projeto: um manifest com `name`/ícones
+  placeholder, sem produto definido, seria pior que não ter manifest — cada projeto derivado
+  adiciona isso quando precisar.
 
 Não há camada de estado global nem cliente HTTP configurados. A convenção de variáveis de
 ambiente é a do Vite: só variáveis com prefixo `VITE_`
@@ -145,7 +148,7 @@ atributo, interface/tipo, hook, arquivo e classe de CSS Module — tudo em ingl�
 (`name`/`active`, nunca `nome`/`ativo`; `isLoading`, nunca `estaCarregando`).
 
 O que **continua em português** é o texto que o usuário lê: conteúdo de JSX, `label`, `placeholder`,
-`title`/`meta` do `react-helmet`, mensagem de `Error` e string literal de UI em geral. A regra separa
+`<title>`/`<meta>` de página, mensagem de `Error` e string literal de UI em geral. A regra separa
 a linguagem do código da linguagem do produto — `<SaveButton label="Salvar alterações" />` está correto:
 `SaveButton` e `label` em inglês, o texto visível em português.
 

@@ -25,7 +25,7 @@ Ao descrever tarefas/critérios de aceite que envolvam código, considere estas 
 - **Componente:** arquivo `src/components/<Nome>.tsx` (PascalCase, sem sufixo), `export default` no final, props numa interface `<Nome>Props` no próprio arquivo. Estilo em `src/styles/components/<nome>.module.css`. Componente não tem rota — tela com rota é página. Ver skill `react-component-scaffold`.
 - **Teste:** co-localizado, `<arquivo>.test.tsx` ao lado do arquivo testado, com Vitest + Testing Library em `jsdom`; one-shot em `npm test -- --run`. Ver skill `vitest-specialist`.
 - **Estilo:** tokens globais (cores, fonte) vivem em `src/styles/global.css` como CSS custom properties; estilo de página vive no CSS Module dela. Não planeje estilo inline nem CSS global novo para escopo de uma página só.
-- **Metadados de página** (`<title>`, `<meta>`): hoje via `react-helmet`, com o padrão do site em `App.tsx` e sobrescrita por página. A issue #15 prevê a troca por metadata nativa do React 19 — se a spec tocar em metadados, cheque no código qual dos dois está valendo antes de escrever a tarefa.
+- **Metadados de página** (`<title>`, `<meta>`): declarados por cada página com as tags nativas do React 19 (`<title>`/`<meta>` direto no JSX, sem biblioteca). Se a spec tocar em metadados, confira o código da página antes de escrever a tarefa.
 - **TypeScript `strict` está ativo.** Não descreva código que dependa de `any` explícito ou de cast para silenciar erro de tipo.
 - **Estado e lógica:** componente cuida de renderização e interação; lógica reutilizável vira hook (`src/hooks/`) e acesso a dado externo vira service (`src/services/`). Não planeje regra de negócio dentro do JSX de uma página.
 
