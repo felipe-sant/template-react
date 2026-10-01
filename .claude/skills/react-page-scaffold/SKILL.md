@@ -13,7 +13,7 @@ Toda página deste template é composta por **três peças que precisam existir 
 | Estilo | `src/styles/pages/<nome>.module.css` | `css.<classe>` vira `undefined`, elemento renderiza sem estilo |
 | Rota | entrada em `src/routers/Router.tsx` | a página existe mas é inalcançável; a URL cai no `NotFound` |
 
-`Home.page.tsx` e `NotFound.page.tsx` são os exemplos de referência já no repositório. Como todo exemplo de template, existem para serem copiados e depois substituídos pelas páginas reais do projeto — não são peça permanente da aplicação.
+`Home.page.tsx` e `NotFound.page.tsx` são as páginas-base já no repositório e servem de modelo para as três peças. O projeto que usa o template substitui o conteúdo delas pelo seu.
 
 Há uma quarta peça, mas **condicional**: se a página tiver lógica de estado/efeito (fetch, `useState`, `useEffect`), essa lógica vai para um hook dedicado em `src/pages/hooks/use<Nome>.ts` — ver passo 2. Página só apresentacional, como `Home.page.tsx` e `NotFound.page.tsx`, não tem essa peça.
 
@@ -21,20 +21,20 @@ Há uma quarta peça, mas **condicional**: se a página tiver lógica de estado/
 
 ### 1. Componente — `src/pages/<Nome>.page.tsx`
 
-Nome do arquivo em PascalCase com sufixo `.page.tsx`. Componente `function <Nome>Page()`, com `export default` no final (não `export default function`, para seguir o padrão dos dois exemplos existentes).
+Nome do arquivo em PascalCase com sufixo `.page.tsx`. Componente `function <Nome>Page()`, com `export default` no final (não `export default function`, para seguir o padrão das páginas-base `Home` e `NotFound`).
 
 ```tsx
-import css from "@/styles/pages/exemplo.module.css"
+import css from "@/styles/pages/about.module.css"
 
-function ExemploPage() {
+function AboutPage() {
     return (
         <main className={css.main}>
-            <h1>Exemplo</h1>
+            <h1>Sobre</h1>
         </main>
     )
 }
 
-export default ExemploPage
+export default AboutPage
 ```
 
 A tag raiz é `<main>` — `src/styles/global.css` já aplica `min-height: 100dvh` nela.
@@ -47,26 +47,26 @@ exportando `use<Nome>()`. O `.page.tsx` só chama o hook e renderiza o retorno �
 `useState`/`useEffect` nem chamada a service dentro do componente.
 
 Isso é diferente de `src/hooks/`, reservado a hooks reutilizáveis entre páginas e componentes
-(`useToggle`, `useAuth`). `src/pages/hooks/` é para lógica específica de uma única página, que não
-faz sentido reaproveitar em outro lugar.
+(um `useDebounce` ou um `useMediaQuery`, por exemplo; a pasta é criada no primeiro uso).
+`src/pages/hooks/` é para lógica específica de uma única página, que não faz sentido reaproveitar
+em outro lugar.
 
-`src/pages/hooks/useExampleList.ts` é o exemplo real já no repositório, consumido por
-`src/pages/ExampleList.page.tsx`. Versão simplificada da mesma ideia:
+Exemplo com carregamento, erro e sucesso (a pasta `src/pages/hooks/` também é criada no primeiro uso):
 
 ```ts
 import { useEffect, useState } from "react"
 import { get } from "@/services/http.service"
 
-type ExampleState =
+type ItemsState =
     | { status: "loading" }
     | { status: "error"; message: string }
     | { status: "success"; items: string[] }
 
-export function useExample(): ExampleState {
-    const [state, setState] = useState<ExampleState>({ status: "loading" })
+export function useItems(): ItemsState {
+    const [state, setState] = useState<ItemsState>({ status: "loading" })
 
     useEffect(() => {
-        get<string[]>("/mock/example.json")
+        get<string[]>(`${import.meta.env.VITE_API_URL}/items`)
             .then((items) => setState({ status: "success", items }))
             .catch((error: unknown) => {
                 const message = error instanceof Error ? error.message : "Erro ao carregar."
@@ -79,10 +79,10 @@ export function useExample(): ExampleState {
 ```
 
 ```tsx
-import { useExample } from "@/pages/hooks/useExample"
+import { useItems } from "@/pages/hooks/useItems"
 
-function ExemploPage() {
-    const state = useExample()
+function AboutPage() {
+    const state = useItems()
 
     return (
         <main>
@@ -99,7 +99,7 @@ function ExemploPage() {
     )
 }
 
-export default ExemploPage
+export default AboutPage
 ```
 
 Página só apresentacional, sem estado nem efeito (como `Home.page.tsx` e `NotFound.page.tsx`), não
@@ -109,38 +109,49 @@ tem hook — este passo não se aplica.
 
 Nome do arquivo em camelCase, correspondendo ao componente (`NotFound.page.tsx` → `notFound.module.css`).
 
-**Toda classe usada como `css.<algo>` no JSX precisa existir aqui.** `src/types/declarations.d.ts` tipa o módulo como `{ [key: string]: string }`, ou seja, qualquer chave compila — `css.naoExiste` não é erro de tipo, é `undefined` em runtime e o elemento sai sem `class`. Foi exatamente o caso da issue #3 (`home.module.css` vazio com `css.main` em uso), já corrigida. Confira o par JSX ↔ CSS a olho antes de dar a tarefa por concluída.
+**Toda classe usada como `css.<algo>` no JSX precisa existir aqui.** `src/types/declarations.d.ts` tipa o módulo como `{ [key: string]: string }`, ou seja, qualquer chave compila — `css.missingClass` não é erro de tipo, é `undefined` em runtime e o elemento sai sem `class`. Foi exatamente o caso da issue #3 (`home.module.css` vazio com `css.main` em uso), já corrigida. Confira o par JSX ↔ CSS a olho antes de dar a tarefa por concluída.
 
 Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-color`, `--sans-font`) em vez de repetir valor hardcoded.
 
-### 4. Rota — `src/routers/Router.tsx`
+### 4. Rota — `src/routers/paths.ts` e `src/routers/Router.tsx`
 
-Registre a página no `Router`. O `Routes` é importado com o alias `Switch`, e a rota `*` (NotFound) tem que continuar sendo a **última**:
+Adicione o path em `ROUTES` (`src/routers/paths.ts`) e registre a página como filha do `MainLayout` em `routes` (`RouteObject[]`, em `src/routers/Router.tsx`). A página é importada com `lazy` — o único `<Suspense>` já fica no `MainLayout`, em volta do `<Outlet />` — e a rota `*` (NotFound) tem que continuar sendo a **última**:
 
 ```tsx
-import Exemplo from "@/pages/Exemplo.page";
+export const ROUTES = {
+    home: "/",
+    about: "/about",
+    notFound: "*"
+} as const
 
-<Switch>
-    <Route path="/" element={<Home />} />
-    <Route path="/exemplo" element={<Exemplo />} />
-    <Route path="*" element={<NotFound />} />
-</Switch>
+const About = lazy(() => import("@/pages/About.page"))
+
+export const routes: RouteObject[] = [
+    {
+        element: <MainLayout />,
+        errorElement: <ErrorPage />,
+        children: [
+            { path: ROUTES.home, element: <Home /> },
+            { path: ROUTES.about, element: <About /> },
+            { path: ROUTES.notFound, element: <NotFound /> }
+        ]
+    }
+]
 ```
 
 ### 5. Metadados da página (quando necessário)
 
-`App.tsx` define `<title>`/`<meta name="description">` padrão do site via `react-helmet`. Uma página só precisa declarar os seus se quiser sobrescrever — `NotFound.page.tsx` é o exemplo.
+Cada página declara os próprios `<title>` e `<meta>` direto no JSX, com as tags nativas do React 19, que sobem sozinhas para o `<head>` — sem biblioteca nem wrapper. `NotFound.page.tsx` e `Home.page.tsx` são os modelos:
 
 ```tsx
-import { Helmet } from "react-helmet"
-
-<Helmet>
+<>
     <title>Título da página</title>
     <meta name="description" content="Descrição da página." />
-</Helmet>
+    <main className={css.main}>
+        <h1>Título</h1>
+    </main>
+</>
 ```
-
-> A issue #15 prevê remover o `react-helmet` (sem manutenção, warnings em StrictMode no React 19) e usar `<title>`/`<meta>` nativos do React 19, que sobem sozinhos para o `<head>`. **Confira o que está valendo no código antes de copiar este trecho** — se `react-helmet` já tiver saído do `package.json`, escreva as tags direto no JSX, sem wrapper.
 
 ## Navegação entre páginas
 

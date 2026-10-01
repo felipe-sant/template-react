@@ -30,28 +30,27 @@ npm run test:cov  # vitest run --coverage — suíte inteira + relatório de cob
 ```
 
 O teste é **co-localizado**: `<arquivo>.test.tsx` ao lado do arquivo testado
-(`src/pages/Home.page.test.tsx`, `src/components/Button.test.tsx`), nunca em `__tests__/` nem com
+(`src/pages/Home.page.test.tsx`), nunca em `__tests__/` nem com
 sufixo `.spec.tsx`. Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service
-(`src/hooks/useToggle.test.ts`, `src/utils/formatDate.test.ts`). O ambiente é `jsdom` e o setup é
+(`src/services/http.service.test.ts`). O ambiente é `jsdom` e o setup é
 `src/setupTests.ts`, registrado em `test.setupFiles` do `vite.config.ts` — é ele que importa
 `@testing-library/jest-dom/vitest` (registrando matchers como `toBeInTheDocument()`) e que roda
 `afterEach(cleanup)`, porque sem `globals: true` o Testing Library não liga o cleanup sozinho.
-Os testes existentes servem de modelo para cada formato: render direto da página
-(`Home.page.test.tsx`), árvore de rotas sob `MemoryRouter` para verificar a rota `*`
-(`Router.test.tsx`), componente com interação (`Button.test.tsx`), hook com `renderHook`
-(`useToggle.test.ts`), função pura (`formatDate.test.ts`), módulo com `fetch` stubado via
-`vi.stubGlobal` (`http.service.test.ts`) e layout com `<Outlet />` preenchido por rota-filha
-(`Main.layout.test.tsx`). A skill `vitest-specialist` documenta o resto.
+Os testes existentes servem de modelo para os formatos que o template já tem: render direto da
+página (`Home.page.test.tsx`), árvore de rotas em `createMemoryRouter` para verificar a rota `*`
+(`Router.test.tsx`), módulo com `fetch` stubado via `vi.stubGlobal` (`http.service.test.ts`) e
+layout com `<Outlet />` preenchido por rota-filha (`Main.layout.test.tsx`). Componente com
+interação, hook com `renderHook` e função pura não têm teste-modelo no repositório: a skill
+`vitest-specialist` traz um trecho de cada formato.
 
 Ficam sem teste `src/index.tsx`, que só chama `createRoot` num `#root` que não existe fora do
-`index.html`, e `src/types/example.types.ts`, que só declara tipo e não tem runtime.
+`index.html`, e a pasta `src/types/`, que só declara tipo e não tem runtime.
 
 `npm run test:cov` roda a suíte inteira com `@vitest/coverage-v8` (bloco `test.coverage` em
 `vite.config.ts`), gerando relatório nos formatos `text`, `json`, `json-summary` e `html` em
 `coverage/` (gitignored) e aplicando um threshold mínimo de 80% em statements, branches, functions
 e lines — abaixo disso o comando termina com erro. `exclude` cobre os arquivos sem runtime
-relevante já citados acima, mais `vite.config.ts`, `src/setupTests.ts` e
-`src/types/declarations.d.ts`.
+relevante já citados acima, mais `vite.config.ts`, `src/setupTests.ts` e o glob `src/types/**`.
 
 `.github/workflows/ci.yml` roda em push para `main` e em todo Pull Request, com três jobs:
 `build` (`npm run build`) e `lint` (`npm run lint`) sempre completos, e `test`, cujo escopo
@@ -78,23 +77,45 @@ editores compatíveis, coerente com o `.prettierrc` já existente.
 
 Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` → `src/routers/Router.tsx` → páginas.
 
-- **`App.tsx`** define os metadados padrão do site (`react-helmet`) e importa o `global.css`.
-  Páginas que precisam de título próprio declaram o próprio `<Helmet>`, que sobrescreve o do App
-  (ver `NotFound.page.tsx`).
-- **`src/routers/Router.tsx`** — ponto único de registro de rotas (`BrowserRouter`). `Routes` é
-  importado com alias `Switch`. A rota `*` cai em `NotFound`. Toda página nova entra aqui. O
-  arquivo exporta `AppRoutes` (só as `<Route>`) separado do `Router` (export default, que envolve
-  `AppRoutes` com `BrowserRouter`) — é `AppRoutes` que o teste renderiza sob `MemoryRouter`.
+- **`App.tsx`** renderiza o `Router` e importa o `global.css`. Metadados (`<title>`, `<meta>`) são
+  declarados por cada página com as tags nativas do React 19, que sobem sozinhas para o `<head>`
+  (ver `NotFound.page.tsx`), sem biblioteca nem wrapper.
+- **`src/routers/Router.tsx`** — ponto único de registro de rotas. Exporta `routes`
+  (`RouteObject[]`, com `MainLayout` como rota-pai e as páginas como filhas, os paths vindos de
+  `ROUTES` em `src/routers/paths.ts`) e o `Router` (export default), que cria o data router com
+  `createBrowserRouter(routes)` e renderiza um `RouterProvider`. A rota `*` cai em `NotFound` e
+  fica por último. Toda página nova entra aqui. O teste renderiza `routes` com
+  `createMemoryRouter(routes, { initialEntries })` e `RouterProvider`.
   As rotas-filhas de `MainLayout` são `lazy` e o único `<Suspense>` fica em volta do `<Outlet />`
   de `src/layouts/Main.layout.tsx`: página nova não precisa (nem deve) ter o próprio `<Suspense>`.
 - **`src/pages/`** — convenção de nome `Nome.page.tsx`, componente `function NomePage()` com
   `export default`. Lógica de estado/efeito específica de uma página (`useState`, `useEffect`,
   chamada a service) não fica no componente: vive em `src/pages/hooks/use<Nome>.ts`, exportando
-  `use<Nome>()` — ver `src/pages/hooks/useExampleList.ts` como exemplo já presente no repositório.
-  O `.page.tsx` correspondente só chama esse hook e renderiza o retorno, sem `useState`/`useEffect`
-  nem chamada a service dentro do componente. Isso é distinto de `src/hooks/`, que continua
-  reservado a hooks reutilizáveis entre páginas e componentes, não específicos de uma única página
-  (`src/hooks/useToggle.ts`, `src/hooks/useAuth.ts`).
+  `use<Nome>()`. O `.page.tsx` correspondente só chama esse hook e renderiza o retorno, sem
+  `useState`/`useEffect` nem chamada a service dentro do componente:
+
+  ```tsx
+  function useProductList() {
+      const [products, setProducts] = useState<Product[]>([])
+      const [isLoading, setIsLoading] = useState(true)
+
+      useEffect(() => {
+          get<Product[]>("/products").then(setProducts).finally(() => setIsLoading(false))
+      }, [])
+
+      return { products, isLoading }
+  }
+
+  function ProductListPage() {
+      const { products, isLoading } = useProductList()
+
+      return isLoading ? <p>Carregando...</p> : <ProductTable products={products} />
+  }
+  ```
+
+  Isso é distinto de `src/hooks/`, que é reservado a hooks reutilizáveis entre páginas e
+  componentes, não específicos de uma única página (por exemplo, um `useDebounce` ou `useMediaQuery`).
+  Nenhuma das duas pastas existe ainda: `src/pages/hooks/` e `src/hooks/` são criadas no primeiro uso.
 - **`src/styles/`** — `global.css` guarda os CSS custom properties (escala de cinza `--g1-color`
   … `--g10-color`, `--sans-font`) e o reset. Estilos de página ficam em
   `src/styles/pages/<nome>.module.css` (CSS Modules), importados como `import css from "..."`.
@@ -105,20 +126,10 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` →
   verde e quebra o build, ou vice-versa. O Vitest herda o alias do mesmo `vite.config.ts`.
 - **`public/`** — assets estáticos que o Vite copia como estão para a raiz de `dist/` no build, sem
   passar pelo bundler. Hoje contém só `favicon.svg`, referenciado em `index.html` via
-  `<link rel="icon">`. O template não inclui `manifest.json` nem ícones de PWA por decisão de
-  projeto: um manifest com `name`/ícones placeholder, sem produto definido, seria pior que não ter
-  manifest — cada projeto derivado adiciona isso quando precisar.
-
-- **Fluxo de exemplo integrado** — `src/pages/ExampleList.page.tsx`, registrado na rota
-  `/exemplos` de `src/routers/Router.tsx` (dentro de `MainLayout`, fora de `RequireAuth`), consome
-  `src/pages/hooks/useExampleList.ts`, que busca uma lista de `ExampleEntity`
-  (`src/types/example.types.ts`) com `get` de `src/services/http.service.ts` e concentra o
-  `useState`/`useEffect` de carregamento/erro/sucesso; a página só formata cada `createdAt` com
-  `src/utils/formatDate.ts` e renderiza carregamento/erro/lista vazia a partir do estado que o hook
-  devolve. O dado vem de um mock estático em `public/mock/`, não de
-  `VITE_API_URL`: o valor padrão dessa variável em `.env.example` é um domínio reservado que não
-  resolve, então apontar o exemplo para ele quebraria por padrão logo após um `git clone` sem
-  `.env` configurado.
+  `<link rel="icon">`; arquivo estático novo (imagem, dado mock) entra aqui. O template não inclui
+  `manifest.json` nem ícones de PWA por decisão de projeto: um manifest com `name`/ícones
+  placeholder, sem produto definido, seria pior que não ter manifest — cada projeto derivado
+  adiciona isso quando precisar.
 
 Não há camada de estado global nem cliente HTTP configurados. A convenção de variáveis de
 ambiente é a do Vite: só variáveis com prefixo `VITE_`
@@ -137,9 +148,9 @@ atributo, interface/tipo, hook, arquivo e classe de CSS Module — tudo em ingl�
 (`name`/`active`, nunca `nome`/`ativo`; `isLoading`, nunca `estaCarregando`).
 
 O que **continua em português** é o texto que o usuário lê: conteúdo de JSX, `label`, `placeholder`,
-`title`/`meta` do `react-helmet`, mensagem de `Error` e string literal de UI em geral. A regra separa
-a linguagem do código da linguagem do produto — `<Button label="Botão de exemplo" />` está correto:
-`Button` e `label` em inglês, o texto visível em português.
+`<title>`/`<meta>` de página, mensagem de `Error` e string literal de UI em geral. A regra separa
+a linguagem do código da linguagem do produto — `<SaveButton label="Salvar alterações" />` está correto:
+`SaveButton` e `label` em inglês, o texto visível em português.
 
 **Não escreva comentários no código.** Um bom código se explica sozinho: se um trecho só fica
 compreensível com um comentário, o problema é o trecho — renomeie a variável/função, extraia uma
@@ -192,8 +203,25 @@ Continua sendo revisão manual do `reviewer` (o oxlint não cobre):
 - Subpath import quando o pacote publica (`lodash/debounce` em vez de `lodash`) — não existe
   regra no oxlint para essa convenção.
 - `.map()` que renderiza JSX com corpo de mais de 3 linhas deve ser extraído para um componente
-  dedicado em vez de ficar inline — não existe regra de lint que meça linhas de corpo de `.map()`.
-  Ver `ExampleListItem` (`src/pages/ExampleList.page.tsx`) como exemplo já seguindo a convenção.
+  dedicado em vez de ficar inline — não existe regra de lint que meça linhas de corpo de `.map()`:
+
+  ```tsx
+  {products.map((product) => (
+      <li key={product.id}>
+          <h3>{product.name}</h3>
+          <p>{product.description}</p>
+          <span>{product.price}</span>
+      </li>
+  ))}
+  ```
+
+  vira
+
+  ```tsx
+  {products.map((product) => (
+      <ProductListItem key={product.id} product={product} />
+  ))}
+  ```
 
 ### Imports
 
