@@ -294,7 +294,7 @@ função com nome descritivo ou simplifique a lógica, em vez de comentar. Isso 
 e `{/* */}` em JSX.
 
 O contexto que não cabe no código vai para onde ele é procurado de verdade: `README.md` (como usar),
-a descrição do PR (por que mudou), o `spec.md` da feature em `.docs/` (decisões de projeto) e a
+a descrição do PR (por que mudou), o `spec.md` da feature em `.specs/` (decisões de projeto) e a
 mensagem de commit (o que mudou naquele passo). Ao remover um comentário que carregava informação
 útil, mova essa informação para um desses lugares — não a descarte.
 
@@ -438,7 +438,7 @@ novo, então repetir via hook no momento do push seria redundante.
 ## Tooling de IA (agents, skills e spec-driven)
 
 - `.claude/agents/` — três papéis que formam o fluxo planejar → aprovar → executar → revisar:
-  `sdd` (só planeja, escreve `spec.md`/`tasks.md` em `.docs/`, nunca toca em `src/`), `executor`
+  `sdd` (só planeja, escreve `spec.md`/`tasks.md` em `.specs/`, nunca toca em `src/`), `executor`
   (implementa um `tasks.md` já aprovado, em branch dedicada, com commits atômicos) e `reviewer`
   (audita o resultado contra este arquivo, somente leitura).
 - `.claude/skills/` — conhecimento carregável sob demanda. São cinco, separadas pela pasta do
@@ -448,10 +448,14 @@ novo, então repetir via hook no momento do push seria redundante.
   Testing Library, `src/setupTests.ts` e o bloco `test` do `vite.config.ts`),
   `redux-store-scaffold` (slice em `src/store/slices/` + registro no `rootReducer` + hooks tipados)
   e `rtk-query-endpoint-scaffold` (endpoints em `src/store/api/` via `api.injectEndpoints`).
-- `.docs/` — specs por feature/bug (`.docs/features/<slug>/`, `.docs/bugs/<slug>/`), a partir de
-  `.docs/_template/`. As pastas de spec são gitignored: planejamento local, fora do histórico.
+- `.specs/` — specs por feature/bug (`.specs/features/<slug>/`, `.specs/bugs/<slug>/`), a partir de
+  `.specs/_template/`. As pastas de spec são gitignored: planejamento local, fora do histórico.
   O estado vive no campo `**Status:**` do `spec.md` (`rascunho` → `em-revisao` → `aprovada` →
   `em-andamento` → `implementada`); só humano promove para `aprovada`.
+- `docs/` — documentação versionada **só deste frontend** (arquitetura, ADRs, diagramas, telas). O
+  sistema inteiro fica no repositório pai, que reúne backend e frontend como submódulos, e o
+  contrato da API fica no backend. Índice em `docs/README.md`; o `sdd` não escreve lá, só em
+  `.specs/`.
 
 Ao mudar uma convenção deste arquivo, verifique se algum agente ou skill a repete — eles citam
 este `CLAUDE.md` como fonte da verdade, mas duplicam os pontos que precisam aplicar sozinhos.
