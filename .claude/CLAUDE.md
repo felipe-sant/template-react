@@ -33,7 +33,7 @@ npm test -- --run src/pages/test/Home.page.test.tsx   # um arquivo específico
 npm run typecheck # checagem de tipos (tsc -b) de src/ e vite.config.ts
 npm run lint      # oxlint sobre o projeto (configuração em .oxlintrc.json)
 npm run lint:fix  # mesma coisa, aplicando as correções automáticas possíveis (oxlint --fix)
-npm run format    # prettier --write em src/**/*.{ts,tsx} e vite.config.ts, conforme .prettierrc
+npm run format    # prettier --write em **/*.{ts,tsx,css,json,md,yml}, conforme .prettierrc e .prettierignore
 npm run test:cov  # vitest run --coverage — suíte inteira + relatório de cobertura
 ```
 
@@ -79,6 +79,13 @@ Ficam sem teste `src/index.tsx`, que só chama `createRoot` num `#root` que não
 e lines — abaixo disso o comando termina com erro. `exclude` cobre os arquivos sem runtime
 relevante já citados acima, mais `vite.config.ts`, `src/setupTests.ts` e o glob `src/types/**`.
 
+O bloco `test` usa `pool: "vmThreads"` (o `jsdom` é criado uma vez por worker e cada arquivo roda
+num contexto de VM isolado). Média de 5 execuções, primeira descartada: 11,06 s no padrão, 3,88 s
+com `vmThreads` (-65%) e 4,05 s com `isolate: false` (-63%, mas falhou sob `--sequence.shuffle` e
+foi descartado); cobertura idêntica nas três. O custo é memória (cerca de 1,4 GB de pico no
+`test:cov` contra cerca de 225 MB). Teste que stuba com `vi.stubGlobal`/`vi.stubEnv` restaura no
+`afterEach` com `vi.unstubAllGlobals()`/`vi.unstubAllEnvs()`.
+
 `.github/workflows/ci.yml` roda em push para `main` e em todo Pull Request, com três jobs:
 `build` (`npm run build`) e `lint` (`npm run lint`) sempre completos, e `test`, cujo escopo
 depende do contexto — suíte completa + `npm run test:cov` (com o threshold de 80% acima) quando o
@@ -88,17 +95,26 @@ evento é push (sempre em `main`) ou o PR mira `main`, ou quando o diff toca um 
 os testes afetados pelo diff. Em `mode=full`, o diretório `coverage/` é publicado como artifact do
 workflow.
 
+Cada push num PR cancela o run anterior da mesma ref (`concurrency`, `cancel-in-progress` só para
+`pull_request`; `main` nunca é cancelada). O `.github/dependabot.yml` atualiza `npm` e
+`github-actions` mensalmente, com `minor`/`patch` agrupados num PR por ecossistema e `major` em PR
+próprio; como mira `main`, esses PRs rodam a suíte completa.
+
 `vite build` sozinho não checa tipos (usa esbuild, que só transpila); por isso o script `build`
 roda `npm run typecheck` (`tsc -b`, que cobre `src/` via `tsconfig.app.json` e `vite.config.ts` via `tsconfig.node.json`) antes.
 
 `npm install` configura automaticamente (script `prepare`, `"prepare": "husky"`) um hook de
 `pre-commit` do Husky que roda `npx lint-staged` a cada commit — sem passo manual extra.
-`lint-staged` (`.lintstagedrc.json`) aplica `oxlint --fix` e depois `prettier --write` só nos
-arquivos `.ts`/`.tsx` staged, mesmo escopo dos scripts `lint:fix`/`format`; corrige o que for
+`lint-staged` (`.lintstagedrc.json`) aplica `oxlint --fix` e depois `prettier --write` nos
+arquivos `.ts`/`.tsx` staged, e só `prettier --write` nos `.css`/`.json`/`.md`/`.yml` staged (mesmo
+escopo do script `format`, com `package-lock.json`, `dist/` e `coverage/` fora via
+`.prettierignore`); corrige o que for
 automático e bloqueia o commit se sobrar erro de lint não corrigível sozinho. O `.editorconfig` na
 raiz (`root = true`) padroniza charset, final de linha, quebra de linha final, remoção de trailing
-whitespace e indentação (`indent_size = 2` por padrão, `4` para `*.ts`/`*.tsx`/`*.css`) para
-editores compatíveis, coerente com o `.prettierrc` já existente.
+whitespace e indentação (`indent_size = 4` para todos os tipos, exceto `package.json` e `package-lock.json`, em `2`)
+para editores compatíveis, coerente com o `.prettierrc`. O stylelint foi avaliado e recusado
+(superfície de CSS pequena, conflito com escolhas pessoais de estilo, dependências extras); pode ser
+reavaliado se o CSS crescer.
 
 ## Arquitetura
 
@@ -126,23 +142,23 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` (`P
   (`resolveSupportedLanguage.ts`: código exato, ou `es-*` → `es`, `en-*` → `en`, `pt`/`pt-*` →
   `pt-BR`, ou `undefined`). A ordem efetiva é escolha salva (por `setLanguage` ou por um `?lng=`
   válido) → idioma do navegador → `en`; navegador em `fr` abre em `en`.
-  - **`caches: []`: o detector nunca grava**, para que quem não escolheu idioma acompanhe o
-    idioma do navegador a cada carga.
-  - **`saveLanguage` é o único código que escreve em `LANGUAGE_STORAGE_KEY`**, interno à pasta,
-    chamado só por `setLanguage` e por `i18n.ts` logo depois do `init()`, quando a URL tem `?lng=`
-    suportado. `i18n.ts` não importa `setLanguage`, para não criar ciclo.
-  - **API de idioma:** `getLanguage(): SupportedLanguage` (idioma ativo, função comum, usável fora
-    de React) e `setLanguage(language): Promise<void>` (troca e salva a escolha). Componente e
-    página usam só essas duas, nunca `saveLanguage` nem `localStorage` direto.
-  - Um listener de `languageChanged`, registrado antes do `init()`, mantém
-    `document.documentElement.lang` sincronizado com o idioma ativo. O `lang="pt-BR"` do
-    `index.html` descreve o conteúdo estático daquele arquivo e é corrigido assim que o JS roda.
-  - `SupportedLanguage` vem de `src/types/language/SupportedLanguage.types.ts`, derivado de `SUPPORTED_LANGUAGES`.
-    `src/types/i18next.d.ts` augmenta `CustomTypeOptions` com `defaultNS: "common"` e os recursos
-    de `pt-BR`: chave inexistente em `t()` é erro de compilação, e `en`/`es` são tipados como
-    `typeof` de `pt-BR` em `resources.ts`, então namespace ou chave faltando também não compila.
+    - **`caches: []`: o detector nunca grava**, para que quem não escolheu idioma acompanhe o
+      idioma do navegador a cada carga.
+    - **`saveLanguage` é o único código que escreve em `LANGUAGE_STORAGE_KEY`**, interno à pasta,
+      chamado só por `setLanguage` e por `i18n.ts` logo depois do `init()`, quando a URL tem `?lng=`
+      suportado. `i18n.ts` não importa `setLanguage`, para não criar ciclo.
+    - **API de idioma:** `getLanguage(): SupportedLanguage` (idioma ativo, função comum, usável fora
+      de React) e `setLanguage(language): Promise<void>` (troca e salva a escolha). Componente e
+      página usam só essas duas, nunca `saveLanguage` nem `localStorage` direto.
+    - Um listener de `languageChanged`, registrado antes do `init()`, mantém
+      `document.documentElement.lang` sincronizado com o idioma ativo. O `lang="pt-BR"` do
+      `index.html` descreve o conteúdo estático daquele arquivo e é corrigido assim que o JS roda.
+    - `SupportedLanguage` vem de `src/types/language/SupportedLanguage.types.ts`, derivado de `SUPPORTED_LANGUAGES`.
+      `src/types/i18next.d.ts` augmenta `CustomTypeOptions` com `defaultNS: "common"` e os recursos
+      de `pt-BR`: chave inexistente em `t()` é erro de compilação, e `en`/`es` são tipados como
+      `typeof` de `pt-BR` em `resources.ts`, então namespace ou chave faltando também não compila.
 - **`src/locales/`** — tradução é dado, separado da configuração em `src/i18n/`:
-  `src/locales/<idioma>/<namespace>.json`, JSON com 2 espaços, os mesmos namespaces e chaves nos
+  `src/locales/<idioma>/<namespace>.json`, JSON com 4 espaços, os mesmos namespaces e chaves nos
   três idiomas. Um namespace por dono do texto, com o nome do CSS Module correspondente (`home`,
   `notFound`, `error`, `mainLayout`); `common` guarda texto compartilhado (`backHome`, `loading`)
   e texto fixo de componente de `src/components/`. Chave em inglês, lowerCamelCase, hierárquica por
@@ -164,59 +180,60 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` (`P
 - **`src/store/`** — estado global: **Redux Toolkit + react-redux** para estado de cliente e
   **RTK Query** (`@reduxjs/toolkit/query/react`, sem dependência extra) para estado de servidor.
   Um símbolo público por arquivo, `export default` no final:
-  - `api.ts`: `createApi` com `reducerPath: "api"`, `baseQuery` com
-    `fetchBaseQuery({ baseUrl: API_URL, prepareHeaders })` (`API_URL` de `@/services/http/apiUrl`,
-    `Accept-Language` com `getLanguage()`), `tagTypes: []` e `endpoints: () => ({})`. Sem endpoint
-    de exemplo: o template não tem chamada de API real. Não importa a store. O RTK Query não usa o
-    `http` como `baseQuery` (o `fetchBaseQuery` já entrega o contrato que ele espera); os dois
-    clientes compartilham `apiUrl.ts` e o idioma.
-  - `api/<dominio>.api.ts`: endpoints de um domínio via `api.injectEndpoints`, com tipos de
-    request/response locais e sem `export`; exporta só a API injetada, e os hooks gerados são
-    consumidos por ela (`<dominio>Api.useGetXQuery`). `tagTypes` é preenchido em `api.ts` quando o
-    projeto precisar de invalidação.
-  - `rootReducer.ts` (`combineReducers` com `[api.reducerPath]: api.reducer`, onde slices entram),
-    `createStore.ts` (`createStore(preloadedState?)`, `configureStore` com `api.middleware`
-    concatenado, store nova a cada chamada) e `store.ts` (a instância da aplicação).
-  - `useAppDispatch.ts` e `useAppSelector.ts`: `useDispatch.withTypes<AppDispatch>()` e
-    `useSelector.withTypes<RootState>()`; código de aplicação usa só esses, com seletor estreito
-    (`useAppSelector((state) => state.x.y)`), nunca o estado inteiro.
-  - `slices/<nome>.slice.ts`: `createSlice`, export default do próprio slice, `<Nome>State` local.
-  - Tipos em `src/types/store/RootState.types.ts` (`ReturnType<typeof rootReducer>`),
-    `AppStore.types.ts` (`ReturnType<typeof createStore>`) e `AppDispatch.types.ts`
-    (`AppStore["dispatch"]`), um por arquivo, importados com `import type`.
-  - O `<Provider store={store}>` fica em `App.tsx`, em volta do `<Router />`. Estado que só uma
-    página usa continua `useState` no hook da página; estado compartilhado vai para um slice;
-    dado do servidor vai para um endpoint do RTK Query. Idioma continua em `src/i18n/`.
-  - Refetch on focus/reconnect (`setupListeners`) segue desligado, o padrão do RTK Query.
+    - `api.ts`: `createApi` com `reducerPath: "api"`, `baseQuery` com
+      `fetchBaseQuery({ baseUrl: API_URL, prepareHeaders })` (`API_URL` de `@/services/http/apiUrl`,
+      `Accept-Language` com `getLanguage()`), `tagTypes: []` e `endpoints: () => ({})`. Sem endpoint
+      de exemplo: o template não tem chamada de API real. Não importa a store. O RTK Query não usa o
+      `http` como `baseQuery` (o `fetchBaseQuery` já entrega o contrato que ele espera); os dois
+      clientes compartilham `apiUrl.ts` e o idioma.
+    - `api/<dominio>.api.ts`: endpoints de um domínio via `api.injectEndpoints`, com tipos de
+      request/response locais e sem `export`; exporta só a API injetada, e os hooks gerados são
+      consumidos por ela (`<dominio>Api.useGetXQuery`). `tagTypes` é preenchido em `api.ts` quando o
+      projeto precisar de invalidação.
+    - `rootReducer.ts` (`combineReducers` com `[api.reducerPath]: api.reducer`, onde slices entram),
+      `createStore.ts` (`createStore(preloadedState?)`, `configureStore` com `api.middleware`
+      concatenado, store nova a cada chamada) e `store.ts` (a instância da aplicação).
+    - `useAppDispatch.ts` e `useAppSelector.ts`: `useDispatch.withTypes<AppDispatch>()` e
+      `useSelector.withTypes<RootState>()`; código de aplicação usa só esses, com seletor estreito
+      (`useAppSelector((state) => state.x.y)`), nunca o estado inteiro.
+    - `slices/<nome>.slice.ts`: `createSlice`, export default do próprio slice, `<Nome>State` local.
+    - Tipos em `src/types/store/RootState.types.ts` (`ReturnType<typeof rootReducer>`),
+      `AppStore.types.ts` (`ReturnType<typeof createStore>`) e `AppDispatch.types.ts`
+      (`AppStore["dispatch"]`), um por arquivo, importados com `import type`.
+    - O `<Provider store={store}>` fica em `App.tsx`, em volta do `<Router />`. Estado que só uma
+      página usa continua `useState` no hook da página; estado compartilhado vai para um slice;
+      dado do servidor vai para um endpoint do RTK Query. Idioma continua em `src/i18n/`.
+    - Refetch on focus/reconnect (`setupListeners`) segue desligado, o padrão do RTK Query.
 - **`src/pages/`** — convenção de nome `Nome.page.tsx`, componente `function NomePage()` com
   `export default`. Lógica de estado/efeito específica de uma página (`useState`, `useEffect`,
   chamada a service) não fica no componente: vive em `src/pages/hooks/use<Nome>.ts`, exportando
   `use<Nome>()`. O `.page.tsx` correspondente só chama esse hook e renderiza o retorno, sem
   `useState`/`useEffect` nem chamada a service dentro do componente:
 
-  ```tsx
-  function useProductList() {
-      const [products, setProducts] = useState<Product[]>([])
-      const [isLoading, setIsLoading] = useState(true)
+    ```tsx
+    function useProductList() {
+        const [products, setProducts] = useState<Product[]>([])
+        const [isLoading, setIsLoading] = useState(true)
 
-      useEffect(() => {
-          get<Product[]>("/products").then(setProducts).finally(() => setIsLoading(false))
-      }, [])
+        useEffect(() => {
+            get<Product[]>("/products").then(setProducts).finally(() => setIsLoading(false))
+        }, [])
 
-      return { products, isLoading }
-  }
+        return { products, isLoading }
+    }
 
-  function ProductListPage() {
-      const { t } = useTranslation()
-      const { products, isLoading } = useProductList()
+    function ProductListPage() {
+        const { t } = useTranslation()
+        const { products, isLoading } = useProductList()
 
-      return isLoading ? <p>{t("loading")}</p> : <ProductTable products={products} />
-  }
-  ```
+        return isLoading ? <p>{t("loading")}</p> : <ProductTable products={products} />
+    }
+    ```
 
-  Isso é distinto de `src/hooks/`, que é reservado a hooks reutilizáveis entre páginas e
-  componentes, não específicos de uma única página (por exemplo, um `useDebounce` ou `useMediaQuery`).
-  Nenhuma das duas pastas existe ainda: `src/pages/hooks/` e `src/hooks/` são criadas no primeiro uso.
+    Isso é distinto de `src/hooks/`, que é reservado a hooks reutilizáveis entre páginas e
+    componentes, não específicos de uma única página (por exemplo, um `useDebounce` ou `useMediaQuery`).
+    Nenhuma das duas pastas existe ainda: `src/pages/hooks/` e `src/hooks/` são criadas no primeiro uso.
+
 - **`src/styles/`** — `global.css` guarda os CSS custom properties (escala de cinza `--g1-color`
   … `--g10-color`, `--sans-font`) e o reset. Estilos de página ficam em
   `src/styles/pages/<nome>.module.css` (CSS Modules), importados como `import css from "..."`.
@@ -226,8 +243,10 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` (`P
   `vite.config.ts` (para o dev server e o build). Mexer em um sem o outro deixa o `tsc -b`
   verde e quebra o build, ou vice-versa. O Vitest herda o alias do mesmo `vite.config.ts`.
 - **`public/`** — assets estáticos que o Vite copia como estão para a raiz de `dist/` no build, sem
-  passar pelo bundler. Hoje contém só `favicon.svg`, referenciado em `index.html` via
-  `<link rel="icon">`; arquivo estático novo (imagem, dado mock) entra aqui. O template não inclui
+  passar pelo bundler. Hoje contém `favicon.svg`, referenciado em `index.html` via
+  `<link rel="icon">`, e `fonts/` (`woff2` latin e licenças OFL das três famílias, referenciados
+  pelos `@font-face` de `global.css` e por dois `preload` do `index.html`, sem fonte de terceiros);
+  arquivo estático novo (imagem, dado mock) entra aqui. O template não inclui
   `manifest.json` nem ícones de PWA por decisão de projeto: um manifest com `name`/ícones
   placeholder, sem produto definido, seria pior que não ter manifest — cada projeto derivado
   adiciona isso quando precisar.
@@ -352,23 +371,23 @@ Continua sendo revisão manual do `reviewer` (o oxlint não cobre):
 - `.map()` que renderiza JSX com corpo de mais de 3 linhas deve ser extraído para um componente
   dedicado em vez de ficar inline — não existe regra de lint que meça linhas de corpo de `.map()`:
 
-  ```tsx
-  {products.map((product) => (
-      <li key={product.id}>
-          <h3>{product.name}</h3>
-          <p>{product.description}</p>
-          <span>{product.price}</span>
-      </li>
-  ))}
-  ```
+    ```tsx
+    {products.map((product) => (
+        <li key={product.id}>
+            <h3>{product.name}</h3>
+            <p>{product.description}</p>
+            <span>{product.price}</span>
+        </li>
+    ))}
+    ```
 
-  vira
+    vira
 
-  ```tsx
-  {products.map((product) => (
-      <ProductListItem key={product.id} product={product} />
-  ))}
-  ```
+    ```tsx
+    {products.map((product) => (
+        <ProductListItem key={product.id} product={product} />
+    ))}
+    ```
 
 ### Imports
 
@@ -439,7 +458,8 @@ novo, então repetir via hook no momento do push seria redundante.
 
 - `.claude/agents/` — três papéis que formam o fluxo planejar → aprovar → executar → revisar:
   `sdd` (só planeja, escreve `spec.md`/`tasks.md` em `.specs/`, nunca toca em `src/`), `executor`
-  (implementa um `tasks.md` já aprovado, em branch dedicada, com commits atômicos) e `reviewer`
+  (implementa um `tasks.md` já aprovado, em branch dedicada, com commits atômicos, e sempre chama
+  o `reviewer` ao terminar) e `reviewer`
   (audita o resultado contra este arquivo, somente leitura).
 - `.claude/skills/` — conhecimento carregável sob demanda. São cinco, separadas pela pasta do
   artefato: `react-page-scaffold` (página em `src/pages/` + CSS Module + registro de rota),

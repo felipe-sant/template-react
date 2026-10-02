@@ -16,7 +16,7 @@ Quatro dígitos sequenciais e um tema curto em inglês: `0002-routing-library.md
 
 ## Índice
 
-| Número | Título | Status |
-| --- | --- | --- |
-| [0000](0000-template.md) | Molde de ADR | molde |
+| Número                           | Título                  | Status |
+| -------------------------------- | ----------------------- | ------ |
+| [0000](0000-template.md)         | Molde de ADR            | molde  |
 | [0001](0001-state-management.md) | Gerenciamento de estado | aceita |

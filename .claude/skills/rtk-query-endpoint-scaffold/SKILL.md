@@ -7,12 +7,12 @@ description: Como criar endpoints de API neste template React com RTK Query, seg
 
 Dado vindo do servidor é **estado de servidor**: vive no cache do RTK Query, não em `useState` nem em slice. A base já existe em `src/store/api.ts` (`createApi` com `reducerPath: "api"`, `baseUrl` de `@/services/http/apiUrl`, `Accept-Language` no `prepareHeaders`, `tagTypes: []` e nenhum endpoint) e está registrada no `rootReducer` e no middleware da store. O template não traz endpoint de exemplo: os trechos abaixo, com um domínio `items` hipotético, ilustram o formato. O `get`/`post` de `src/services/http/` é `fetch` cru para o que não passa pelo RTK Query; o RTK Query não o usa como `baseQuery`.
 
-| Peça | Caminho | Se faltar |
-| --- | --- | --- |
-| Endpoints | `src/store/api/<dominio>.api.ts` | — |
-| Tag (se houver invalidação) | `tagTypes` em `src/store/api.ts` | `providesTags`/`invalidatesTags` não compila |
-| Consumo | hook de página `src/pages/hooks/use<Nome>.ts` | a página mistura dado e render |
-| Teste | `src/store/api/test/<dominio>.api.test.ts` | o `reviewer` bloqueia a revisão |
+| Peça                        | Caminho                                       | Se faltar                                    |
+| --------------------------- | --------------------------------------------- | -------------------------------------------- |
+| Endpoints                   | `src/store/api/<dominio>.api.ts`              | —                                            |
+| Tag (se houver invalidação) | `tagTypes` em `src/store/api.ts`              | `providesTags`/`invalidatesTags` não compila |
+| Consumo                     | hook de página `src/pages/hooks/use<Nome>.ts` | a página mistura dado e render               |
+| Teste                       | `src/store/api/test/<dominio>.api.test.ts`    | o `reviewer` bloqueia a revisão              |
 
 ## Passo a passo
 

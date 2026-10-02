@@ -12,21 +12,24 @@ O stack é Vitest + `@testing-library/react` em ambiente `jsdom`, configurado no
 ```ts
 test: {
     environment: "jsdom",
+    pool: "vmThreads",
     setupFiles: ["./src/setupTests.ts"]
 }
 ```
+
+O `pool: "vmThreads"` reaproveita o `jsdom` por worker mantendo um contexto de VM por arquivo; mesmo assim, teste que usa `vi.stubGlobal` ou `vi.stubEnv` restaura no `afterEach` com `vi.unstubAllGlobals()` e `vi.unstubAllEnvs()`.
 
 Não há `globals: true` e não há `passWithNoTests` — as duas ausências têm consequência prática, abaixo.
 
 ## 1. Como rodar
 
-| Comando | O que faz |
-| --- | --- |
-| `npm test` | **watch mode** (o script é `vitest`, sem `run`). Não termina. |
-| `npm test -- --run` | execução one-shot. **É esta que você usa** num agente, em CI ou em terminal não-interativo. |
-| `npm test -- --run src/pages/test/Home.page.test.tsx` | um arquivo só, one-shot. |
-| `npm run typecheck` | checagem de tipos isolada, inclusive dos arquivos de teste. |
-| `npm run build` | `typecheck` + build de produção. Não roda teste. |
+| Comando                                               | O que faz                                                                                   |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `npm test`                                            | **watch mode** (o script é `vitest`, sem `run`). Não termina.                               |
+| `npm test -- --run`                                   | execução one-shot. **É esta que você usa** num agente, em CI ou em terminal não-interativo. |
+| `npm test -- --run src/pages/test/Home.page.test.tsx` | um arquivo só, one-shot.                                                                    |
+| `npm run typecheck`                                   | checagem de tipos isolada, inclusive dos arquivos de teste.                                 |
+| `npm run build`                                       | `typecheck` + build de produção. Não roda teste.                                            |
 
 Rodar `npm test` puro dentro de um agente trava a sessão até o timeout: o processo fica esperando input que nunca vem. Sempre `-- --run`.
 
@@ -38,13 +41,13 @@ Rodar `npm test` puro dentro de um agente trava a sessão até o timeout: o proc
 
 `<diretório>/test/<arquivo>.test.tsx`: o teste vive numa pasta `test/` dentro do diretório do arquivo testado, com o mesmo nome do arquivo mais `.test.ts(x)`. O arquivo testado é importado pelo alias `@/` (`import HomePage from "@/pages/Home.page"`), nunca por `../` — a regra `import/no-relative-parent-imports` proíbe —, e `vi.mock`, `vi.doMock` e `import()` dinâmico também usam alias. Nunca uma pasta `__tests__/`, nunca o sufixo `.spec.tsx` — nenhum dos dois é coletado nem reconhecido como convenção aqui. `src/setupTests.ts` não é teste: é setup e fica onde está.
 
-| Arquivo testado | Arquivo de teste |
-| --- | --- |
-| `src/pages/Home.page.tsx` | `src/pages/test/Home.page.test.tsx` |
-| `src/services/http/get.ts` | `src/services/http/test/get.test.ts` |
-| `src/routers/Router.tsx` | `src/routers/test/Router.test.tsx` |
+| Arquivo testado                 | Arquivo de teste                          |
+| ------------------------------- | ----------------------------------------- |
+| `src/pages/Home.page.tsx`       | `src/pages/test/Home.page.test.tsx`       |
+| `src/services/http/get.ts`      | `src/services/http/test/get.test.ts`      |
+| `src/routers/Router.tsx`        | `src/routers/test/Router.test.tsx`        |
 | `src/components/SaveButton.tsx` | `src/components/test/SaveButton.test.tsx` |
-| `src/hooks/useCounter.ts` | `src/hooks/test/useCounter.test.ts` |
+| `src/hooks/useCounter.ts`       | `src/hooks/test/useCounter.test.ts`       |
 
 As três primeiras linhas existem no repositório; as duas últimas são só a regra aplicada a arquivos hipotéticos.
 
@@ -355,11 +358,11 @@ O `?lng=` é stubado com `window.history.pushState` e o `navigator` com `vi.spyO
 
 Ordem de preferência: **`getByRole` com `name`** > `getByLabelText` / `getByText` > `getByTestId` (último recurso). `getByRole` consulta a árvore de acessibilidade — o que o usuário e o leitor de tela enxergam —, então além de encontrar o elemento ele pega regressão de acessibilidade: se o `<button>` virou `<div onClick>` ou a imagem perdeu o `alt`, a query falha. `getByTestId` passa mesmo com a marcação quebrada, por isso é o último recurso.
 
-| Prefixo | Quando não acha | Use para |
-| --- | --- | --- |
-| `getBy*` | **estoura** | afirmar que o elemento está lá (o caso comum) |
-| `queryBy*` | devolve `null` | afirmar **ausência**: `expect(screen.queryByRole("alert")).not.toBeInTheDocument()` |
-| `findBy*` | estoura depois do timeout | o que aparece de forma **assíncrona** — sempre com `await` |
+| Prefixo    | Quando não acha           | Use para                                                                            |
+| ---------- | ------------------------- | ----------------------------------------------------------------------------------- |
+| `getBy*`   | **estoura**               | afirmar que o elemento está lá (o caso comum)                                       |
+| `queryBy*` | devolve `null`            | afirmar **ausência**: `expect(screen.queryByRole("alert")).not.toBeInTheDocument()` |
+| `findBy*`  | estoura depois do timeout | o que aparece de forma **assíncrona** — sempre com `await`                          |
 
 `getAllBy*`/`queryAllBy*`/`findAllBy*` para mais de um elemento. `findBy*` sem `await` devolve uma Promise que passa em qualquer `expect` de verdade/falsidade e nunca testa nada.
 
@@ -372,19 +375,19 @@ Ordem de preferência: **`getByRole` com `name`** > `getByLabelText` / `getByTex
 
 ## 10. Erros comuns
 
-| Sintoma | Causa |
-| --- | --- |
-| `Invalid Chai property: toBeInTheDocument` | o setup não carregou: `setupFiles` saiu do bloco `test` do `vite.config.ts` (item 4) |
-| `ReferenceError: expect is not defined`, apontando `src/setupTests.ts:1` | o import do setup foi trocado pelo entrypoint raiz do `jest-dom` em vez do subpath `/vitest` (item 4) |
-| "No test files found", ou exit 1 sem nenhuma falha visível | nome ou lugar do arquivo fora da convenção — não é coletado, e sem `passWithNoTests` a suíte vazia falha (itens 2 e 3) |
-| `useNavigate() may be used only in the context of a <Router>` | faltou um router em volta do que usa `<Link>`/`useNavigate` (`MemoryRouter`, ou `createMemoryRouter` com `RouterProvider`; item 6) |
-| `document is not defined` | `environment: "jsdom"` fora do bloco `test` do `vite.config.ts` |
-| `Found multiple elements with the role ...` | render anterior não foi desmontado: alguém removeu o `afterEach(cleanup)` do `src/setupTests.ts` (item 4) |
-| `describe is not defined` / `vi is not defined` | falta o `import` de `vitest` — não há `globals: true` |
-| teste de tela não acha o texto em português, mas acha o texto em inglês | o `beforeEach` do `src/setupTests.ts` sumiu ou trocou o `"pt-BR"` pelo fallback `en`, e o idioma veio do navegador do `jsdom` (`en-US`) (item 4) |
-| teste passa sozinho e falha na suíte, com o idioma ou a URL de outro teste | um teste stubou `?lng=` ou o `navigator` e não restaurou no `afterEach` (item 7) |
-| o texto renderizado é a própria chave (`heading`, `meta.title`) | chave sem valor, ou namespace não registrado em `src/i18n/resources.ts`: o i18next devolve a chave quando não acha tradução (item 7) |
-| asserção logo após `user.click(...)` falha de forma intermitente, ou passa sem o efeito acontecer | a interação da v14 é assíncrona e faltou o `await` (item 9) |
+| Sintoma                                                                                           | Causa                                                                                                                                            |
+| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `Invalid Chai property: toBeInTheDocument`                                                        | o setup não carregou: `setupFiles` saiu do bloco `test` do `vite.config.ts` (item 4)                                                             |
+| `ReferenceError: expect is not defined`, apontando `src/setupTests.ts:1`                          | o import do setup foi trocado pelo entrypoint raiz do `jest-dom` em vez do subpath `/vitest` (item 4)                                            |
+| "No test files found", ou exit 1 sem nenhuma falha visível                                        | nome ou lugar do arquivo fora da convenção — não é coletado, e sem `passWithNoTests` a suíte vazia falha (itens 2 e 3)                           |
+| `useNavigate() may be used only in the context of a <Router>`                                     | faltou um router em volta do que usa `<Link>`/`useNavigate` (`MemoryRouter`, ou `createMemoryRouter` com `RouterProvider`; item 6)               |
+| `document is not defined`                                                                         | `environment: "jsdom"` fora do bloco `test` do `vite.config.ts`                                                                                  |
+| `Found multiple elements with the role ...`                                                       | render anterior não foi desmontado: alguém removeu o `afterEach(cleanup)` do `src/setupTests.ts` (item 4)                                        |
+| `describe is not defined` / `vi is not defined`                                                   | falta o `import` de `vitest` — não há `globals: true`                                                                                            |
+| teste de tela não acha o texto em português, mas acha o texto em inglês                           | o `beforeEach` do `src/setupTests.ts` sumiu ou trocou o `"pt-BR"` pelo fallback `en`, e o idioma veio do navegador do `jsdom` (`en-US`) (item 4) |
+| teste passa sozinho e falha na suíte, com o idioma ou a URL de outro teste                        | um teste stubou `?lng=` ou o `navigator` e não restaurou no `afterEach` (item 7)                                                                 |
+| o texto renderizado é a própria chave (`heading`, `meta.title`)                                   | chave sem valor, ou namespace não registrado em `src/i18n/resources.ts`: o i18next devolve a chave quando não acha tradução (item 7)             |
+| asserção logo após `user.click(...)` falha de forma intermitente, ou passa sem o efeito acontecer | a interação da v14 é assíncrona e faltou o `await` (item 9)                                                                                      |
 
 **Teste que passaria com o setup desligado não prova nada.** `expect(element).toBeTruthy()` é verdadeiro para qualquer objeto, inclusive um nó fora do documento; prefira um matcher do `jest-dom` (`toBeInTheDocument`, `toHaveTextContent`, `toBeDisabled`) que afirma algo sobre o DOM. Vale o mesmo teste de sanidade de sempre: quebre a asserção de propósito uma vez e confirme que ela fica vermelha.
 

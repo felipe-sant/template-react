@@ -36,7 +36,7 @@ quando precisar, seguindo as convenções abaixo.
    template (ou clone este repositório, se preferir).
 2. Instale as dependências: `npm install`.
 3. Renomeie o projeto: o campo `name` em `package.json`, o `<title>` e o `<meta
-   name="description">` em `index.html`, o heading `# Novo projeto` deste `README.md` e, junto
+name="description">` em `index.html`, o heading `# Novo projeto` deste `README.md` e, junto
    com o `name` do `package.json`, o valor de `LANGUAGE_STORAGE_KEY` em
    `src/i18n/languageStorageKey.ts` (`"template-react:language"` → `"<nome-do-projeto>:language"`).
 4. Suba o dev server (`npm run dev`) e confirme em `http://localhost:5173`.
@@ -47,10 +47,10 @@ quando precisar, seguindo as convenções abaixo.
 
 ## Documentação
 
-| Pasta | O que é |
-| --- | --- |
+| Pasta                     | O que é                                                                                                                                  |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | [`docs/`](docs/README.md) | Documentação versionada só deste frontend: arquitetura, decisões, diagramas e telas. O conteúdo atual é um exemplo fictício a substituir |
-| `.specs/` | Planejamento local (`spec.md` e `tasks.md` por feature ou bug), gitignored |
+| `.specs/`                 | Planejamento local (`spec.md` e `tasks.md` por feature ou bug), gitignored                                                               |
 
 `docs/` cobre apenas este frontend. O sistema inteiro fica no repositório pai, que reúne backend e frontend como submódulos, e o contrato da API fica no backend. O índice completo está em [`docs/README.md`](docs/README.md).
 
@@ -60,20 +60,20 @@ Cada pasta tem um papel definido, uma convenção de nome de arquivo e um tipo d
 Siga essa tabela ao adicionar código novo. As pastas que ainda não têm arquivo (`components/`,
 `hooks/`, `utils/`, `pages/hooks/`) são criadas no primeiro uso.
 
-| Pasta | Guarda | Nome do arquivo | Export |
-| --- | --- | --- | --- |
-| `components/` | Componentes de UI reutilizáveis, sem rota própria. | `<Nome>.tsx` (PascalCase, sem sufixo) | `export default` no final do arquivo |
-| `layouts/` | Estruturas de página compartilhadas (header/footer ao redor de `<Outlet />`). | `<Nome>.layout.tsx` | `export default` no final do arquivo |
-| `pages/` | Telas ligadas a uma rota. | `<Nome>.page.tsx` | `export default` no final do arquivo |
-| `routers/` | Registro das rotas da aplicação e módulos auxiliares de roteamento. | `Router.tsx`, `routes.tsx`, `paths.ts` | `export default` no final do arquivo |
-| `hooks/` | Hooks React reutilizáveis. | `use<Nome>.ts` | `export default` no final do arquivo |
-| `services/` | Acesso a dado externo (HTTP e afins). | `<nome>/<verbo>.ts` (camelCase) | `export default` no final do arquivo |
-| `types/` | Tipos compartilhados entre vários arquivos. | `<dominio>/<NomeDoTipo>.types.ts` / `<nome>.d.ts` | `export default` no final do arquivo (`.d.ts`: ver abaixo) |
-| `store/` | Estado global: `api.ts` (RTK Query), `rootReducer.ts`, `createStore.ts`, `store.ts`, hooks tipados, `slices/<nome>.slice.ts` e `api/<dominio>.api.ts`. | `<nome>.ts`, `<nome>.slice.ts`, `<dominio>.api.ts` | `export default` no final do arquivo |
-| `utils/` | Funções puras e auxiliares. | `<nome>.ts` (camelCase) | `export default` no final do arquivo |
-| `styles/` | `global.css` (custom properties + reset) e CSS Modules por pasta. | `<nome>.module.css` (camelCase) | — |
-| `i18n/` | Configuração da internacionalização: instância do i18next, constantes de idioma e a API `getLanguage`/`setLanguage`. | `<nome>.ts` (camelCase), `i18n.ts` para a instância | `export default` no final do arquivo |
-| `locales/` | Traduções: uma pasta por idioma, um JSON por namespace. | `<idioma>/<namespace>.json` (ex.: `pt-BR/home.json`) | — |
+| Pasta         | Guarda                                                                                                                                                 | Nome do arquivo                                      | Export                                                     |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- | ---------------------------------------------------------- |
+| `components/` | Componentes de UI reutilizáveis, sem rota própria.                                                                                                     | `<Nome>.tsx` (PascalCase, sem sufixo)                | `export default` no final do arquivo                       |
+| `layouts/`    | Estruturas de página compartilhadas (header/footer ao redor de `<Outlet />`).                                                                          | `<Nome>.layout.tsx`                                  | `export default` no final do arquivo                       |
+| `pages/`      | Telas ligadas a uma rota.                                                                                                                              | `<Nome>.page.tsx`                                    | `export default` no final do arquivo                       |
+| `routers/`    | Registro das rotas da aplicação e módulos auxiliares de roteamento.                                                                                    | `Router.tsx`, `routes.tsx`, `paths.ts`               | `export default` no final do arquivo                       |
+| `hooks/`      | Hooks React reutilizáveis.                                                                                                                             | `use<Nome>.ts`                                       | `export default` no final do arquivo                       |
+| `services/`   | Acesso a dado externo (HTTP e afins).                                                                                                                  | `<nome>/<verbo>.ts` (camelCase)                      | `export default` no final do arquivo                       |
+| `types/`      | Tipos compartilhados entre vários arquivos.                                                                                                            | `<dominio>/<NomeDoTipo>.types.ts` / `<nome>.d.ts`    | `export default` no final do arquivo (`.d.ts`: ver abaixo) |
+| `store/`      | Estado global: `api.ts` (RTK Query), `rootReducer.ts`, `createStore.ts`, `store.ts`, hooks tipados, `slices/<nome>.slice.ts` e `api/<dominio>.api.ts`. | `<nome>.ts`, `<nome>.slice.ts`, `<dominio>.api.ts`   | `export default` no final do arquivo                       |
+| `utils/`      | Funções puras e auxiliares.                                                                                                                            | `<nome>.ts` (camelCase)                              | `export default` no final do arquivo                       |
+| `styles/`     | `global.css` (custom properties + reset) e CSS Modules por pasta.                                                                                      | `<nome>.module.css` (camelCase)                      | —                                                          |
+| `i18n/`       | Configuração da internacionalização: instância do i18next, constantes de idioma e a API `getLanguage`/`setLanguage`.                                   | `<nome>.ts` (camelCase), `i18n.ts` para a instância  | `export default` no final do arquivo                       |
+| `locales/`    | Traduções: uma pasta por idioma, um JSON por namespace.                                                                                                | `<idioma>/<namespace>.json` (ex.: `pt-BR/home.json`) | —                                                          |
 
 ### Imports internos
 
@@ -108,10 +108,13 @@ espaçamento, forma, movimento) em vez de valores hardcoded.
 > definidos em `src/styles/global.css` são escolha pessoal de
 > [@felipe-sant](https://github.com/felipe-sant), baseada no design system do portfólio pessoal
 > dele — não convenção da comunidade React/TypeScript. Troque esses valores livremente: nada no
-> restante do template depende dos tokens específicos escolhidos aqui. A tipografia depende de um
-> `@import` do Google Fonts (dependência de rede nova); para evitá-la, basta trocar
-> `--font-heading`/`--font-body`/`--font-mono` por fontes locais ou de sistema e remover o
-> `@import`.
+> restante do template depende dos tokens específicos escolhidos aqui. As fontes são
+> self-hospedadas: os `woff2` (subconjunto `latin`) e as licenças OFL ficam em `public/fonts/`, os
+> `@font-face` em `src/styles/global.css` e dois `preload` em `index.html`, sem requisição a
+> terceiros (LGPD/GDPR) nem dependência de CDN. Para trocar a fonte, substitua os `woff2` em
+> `public/fonts/`, os `@font-face` e os `preload`; para remover, apague `public/fonts/`, os
+> `@font-face` e os `preload` e aponte `--font-heading`/`--font-body`/`--font-mono` para fontes de
+> sistema.
 
 ### Exceção de sufixo: arquivos raiz/singulares
 
@@ -205,7 +208,7 @@ src/
   compartilhado (`backHome`, `loading`) e texto fixo de componentes de `src/components/`
   (`common:saveButton.label`).
 - **A chave é identificador**: em inglês, lowerCamelCase e hierárquica por papel (`meta.title`,
-  `meta.description`, `heading`, `showcase.status.success`). Os JSON usam 2 espaços de indentação.
+  `meta.description`, `heading`, `showcase.status.success`). Os JSON usam 4 espaços de indentação.
 - `src/i18n/resources.ts` monta `{ "pt-BR": ..., en: ..., es: ... }` a partir dos JSON e tipa `en`
   e `es` como `typeof` dos recursos de `pt-BR`: namespace ou chave faltando em `en`/`es` vira erro de
   compilação. Chave sobrando não é pega pelo tipo, só por `src/i18n/test/resources.test.ts`, que também
@@ -301,11 +304,7 @@ interface LanguageOptionProps {
 
 function LanguageOption({ language, isActive }: LanguageOptionProps) {
     return (
-        <button
-            type="button"
-            aria-pressed={isActive}
-            onClick={() => void setLanguage(language)}
-        >
+        <button type="button" aria-pressed={isActive} onClick={() => void setLanguage(language)}>
             {language}
         </button>
     )
@@ -407,7 +406,7 @@ npm test -- --run # execução one-shot (CI)
 npm run typecheck # checagem de tipos (tsc -b) de src/ e vite.config.ts
 npm run lint      # roda o oxlint sobre o projeto, usando a configuração de .oxlintrc.json
 npm run lint:fix  # mesma coisa que npm run lint, mas aplicando automaticamente as correções possíveis (oxlint --fix)
-npm run format    # roda prettier --write em src/**/*.{ts,tsx} e vite.config.ts, conforme as regras de .prettierrc
+npm run format    # roda prettier --write em **/*.{ts,tsx,css,json,md,yml}, conforme .prettierrc e .prettierignore
 npm run test:cov  # roda vitest run --coverage — suíte inteira + relatório de cobertura
 ```
 
@@ -415,7 +414,7 @@ npm run test:cov  # roda vitest run --coverage — suíte inteira + relatório d
 > As regras de formatação em `.prettierrc` (`tabWidth: 4`, `trailingComma: "none"`, sem ponto e
 > vírgula, aspas duplas, etc.) e de lint em `.oxlintrc.json` são escolha pessoal de
 > [@felipe-sant](https://github.com/felipe-sant), não convenção da comunidade React/TypeScript.
-> Quem preferir 2 espaços de indentação, ponto e vírgula ou outra convenção pode simplesmente
+> Quem preferir outra indentação de indentação, ponto e vírgula ou outra convenção pode simplesmente
 > editar esses dois arquivos — nada no restante do template depende dos valores específicos
 > escolhidos aqui.
 
@@ -424,11 +423,18 @@ npm run test:cov  # roda vitest run --coverage — suíte inteira + relatório d
 `npm install` configura automaticamente (via script `prepare`) um hook de `pre-commit` do
 [Husky](https://typicode.github.io/husky/) que roda `lint-staged` em cada commit — nenhum passo
 manual extra é necessário. `lint-staged` (configurado em `.lintstagedrc.json`) aplica `oxlint --fix`
-e depois `prettier --write` só nos arquivos `.ts`/`.tsx` staged, corrigindo o que for automático ou
+e depois `prettier --write` nos arquivos `.ts`/`.tsx` staged, e aplica só `prettier --write` aos
+`.css`/`.json`/`.md`/`.yml` staged — mesmo escopo do script `format`, que deixa de fora
+`package-lock.json`, `dist/` e `coverage/` via `.prettierignore` —, corrigindo o que for automático ou
 bloqueando o commit quando sobrar um erro de lint que o `oxlint` não sabe corrigir sozinho. O
 `.editorconfig` na raiz complementa isso para editores compatíveis: padroniza charset, final de
-linha, quebra de linha final, remoção de espaço em branco à direita e indentação (2 espaços por
-padrão, 4 para `.ts`/`.tsx`/`.css`) antes mesmo de o Prettier rodar.
+linha, quebra de linha final, remoção de espaço em branco à direita e indentação (4 espaços em
+todos os tipos, como no `.prettierrc`, exceto `package.json` e `package-lock.json`, que ficam em 2 para o npm não regravar o lockfile) antes mesmo
+de o Prettier rodar.
+
+O stylelint foi avaliado e recusado: a superfície de CSS é pequena, o `stylelint-config-standard`
+brigaria com escolhas pessoais de estilo documentadas aqui e exigiria duas dependências de dev e um
+passo a mais no CI. Pode ser reavaliado se o CSS do template crescer.
 
 ### Testes
 
@@ -456,6 +462,24 @@ gerando os formatos `text`, `json`, `json-summary` e `html` em `coverage/` (fora
 versão) e exigindo um mínimo de 80% em statements, branches, functions e lines (bloco
 `test.coverage` em `vite.config.ts`) — abaixo disso o comando falha.
 
+O bloco `test` usa `pool: "vmThreads"`: o Vitest cria o ambiente `jsdom` uma vez por worker e
+isola cada arquivo de teste num contexto de VM, em vez de criar um `jsdom` por arquivo. Medido
+nesta máquina (8 núcleos, Node 24, Vitest 5, 19 arquivos e 100 testes), média de 5 execuções
+com a primeira descartada:
+
+| Configuração        | `npm test -- --run` | Ganho | Resultado                                                              |
+| ------------------- | ------------------- | ----- | ---------------------------------------------------------------------- |
+| padrão (`forks`)    | 11,06 s             | -     | verde                                                                  |
+| `pool: "vmThreads"` | 3,88 s              | 65%   | verde, 3 execuções com `--sequence.shuffle` verdes, cobertura igual    |
+| `isolate: false`    | 4,05 s              | 63%   | falhou uma vez em 3 execuções com `--sequence.shuffle` (`get.test.ts`) |
+
+Adotou-se `vmThreads` porque passou em todas as checagens e preserva o isolamento por arquivo;
+`isolate: false` ficou de fora por depender da ordem de execução. O custo do `vmThreads` é
+memória (pico de cerca de 1,4 GB no `test:cov` contra cerca de 225 MB no padrão, na medição). Teste que
+usa `vi.stubGlobal` ou `vi.stubEnv` continua restaurando no `afterEach` com
+`vi.unstubAllGlobals()` e `vi.unstubAllEnvs()`, e `vi.resetModules()` segue valendo para recarregar
+um módulo dentro do arquivo.
+
 ### CI
 
 `.github/workflows/ci.yml` roda em todo push para `main` e em todo Pull Request, com três jobs:
@@ -466,3 +490,11 @@ arquivo "suite-wide" (`package.json`, `package-lock.json`, `vite.config.ts`, `ts
 `src/setupTests.ts`); nos demais Pull Requests, roda só `vitest --changed`, sem coverage, testando
 apenas o que o diff afeta. Quando a suíte completa roda, `coverage/` é publicado como artifact do
 workflow.
+
+Cada push num Pull Request cancela o run anterior da mesma ref (`concurrency` por workflow e ref,
+com `cancel-in-progress` só para `pull_request`); runs em `main` nunca são cancelados, para o
+artifact de coverage sempre ser produzido.
+
+O `.github/dependabot.yml` atualiza dependências dos ecossistemas `npm` e `github-actions` uma vez
+por mês, agrupando as atualizações `minor` e `patch` num único PR por ecossistema; versões `major`
+chegam em PRs individuais. Como esses PRs miram `main`, rodam a suíte completa com coverage.

@@ -7,12 +7,12 @@ description: Como criar uma página nova neste template React, seguindo a conven
 
 Toda página deste template é composta por **quatro peças que precisam existir juntas**. Estilo e rota faltando produzem falha silenciosa, que o compilador não pega; o namespace é a única peça com rede de segurança, porque a tipagem do i18next transforma namespace ou chave inexistente em erro de `npm run typecheck`.
 
-| Peça | Caminho | Se faltar |
-| --- | --- | --- |
-| Componente | `src/pages/<Nome>.page.tsx` | — |
-| Estilo | `src/styles/pages/<nome>.module.css` | `css.<classe>` vira `undefined`, elemento renderiza sem estilo |
+| Peça                  | Caminho                                                                                            | Se faltar                                                                                  |
+| --------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| Componente            | `src/pages/<Nome>.page.tsx`                                                                        | —                                                                                          |
+| Estilo                | `src/styles/pages/<nome>.module.css`                                                               | `css.<classe>` vira `undefined`, elemento renderiza sem estilo                             |
 | Namespace de tradução | `src/locales/{pt-BR,en,es}/<nome>.json` + registro em `src/i18n/resources.ts` e `src/i18n/i18n.ts` | `t("<chave>")` não compila; chave ausente em `en`/`es` também quebra o `npm run typecheck` |
-| Rota | entrada em `src/routers/routes.tsx` | a página existe mas é inalcançável; a URL cai no `NotFound` |
+| Rota                  | entrada em `src/routers/routes.tsx`                                                                | a página existe mas é inalcançável; a URL cai no `NotFound`                                |
 
 `Home.page.tsx` e `NotFound.page.tsx` são as páginas-base já no repositório e servem de modelo para as quatro peças. O projeto que usa o template substitui o conteúdo delas pelo seu.
 
@@ -80,9 +80,7 @@ import { useEffect, useState } from "react"
 import get from "@/services/http/get"
 
 type ItemsState =
-    | { status: "loading" }
-    | { status: "error" }
-    | { status: "success"; items: string[] }
+    { status: "loading" } | { status: "error" } | { status: "success"; items: string[] }
 
 function useItems(): ItemsState {
     const [state, setState] = useState<ItemsState>({ status: "loading" })
@@ -139,44 +137,44 @@ Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-col
 
 ### 4. Namespace de tradução — `src/locales/{pt-BR,en,es}/<nome>.json`
 
-O namespace tem o mesmo nome do CSS Module da página (`about.module.css` → `about`; `NotFound.page.tsx` → `notFound`). Chaves em inglês, lowerCamelCase e hierárquicas por papel: `meta.title`, `meta.description`, `heading`, `showcase.status.success`. JSON com 2 espaços de indentação.
+O namespace tem o mesmo nome do CSS Module da página (`about.module.css` → `about`; `NotFound.page.tsx` → `notFound`). Chaves em inglês, lowerCamelCase e hierárquicas por papel: `meta.title`, `meta.description`, `heading`, `showcase.status.success`. JSON com 4 espaços de indentação.
 
 1. Crie `src/locales/pt-BR/<nome>.json` primeiro. `pt-BR` é a língua de referência: o texto novo nasce em português e os JSON de `pt-BR` são a fonte do tipo das chaves.
 
-   ```json
-   {
-     "meta": {
-       "title": "Sobre",
-       "description": "Quem somos e o que fazemos."
-     },
-     "heading": "Sobre",
-     "loadError": "Não foi possível carregar os itens."
-   }
-   ```
+    ```json
+    {
+        "meta": {
+            "title": "Sobre",
+            "description": "Quem somos e o que fazemos."
+        },
+        "heading": "Sobre",
+        "loadError": "Não foi possível carregar os itens."
+    }
+    ```
 
 2. Crie `src/locales/en/<nome>.json` e `src/locales/es/<nome>.json` com **as mesmas chaves**, valores traduzidos.
 3. Em `src/i18n/resources.ts`, importe os três arquivos e acrescente o namespace aos objetos `ptBR`, `en` e `es`:
 
-   ```ts
-   import enAbout from "@/locales/en/about.json"
-   import esAbout from "@/locales/es/about.json"
-   import ptBRAbout from "@/locales/pt-BR/about.json"
+    ```ts
+    import enAbout from "@/locales/en/about.json"
+    import esAbout from "@/locales/es/about.json"
+    import ptBRAbout from "@/locales/pt-BR/about.json"
 
-   const ptBR = {
-       common: ptBRCommon,
-       about: ptBRAbout
-   }
+    const ptBR = {
+        common: ptBRCommon,
+        about: ptBRAbout
+    }
 
-   const en: typeof ptBR = {
-       common: enCommon,
-       about: enAbout
-   }
+    const en: typeof ptBR = {
+        common: enCommon,
+        about: enAbout
+    }
 
-   const es: typeof ptBR = {
-       common: esCommon,
-       about: esAbout
-   }
-   ```
+    const es: typeof ptBR = {
+        common: esCommon,
+        about: esAbout
+    }
+    ```
 
 4. Acrescente o nome ao array `ns` do `init()` em `src/i18n/i18n.ts`.
 
