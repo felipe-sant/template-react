@@ -1,11 +1,11 @@
 ---
 name: react-page-scaffold
-description: Como criar uma página nova neste template React, seguindo a convenção Page + CSS Module + namespace de tradução + registro de rota. Use quando for adicionar, renomear ou remover uma página em src/pages/.
+description: Como criar uma página nova neste projeto React, seguindo a convenção Page + CSS Module + namespace de tradução + registro de rota. Use quando for adicionar, renomear ou remover uma página em src/pages/.
 ---
 
 # React Page Scaffold
 
-Toda página deste template é composta por **quatro peças que precisam existir juntas**. Estilo e rota faltando produzem falha silenciosa, que o compilador não pega; o namespace é a única peça com rede de segurança, porque a tipagem do i18next transforma namespace ou chave inexistente em erro de `npm run typecheck`.
+Toda página deste projeto é composta por **quatro peças que precisam existir juntas**. Estilo e rota faltando produzem falha silenciosa, que o compilador não pega; o namespace é a única peça com rede de segurança, porque a tipagem do i18next transforma namespace ou chave inexistente em erro de `npm run typecheck`.
 
 | Peça                  | Caminho                                                                                            | Se faltar                                                                                  |
 | --------------------- | -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
@@ -14,9 +14,9 @@ Toda página deste template é composta por **quatro peças que precisam existir
 | Namespace de tradução | `src/locales/{pt-BR,en,es}/<nome>.json` + registro em `src/i18n/resources.ts` e `src/i18n/i18n.ts` | `t("<chave>")` não compila; chave ausente em `en`/`es` também quebra o `npm run typecheck` |
 | Rota                  | entrada em `src/routers/routes.tsx`                                                                | a página existe mas é inalcançável; a URL cai no `NotFound`                                |
 
-`Home.page.tsx` e `NotFound.page.tsx` são as páginas-base já no repositório e servem de modelo para as quatro peças. O projeto que usa o template substitui o conteúdo delas pelo seu.
+Os trechos abaixo, com uma página `About` hipotética, mostram o formato esperado das quatro peças.
 
-Há uma quinta peça, mas **condicional**: se a página tiver lógica de estado/efeito (fetch, `useState`, `useEffect`), essa lógica vai para um hook dedicado em `src/pages/hooks/use<Nome>.ts` — ver passo 2. Página só apresentacional, como `Home.page.tsx` e `NotFound.page.tsx`, não tem essa peça.
+Há uma quinta peça, mas **condicional**: se a página tiver lógica de estado/efeito (fetch, `useState`, `useEffect`), essa lógica vai para um hook dedicado em `src/pages/hooks/use<Nome>.ts` — ver passo 2. Página só apresentacional, sem estado nem efeito, não tem essa peça.
 
 Nenhum texto que o usuário lê fica literal no JSX: tudo vem de chave, via `t()` ou `<Trans>`, com o valor em `src/locales/`. `npm run lint` acusa texto literal como filho de elemento e em atributos como `title`, `alt`, `placeholder`, `aria-label` e `content` (regra `react/jsx-no-literals`, desligada só em `*.test.ts(x)`).
 
@@ -24,7 +24,7 @@ Nenhum texto que o usuário lê fica literal no JSX: tudo vem de chave, via `t()
 
 ### 1. Componente — `src/pages/<Nome>.page.tsx`
 
-Nome do arquivo em PascalCase com sufixo `.page.tsx`. Componente `function <Nome>Page()`, com `export default` no final (não `export default function`, para seguir o padrão das páginas-base `Home` e `NotFound`).
+Nome do arquivo em PascalCase com sufixo `.page.tsx`. Componente `function <Nome>Page()`, com `export default` no final (não `export default function`).
 
 O texto vem do namespace da página (passo 4), com `useTranslation("<namespace>")`:
 
@@ -47,15 +47,15 @@ export default AboutPage
 
 A tag raiz é `<main>` — `src/styles/global.css` já aplica `min-height: 100dvh` nela.
 
-Texto compartilhado entre telas (`backHome`, `loading`) fica no namespace `common`. Para usá-lo junto com o da página, passe os dois namespaces em array e prefixe a chave compartilhada com `common:` — sem o array, a chave `common:backHome` não compila. `NotFound.page.tsx` é o modelo:
+Texto compartilhado entre telas (`backHome`, `loading`) fica no namespace `common`. Para usá-lo junto com o da página, passe os dois namespaces em array e prefixe a chave compartilhada com `common:` — sem o array, a chave `common:backHome` não compila:
 
 ```tsx
-const { t } = useTranslation(["notFound", "common"])
+const { t } = useTranslation(["about", "common"])
 
 <Link to={ROUTES.home}>{t("common:backHome")}</Link>
 ```
 
-Texto com marcação no meio (negrito, link) usa `<Trans>` em vez de quebrar a frase em várias chaves. A tag fica no valor do JSON (`"... um trecho em <strong>destaque</strong>."`) e o componente correspondente vai em `components`, como em `Home.page.tsx`:
+Texto com marcação no meio (negrito, link) usa `<Trans>` em vez de quebrar a frase em várias chaves. A tag fica no valor do JSON (`"... um trecho em <strong>destaque</strong>."`) e o componente correspondente vai em `components`:
 
 ```tsx
 <Trans t={t} i18nKey="showcase.description" components={{ strong: <strong /> }} />
@@ -124,20 +124,20 @@ export default AboutPage
 ```
 
 O hook não devolve texto de UI: devolve estado, e o componente escolhe a chave a exibir.
-Página só apresentacional, sem estado nem efeito (como `Home.page.tsx` e `NotFound.page.tsx`), não
+Página só apresentacional, sem estado nem efeito, não
 tem hook — este passo não se aplica.
 
 ### 3. Estilo — `src/styles/pages/<nome>.module.css`
 
-Nome do arquivo em camelCase, correspondendo ao componente (`NotFound.page.tsx` → `notFound.module.css`).
+Nome do arquivo em camelCase, correspondendo ao componente (`UserProfile.page.tsx` → `userProfile.module.css`).
 
-**Toda classe usada como `css.<algo>` no JSX precisa existir aqui.** `src/types/declarations.d.ts` tipa o módulo como `{ [key: string]: string }`, ou seja, qualquer chave compila — `css.missingClass` não é erro de tipo, é `undefined` em runtime e o elemento sai sem `class`. Foi exatamente o caso da issue #3 (`home.module.css` vazio com `css.main` em uso), já corrigida. Confira o par JSX ↔ CSS a olho antes de dar a tarefa por concluída.
+**Toda classe usada como `css.<algo>` no JSX precisa existir aqui.** `src/types/declarations.d.ts` tipa o módulo como `{ [key: string]: string }`, ou seja, qualquer chave compila — `css.missingClass` não é erro de tipo, é `undefined` em runtime e o elemento sai sem `class`. Um CSS Module vazio com `css.main` em uso passa pelo `tsc` e pelo build sem aviso, e a página só aparece sem estilo no navegador. Confira o par JSX ↔ CSS a olho antes de dar a tarefa por concluída.
 
-Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-color`, `--sans-font`) em vez de repetir valor hardcoded.
+Use as custom properties de `src/styles/global.css` (cor, tipografia, espaçamento) em vez de repetir valor hardcoded; confira os nomes no arquivo antes de usar (`color: var(--<token-de-cor>)`, `font-family: var(--<token-de-fonte>)`). Token global novo entra em `global.css`.
 
 ### 4. Namespace de tradução — `src/locales/{pt-BR,en,es}/<nome>.json`
 
-O namespace tem o mesmo nome do CSS Module da página (`about.module.css` → `about`; `NotFound.page.tsx` → `notFound`). Chaves em inglês, lowerCamelCase e hierárquicas por papel: `meta.title`, `meta.description`, `heading`, `showcase.status.success`. JSON com 4 espaços de indentação.
+O namespace tem o mesmo nome do CSS Module da página (`about.module.css` → `about`; `UserProfile.page.tsx` → `userProfile`). Chaves em inglês, lowerCamelCase e hierárquicas por papel: `meta.title`, `meta.description`, `heading`, `showcase.status.success`. JSON com 4 espaços de indentação.
 
 1. Crie `src/locales/pt-BR/<nome>.json` primeiro. `pt-BR` é a língua de referência: o texto novo nasce em português e os JSON de `pt-BR` são a fonte do tipo das chaves.
 
@@ -214,7 +214,7 @@ export default routes
 
 ### 6. Metadados da página (quando necessário)
 
-Cada página declara os próprios `<title>` e `<meta>` direto no JSX, com as tags nativas do React 19, que sobem sozinhas para o `<head>` — sem biblioteca nem wrapper. Eles substituem os placeholders estáticos do `index.html` (`<title>Template React</title>` e a `<meta name="description">`). O texto vem das chaves `meta.title` e `meta.description` do namespace da página; a troca de idioma re-renderiza a página e o React atualiza o `<head>`. `NotFound.page.tsx` e `Home.page.tsx` são os modelos:
+Cada página declara os próprios `<title>` e `<meta>` direto no JSX, com as tags nativas do React 19, que sobem sozinhas para o `<head>` — sem biblioteca nem wrapper. Eles substituem o placeholder estático do `index.html` (o `<title>` e a `<meta name="description">` escritos nele). O texto vem das chaves `meta.title` e `meta.description` do namespace da página; a troca de idioma re-renderiza a página e o React atualiza o `<head>`:
 
 ```tsx
 <>
@@ -242,7 +242,7 @@ Cada página declara os próprios `<title>` e `<meta>` direto no JSX, com as tag
 
 ## Navegação entre páginas
 
-Sempre `<Link to="/rota">` ou `useNavigate()` do `react-router-dom`. Nunca `<a href="/rota">` para rota interna: a âncora crua faz reload completo e descarta todo o estado da aplicação (issue #5). `<a href>` só para link externo.
+Sempre `<Link to="/rota">` ou `useNavigate()` do `react-router-dom`. Nunca `<a href="/rota">` para rota interna: a âncora crua faz reload completo e descarta todo o estado da aplicação. `<a href>` só para link externo.
 
 ## Checklist
 
