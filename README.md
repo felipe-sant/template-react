@@ -9,8 +9,8 @@ Toolkit e RTK Query configurados em `src/store/` (sem slice nem endpoint de exem
 internacionalização em `pt-BR`, `en` e `es`. Não traz autenticação nem componentes de UI prontos —
 o projeto que usa o template adiciona isso quando precisar, seguindo as convenções abaixo.
 
-O template ainda está em construção e não está estruturado de forma definitiva: pastas, convenções
-e tooling podem mudar entre versões.
+O template segue versionamento semântico próprio, publicado por tag e GitHub Release (ver
+[Versionamento](#versionamento)).
 
 ## Stack
 
@@ -48,6 +48,37 @@ name="description">` em `index.html`, o heading `# Novo projeto` deste `README.m
    (`src/pages/NotFound.page.tsx`) pelo do projeto real. O texto dessas telas não fica no
    `.page.tsx`: fica em `src/locales/<idioma>/<namespace>.json` (`home.json`, `notFound.json`),
    um arquivo por idioma.
+
+## Versionamento
+
+O template segue o [SemVer 2.0.0](https://semver.org/lang/pt-BR/), aplicado a um template. Cada
+versão é uma tag `vX.Y.Z` com uma
+[GitHub Release](https://github.com/felipe-sant/template-react/releases) que traz as notas da
+versão. Não há `CHANGELOG` versionado, para que o projeto derivado não herde o histórico do
+template.
+
+O critério para classificar uma mudança é o impacto em quem segue as convenções do template ou
+deriva um projeto dele, não o tamanho da mudança:
+
+- **Major:** muda algo que um projeto derivado ou o `.claude/` herdado assume. Convenção de código
+  ou de nome de arquivo, estrutura de pastas, API pública do template
+  (`getLanguage`/`setLanguage`, `get`/`post`, `createStore`/`renderWithStore`, `ROUTES`), remoção
+  de ferramenta ou de script do `package.json`, troca de ferramenta (por exemplo, de linter),
+  aumento da versão mínima de Node em `engines` e major de dependência que obriga mudar código ou
+  configuração.
+- **Minor:** acréscimo compatível. Ferramenta, script, skill, agente, utilitário ou seção de
+  documentação nova; regra de lint nova que o código atual já cumpre; minor de dependência.
+- **Patch:** correção sem mudança de convenção. Bug, texto ou erro de documentação, formatação,
+  patch de dependência.
+
+Um projeto criado com "Use this template" não recebe atualização automática. Para trazer as
+mudanças de uma versão nova, leia as notas da release e compare as tags
+(`https://github.com/felipe-sant/template-react/compare/vX.Y.Z...vA.B.C`). Vale anotar no README
+do projeto derivado a tag de origem.
+
+O `version` do `package.json` (`0.1.0`) não é a versão do template: é a versão inicial do projeto
+derivado, que o projeto passa a controlar a partir daí. Por isso ele não sobe a cada release do
+template.
 
 ## Documentação
 
