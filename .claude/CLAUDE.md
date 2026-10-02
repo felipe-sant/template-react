@@ -4,10 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Contexto
 
-Template base de frontend React + TypeScript, usado como ponto de partida para novos projetos.
-Ainda está em construção e **não** está estruturado de forma definitiva. A migração de Create
-React App (`react-scripts`) para **Vite** já foi feita: o toolchain de dev server, build e teste
-é Vite + Vitest.
+Projeto frontend em React 19 e TypeScript (`strict`), com Vite (dev server e build), Redux
+Toolkit com RTK Query (estado global), i18next com react-i18next (internacionalização), CSS
+Modules (estilo) e Vitest com Testing Library (teste). As seções abaixo são as convenções do
+projeto: onde cada coisa fica, como é escrita e como é testada.
 
 O conteúdo de documentação (`README.md`, specs, mensagens de commit, descrição de PR) está em
 **português**. Mantenha esse padrão. **Identificadores no código são em inglês** — ver "Estilo de
@@ -15,7 +15,7 @@ código".
 
 Texto de UI não é escrito no código: é referenciado por chave de tradução (`t("heading")`,
 `<Trans>`), e o valor de cada idioma fica em `src/locales/<idioma>/` (i18next + react-i18next,
-ver "Arquitetura"). Os idiomas suportados são `pt-BR`, `en` e `es`. **`pt-BR` é a língua de
+ver "Onde fica cada coisa"). Os idiomas suportados são `pt-BR`, `en` e `es`. **`pt-BR` é a língua de
 referência**: texto novo nasce primeiro em `src/locales/pt-BR/`, os JSON de `pt-BR` são a fonte
 do tipo das chaves e os testes de tela afirmam o texto em português. **O fallback de runtime é
 `en`**, o que o usuário vê quando nenhuma fonte de detecção dá um idioma suportado. As duas coisas
@@ -57,18 +57,17 @@ simular uma nova carga de página (detecção do zero e persistência do `?lng=`
 como em `src/i18n/test/i18n.test.ts`; restaure URL e stubs no fim.
 Teste de componente ou hook que lê a store usa `renderWithStore(ui, { preloadedState })` de
 `src/testUtils/renderWithStore.tsx`, que cria `createStore(preloadedState)` por chamada (estado e
-cache do RTK Query isolados) e devolve o `render` junto da `store`. Como não há endpoint em `src/`,
-o teste injeta um com `api.injectEndpoints`, stuba o `fetch` com `vi.stubGlobal` e define
+cache do RTK Query isolados) e devolve o `render` junto da `store`. O teste de store injeta o
+próprio endpoint com `api.injectEndpoints`, stuba o `fetch` com `vi.stubGlobal` e define
 `VITE_API_URL` absoluta com `vi.stubEnv` (o `Request` do Node não aceita URL relativa), com
 `vi.resetModules()` e import dinâmico para a constante ser relida; o endpoint injetado persiste
 enquanto o módulo vive, então o nome é único por arquivo (ver `src/store/test/api.test.ts` e
 `src/testUtils/test/renderWithStore.test.tsx`).
-Os testes existentes servem de modelo para os formatos que o template já tem: render direto da
-página (`src/pages/test/Home.page.test.tsx`), árvore de rotas em `createMemoryRouter` para verificar a rota `*`
-(`src/routers/test/Router.test.tsx`), módulo com `fetch` stubado via `vi.stubGlobal` (`src/services/http/test/get.test.ts`) e
-layout com `<Outlet />` preenchido por rota-filha (`src/layouts/test/Main.layout.test.tsx`). Componente com
-interação, hook com `renderHook` e função pura não têm teste-modelo no repositório: a skill
-`vitest-specialist` traz um trecho de cada formato.
+Cada formato de teste tem seu jeito: página renderizada direto, árvore de rotas em
+`createMemoryRouter` (para verificar a rota `*`, por exemplo), layout com `<Outlet />` preenchido
+por rota-filha, módulo com `fetch` stubado via `vi.stubGlobal`, componente com interação
+(`user-event`), hook com `renderHook` e função pura. A skill `vitest-specialist` traz um trecho de
+cada formato.
 
 Ficam sem teste `src/index.tsx`, que só chama `createRoot` num `#root` que não existe fora do
 `index.html`, e a pasta `src/types/`, que só declara tipo e não tem runtime.
@@ -79,26 +78,14 @@ Ficam sem teste `src/index.tsx`, que só chama `createRoot` num `#root` que não
 e lines — abaixo disso o comando termina com erro. `exclude` cobre os arquivos sem runtime
 relevante já citados acima, mais `vite.config.ts`, `src/setupTests.ts` e o glob `src/types/**`.
 
-O bloco `test` usa `pool: "vmThreads"` (o `jsdom` é criado uma vez por worker e cada arquivo roda
-num contexto de VM isolado). Média de 5 execuções, primeira descartada: 11,06 s no padrão, 3,88 s
-com `vmThreads` (-65%) e 4,05 s com `isolate: false` (-63%, mas falhou sob `--sequence.shuffle` e
-foi descartado); cobertura idêntica nas três. O custo é memória (cerca de 1,4 GB de pico no
-`test:cov` contra cerca de 225 MB). Teste que stuba com `vi.stubGlobal`/`vi.stubEnv` restaura no
-`afterEach` com `vi.unstubAllGlobals()`/`vi.unstubAllEnvs()`.
+O bloco `test` usa `pool: "vmThreads"`: o `jsdom` é criado uma vez por worker e cada arquivo roda
+num contexto de VM isolado. Não troque por `isolate: false`, que compartilha o estado entre
+arquivos e faz o resultado depender da ordem de execução. Como o worker é reaproveitado, teste que
+stuba com `vi.stubGlobal`/`vi.stubEnv` restaura no `afterEach` com
+`vi.unstubAllGlobals()`/`vi.unstubAllEnvs()`.
 
-`.github/workflows/ci.yml` roda em push para `main` e em todo Pull Request, com três jobs:
-`build` (`npm run build`) e `lint` (`npm run lint`) sempre completos, e `test`, cujo escopo
-depende do contexto — suíte completa + `npm run test:cov` (com o threshold de 80% acima) quando o
-evento é push (sempre em `main`) ou o PR mira `main`, ou quando o diff toca um arquivo
-"suite-wide" (`package.json`, `package-lock.json`, `vite.config.ts`, `tsconfig*.json`,
-`src/setupTests.ts`); nos demais PRs, roda só `vitest --changed` (sem coverage), cobrindo apenas
-os testes afetados pelo diff. Em `mode=full`, o diretório `coverage/` é publicado como artifact do
-workflow.
-
-Cada push num PR cancela o run anterior da mesma ref (`concurrency`, `cancel-in-progress` só para
-`pull_request`; `main` nunca é cancelada). O `.github/dependabot.yml` atualiza `npm` e
-`github-actions` mensalmente, com `minor`/`patch` agrupados num PR por ecossistema e `major` em PR
-próprio; como mira `main`, esses PRs rodam a suíte completa.
+O CI (`.github/workflows/`) roda `npm run build`, `npm run lint` e a suíte de testes, os mesmos
+comandos da verificação local.
 
 `vite build` sozinho não checa tipos (usa esbuild, que só transpila); por isso o script `build`
 roda `npm run typecheck` (`tsc -b`, que cobre `src/` via `tsconfig.app.json` e `vite.config.ts` via `tsconfig.node.json`) antes.
@@ -112,23 +99,19 @@ escopo do script `format`, com `package-lock.json`, `dist/` e `coverage/` fora v
 automático e bloqueia o commit se sobrar erro de lint não corrigível sozinho. O `.editorconfig` na
 raiz (`root = true`) padroniza charset, final de linha, quebra de linha final, remoção de trailing
 whitespace e indentação (`indent_size = 4` para todos os tipos, exceto `package.json` e `package-lock.json`, em `2`)
-para editores compatíveis, coerente com o `.prettierrc`. O stylelint foi avaliado e recusado
-(superfície de CSS pequena, conflito com escolhas pessoais de estilo, dependências extras); pode ser
-reavaliado se o CSS crescer.
+para editores compatíveis, coerente com o `.prettierrc`.
 
-## Arquitetura
-
-Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` (`Provider` da store) → `src/routers/Router.tsx` → páginas.
+## Onde fica cada coisa
 
 - **`App.tsx`** renderiza o `Router` dentro do `<Provider store={store}>` do react-redux e importa, por efeito colateral, `@/i18n/i18n` (que
   inicializa a instância do i18next) e o `global.css`; `@/i18n/i18n` está no `allow` de
   `import/no-unassigned-import` no `.oxlintrc.json`. Metadados (`<title>`, `<meta>`) são
-  declarados por cada página com as tags nativas do React 19, que sobem sozinhas para o `<head>`
-  (ver `NotFound.page.tsx`), sem biblioteca nem wrapper, e com valor vindo de chave:
+  declarados por cada página com as tags nativas do React 19, escritas dentro do JSX da própria
+  página, que sobem sozinhas para o `<head>`, sem biblioteca nem wrapper, e com valor vindo de chave:
   `<title>{t("meta.title")}</title>` e
   `<meta name="description" content={t("meta.description")} />`.
-- **`src/i18n/`** — configuração de idioma (i18next 26, react-i18next 17,
-  i18next-browser-languagedetector 8), um símbolo público por arquivo com `export default`.
+- **`src/i18n/`** — configuração de idioma (i18next, react-i18next e
+  i18next-browser-languagedetector), um símbolo público por arquivo com `export default`.
   `i18n.ts` cria a instância com `createInstance()` (import nomeado de `i18next`; `i18next.use(...)`
   no export default cai em `import/no-named-as-default-member`), registra `LanguageDetector` e
   `initReactI18next` — que torna a instância global, sem provider nem wrapper de render — e inicia
@@ -137,8 +120,8 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` (`P
   `fallbackLng: FALLBACK_LANGUAGE` (`fallbackLanguage.ts`, valor `en`). Não existe constante de
   "idioma padrão" nem de língua de referência: `pt-BR` é referência pelo tipo de `resources.ts`,
   não pelo runtime. A detecção segue `["querystring", "localStorage", "navigator"]`, com
-  `?lng=` e `LANGUAGE_STORAGE_KEY` (`languageStorageKey.ts`, `"template-react:language"`), e
-  `convertDetectedLanguage` passa todo código por `resolveSupportedLanguage`
+  `?lng=` e `LANGUAGE_STORAGE_KEY` (`languageStorageKey.ts`, único lugar onde o valor da chave
+  aparece), e `convertDetectedLanguage` passa todo código por `resolveSupportedLanguage`
   (`resolveSupportedLanguage.ts`: código exato, ou `es-*` → `es`, `en-*` → `en`, `pt`/`pt-*` →
   `pt-BR`, ou `undefined`). A ordem efetiva é escolha salva (por `setLanguage` ou por um `?lng=`
   válido) → idioma do navegador → `en`; navegador em `fr` abre em `en`.
@@ -159,8 +142,8 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` (`P
       `typeof` de `pt-BR` em `resources.ts`, então namespace ou chave faltando também não compila.
 - **`src/locales/`** — tradução é dado, separado da configuração em `src/i18n/`:
   `src/locales/<idioma>/<namespace>.json`, JSON com 4 espaços, os mesmos namespaces e chaves nos
-  três idiomas. Um namespace por dono do texto, com o nome do CSS Module correspondente (`home`,
-  `notFound`, `error`, `mainLayout`); `common` guarda texto compartilhado (`backHome`, `loading`)
+  três idiomas. Um namespace por dono do texto, com o nome do CSS Module correspondente (ex.:
+  `home`, `notFound`, `mainLayout`); `common` guarda texto compartilhado (`backHome`, `loading`)
   e texto fixo de componente de `src/components/`. Chave em inglês, lowerCamelCase, hierárquica por
   papel (`meta.title`, `meta.description`, `heading`, `showcase.status.success`). Página com
   namespace próprio chama `useTranslation("home")`; quem também usa chave de `common` carrega os
@@ -177,13 +160,16 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` (`P
   `routes` com `createMemoryRouter(routes, { initialEntries })` e `RouterProvider`.
   As rotas-filhas de `MainLayout` são `lazy` e o único `<Suspense>` fica em volta do `<Outlet />`
   de `src/layouts/Main.layout.tsx`: página nova não precisa (nem deve) ter o próprio `<Suspense>`.
+  Navegação interna usa `<Link to="...">`/`useNavigate` do `react-router-dom` com o path de
+  `ROUTES`, nunca `<a href="...">`: âncora crua força reload completo da página e descarta o estado
+  da aplicação.
 - **`src/store/`** — estado global: **Redux Toolkit + react-redux** para estado de cliente e
   **RTK Query** (`@reduxjs/toolkit/query/react`, sem dependência extra) para estado de servidor.
   Um símbolo público por arquivo, `export default` no final:
     - `api.ts`: `createApi` com `reducerPath: "api"`, `baseQuery` com
       `fetchBaseQuery({ baseUrl: API_URL, prepareHeaders })` (`API_URL` de `@/services/http/apiUrl`,
-      `Accept-Language` com `getLanguage()`), `tagTypes: []` e `endpoints: () => ({})`. Sem endpoint
-      de exemplo: o template não tem chamada de API real. Não importa a store. O RTK Query não usa o
+      `Accept-Language` com `getLanguage()`), `tagTypes` e `endpoints: () => ({})`; endpoint nunca
+      é declarado em `api.ts`, sempre injetado por domínio. Não importa a store. O RTK Query não usa o
       `http` como `baseQuery` (o `fetchBaseQuery` já entrega o contrato que ele espera); os dois
       clientes compartilham `apiUrl.ts` e o idioma.
     - `api/<dominio>.api.ts`: endpoints de um domínio via `api.injectEndpoints`, com tipos de
@@ -232,24 +218,25 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` (`P
 
     Isso é distinto de `src/hooks/`, que é reservado a hooks reutilizáveis entre páginas e
     componentes, não específicos de uma única página (por exemplo, um `useDebounce` ou `useMediaQuery`).
-    Nenhuma das duas pastas existe ainda: `src/pages/hooks/` e `src/hooks/` são criadas no primeiro uso.
+    Se `src/pages/hooks/` ou `src/hooks/` não existir, crie a pasta no primeiro uso.
 
-- **`src/styles/`** — `global.css` guarda os CSS custom properties (escala de cinza `--g1-color`
-  … `--g10-color`, `--sans-font`) e o reset. Estilos de página ficam em
-  `src/styles/pages/<nome>.module.css` (CSS Modules), importados como `import css from "..."`.
-  A tipagem dos módulos vem de `src/types/declarations.d.ts`.
+- **`src/styles/`** — `global.css` guarda as CSS custom properties (cor, tipografia, espaçamento e
+  afins) e o reset. CSS Module usa essas custom properties em vez de valor hardcoded; confira os
+  nomes em `src/styles/global.css` antes de usar, e token global novo entra lá. Estilos de página
+  ficam em `src/styles/pages/<nome>.module.css` e de componente em
+  `src/styles/components/<nome>.module.css` (CSS Modules), importados como `import css from "..."`.
+  A tipagem dos módulos vem de `src/types/declarations.d.ts` (`{ [key: string]: string }`): toda
+  classe usada como `css.<algo>` precisa existir no módulo importado, porque uma classe inexistente
+  vira `undefined` em runtime, sem erro de compilação.
 - **Alias de import `@/`** — `@/*` resolve para `src/*`. Configurado em dois lugares que precisam
   continuar concordando: `paths` no `tsconfig.app.json` (para o `tsc` e o editor) e `resolve.alias` no
   `vite.config.ts` (para o dev server e o build). Mexer em um sem o outro deixa o `tsc -b`
   verde e quebra o build, ou vice-versa. O Vitest herda o alias do mesmo `vite.config.ts`.
 - **`public/`** — assets estáticos que o Vite copia como estão para a raiz de `dist/` no build, sem
-  passar pelo bundler. Hoje contém `favicon.svg`, referenciado em `index.html` via
-  `<link rel="icon">`, e `fonts/` (`woff2` latin e licenças OFL das três famílias, referenciados
-  pelos `@font-face` de `global.css` e por dois `preload` do `index.html`, sem fonte de terceiros);
-  arquivo estático novo (imagem, dado mock) entra aqui. O template não inclui
-  `manifest.json` nem ícones de PWA por decisão de projeto: um manifest com `name`/ícones
-  placeholder, sem produto definido, seria pior que não ter manifest — cada projeto derivado
-  adiciona isso quando precisar.
+  passar pelo bundler, e são referenciados por caminho absoluto (`/favicon.svg`). Arquivo estático
+  novo (imagem, fonte, dado mock) entra aqui. Fonte é self-hospedada: `woff2` e licença em
+  `public/fonts/`, `@font-face` em `src/styles/global.css` e `preload` no `index.html`, nunca
+  CDN ou serviço de fonte de terceiros (Google Fonts e afins).
 
 **`src/services/http/`** é o cliente HTTP (fetch cru, usado fora do RTK Query), um símbolo
 por arquivo com `export default`: `apiUrl.ts` (a constante da URL da API, a **única** leitura de
@@ -262,8 +249,8 @@ não-ok vira `Error` literal em português com o status e, quando há, o corpo).
 o caminho relativo. Timeout próprio não existe: quem quiser usa `AbortSignal.timeout(ms)`.
 
 A convenção de variáveis de ambiente é a do Vite: só variáveis com prefixo `VITE_`
-são expostas ao código do cliente, e a leitura é `import.meta.env.VITE_ALGO` — não
-`process.env.REACT_APP_ALGO`, que era a convenção do Create React App e não existe mais aqui —
+são expostas ao código do cliente, e a leitura é `import.meta.env.VITE_ALGO`, nunca
+`process.env.REACT_APP_ALGO`. A convenção é
 materializada em `.env.example` (na raiz, com `VITE_API_URL` como exemplo) e na augmentação de
 `ImportMetaEnv`/`ImportMeta` em `src/vite-env.d.ts`.
 
@@ -285,9 +272,10 @@ linguagem do produto — `<SaveButton label={t("profile.saveChanges")} />` está
 JSON correspondente.
 
 Duas exceções ao "texto vem de chave". Mensagem de `Error` lançada no código do cliente
-(`src/services/http/parseResponse.ts`, `src/index.tsx`) é literal em português, como diagnóstico. Mensagem de erro
-de API vem traduzida pelo backend, que recebe o idioma ativo (`getLanguage()`) via
-`Accept-Language` (#63). A descrição de `describe`/`it` nos testes é escrita em português.
+(`src/services/http/parseResponse.ts`, `src/index.tsx`) é literal em português, como diagnóstico.
+Mensagem de erro de API vem traduzida pelo backend: `get`/`post` de `src/services/http/` e o
+`prepareHeaders` do RTK Query enviam o idioma ativo (`getLanguage()`) no header `Accept-Language`
+de toda requisição. A descrição de `describe`/`it` nos testes é escrita em português.
 
 **Export no final e um símbolo exportado por arquivo.** Cinco regras:
 
@@ -323,29 +311,23 @@ comentário explicativo.
 
 ### O que o oxlint verifica automaticamente
 
-`npm run lint` (oxlint 1.85.0, configurado em `.oxlintrc.json`) cobre uma parte das convenções
+`npm run lint` (oxlint, configurado em `.oxlintrc.json`) cobre uma parte das convenções
 acima mecanicamente; o restante continua sendo revisão manual do agente `reviewer`.
 
 Verificado automaticamente pelo oxlint:
 
-- `any` explícito → regra `typescript/no-explicit-any`, ligada individualmente como `error` — a
-  categoria onde ela vive por padrão, `restriction`, traria também dezenas de regras de estilo
-  genéricas do core não relacionadas a esta convenção.
+- `any` explícito → regra `typescript/no-explicit-any`.
 - Array de dependências de hook incompleto → regra `react/exhaustive-deps` (equivalente ao
-  `react-hooks/exhaustive-deps` do ecossistema ESLint clássico; nesta versão do oxlint o
-  `react-hooks` não é um plugin separado, está embutido no plugin `react`). A regra de que hooks
+  `react-hooks/exhaustive-deps` do ecossistema ESLint clássico). A regra de que hooks
   só podem ser chamados incondicionalmente (rules-of-hooks) também é verificada, pela regra
   `react/hooks`.
-- Import de namespace em vez de nomeado → regra `import/no-namespace`, ligada individualmente
-  como `error` pelo mesmo motivo do `no-explicit-any`: a categoria padrão dela, `style`, traria
-  ruído não relacionado.
+- Import de namespace em vez de nomeado → regra `import/no-namespace`.
 - Acessibilidade básica (`alt` em imagem, rótulo associado a campo de formulário, elemento
   clicável com suporte a teclado) → regras do plugin `jsx-a11y` (`jsx-a11y/alt-text`,
   `jsx-a11y/label-has-associated-control`, `jsx-a11y/click-events-have-key-events`, entre outras
   do conjunto padrão do plugin), ativas sempre que o plugin `jsx-a11y` está habilitado,
   independente da categoria de severidade configurada.
-- Import interno usar o alias `@/` em vez de `../` → regra `import/no-relative-parent-imports`,
-  ligada individualmente como `error` pelo mesmo motivo das demais regras pontuais desta lista.
+- Import interno usar o alias `@/` em vez de `../` → regra `import/no-relative-parent-imports`.
 - Texto de UI literal em vez de chave de tradução → regra `react/jsx-no-literals`, ligada como
   `error` com `noStrings: true`, `ignoreProps: true` e `restrictedAttributes` com `title`, `alt`,
   `placeholder`, `aria-label`, `aria-description`, `label` e `content`. Acusa texto solto como
@@ -442,12 +424,57 @@ empacotados.
 
 ## Padrão de branches, commits e PRs
 
-Toda branch, commit e PR segue o padrão de `CONTRIBUTING.md`: branches como
-`<tipo>/<número-da-issue>-<descrição-curta>` (ex.: `feat/21-agentes-e-skills`) e commits como
-`<Tipo> <ícone> [#<número-da-issue>] <descrição>` (ex.: `Fix :bug: [#5] ...`), com o `<Tipo>`
-vindo da tabela daquele arquivo (Fix, Feat, Hotfix, Refactor, Test, Perf, Style, Docs, Build,
-Chore, Revert) — nunca uma label do GitHub (`enhancement`, etc.) no lugar do tipo. A descrição do
-PR segue a estrutura de `.github/PULL_REQUEST_TEMPLATE.md`, não um corpo livre.
+### Tipos de alteração
+
+O `<Tipo>` de branch, commit e título de PR vem sempre desta tabela:
+
+| Tipo     |     Ícone     | Descrição                                                                   |
+| -------- | :-----------: | --------------------------------------------------------------------------- |
+| Fix      |     :bug:     | Correção de bugs.                                                           |
+| Feat     |  :sparkles:   | Desenvolvimento de novas funcionalidades (features).                        |
+| Hotfix   |  :ambulance:  | Correção de bugs a partir da branch de produção (main).                     |
+| Refactor |   :recycle:   | Melhorias no código (ex.: reestruturações; melhorias no código).            |
+| Test     |  :test_tube:  | Criação ou alteração de arquivos de teste.                                  |
+| Perf     |     :zap:     | Mudanças a fim de melhorar a performance.                                   |
+| Style    |     :art:     | Mudanças apenas em estilo de código (ex.: formatação; clean code).          |
+| Docs     |    :bulb:     | Mudanças relacionadas à documentação.                                       |
+| Build    |   :rocket:    | Mudanças em arquivos de build (ex.: Vite; `package.json`).                  |
+| Chore    | :see_no_evil: | Mudanças sem impacto direto na aplicação (ex.: alterações no `.gitignore`). |
+| Revert   |   :rewind:    | Reverter algum commit.                                                      |
+
+Nunca use uma label do GitHub (`enhancement`, `bug` como label, etc.) no lugar do tipo: a label
+classifica a issue, o tipo classifica a mudança.
+
+### Branches
+
+```
+<tipo>/<número-da-issue>-<descrição-curta>
+```
+
+Tipo em minúsculas (`feat/<número>-agentes-e-skills`). Sem issue aberta, o número é omitido
+(`chore/update-gitignore`).
+
+### Commits
+
+```
+<Tipo> <ícone> [#<número-da-issue>] <descrição>
+```
+
+Exemplo: `Fix :bug: [#<número>] Troca <a href> por <Link> na página NotFound`. Sem issue
+relacionada, o `[#...]` é omitido (`Chore :see_no_evil: Atualiza .gitignore`).
+
+Commits são atômicos: uma mudança concluída por commit, nunca várias tarefas acumuladas.
+
+### Pull Requests
+
+- Toda alteração passa por PR para a `main`, sem push direto.
+- O autor se atribui já na criação (`gh pr create --assignee @me`) e aplica labels que já existem
+  no repositório (`bug`, `enhancement`, `documentation`, etc.).
+- A descrição referencia a issue relacionada (`Closes #<número>`), para que ela feche no merge.
+- O título segue o padrão do commit principal (`<Tipo> <ícone> [#<número>] <descrição>`).
+- A descrição segue a estrutura de `.github/PULL_REQUEST_TEMPLATE.md`, não um corpo livre, com as
+  seções Descrição, Alterações, Decisões técnicas, Como testar, Evidências e Impactos e pontos de
+  atenção.
 
 Quando `npm run build`, `npm run lint` e `npm test -- --run` já rodaram localmente (verificação
 que o agente `executor` faz a cada tarefa, ver `.claude/agents/executor.md`) antes do `git push`,

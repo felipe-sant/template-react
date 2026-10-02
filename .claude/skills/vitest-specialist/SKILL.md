@@ -1,6 +1,6 @@
 ---
 name: vitest-specialist
-description: Como escrever, rodar e depurar teste em `test/` por diretório neste template React com Vitest + Testing Library (jsdom). Use quando for criar, alterar, mover ou depurar qualquer arquivo *.test.tsx / *.test.ts em src/, ou mexer em src/setupTests.ts ou no bloco test do vite.config.ts.
+description: Como escrever, rodar e depurar teste em `test/` por diretório neste projeto React com Vitest + Testing Library (jsdom). Use quando for criar, alterar, mover ou depurar qualquer arquivo *.test.tsx / *.test.ts em src/, ou mexer em src/setupTests.ts ou no bloco test do vite.config.ts.
 ---
 
 # Vitest Specialist
@@ -35,7 +35,7 @@ Rodar `npm test` puro dentro de um agente trava a sessão até o timeout: o proc
 
 ## 2. Suíte que não coleta nada falha
 
-`passWithNoTests` foi removido da config de propósito: uma execução que não coleta **nenhum** teste sai com exit 1. O efeito colateral útil é que um arquivo de teste com nome fora da convenção não passa despercebido — mas o sintoma é enganoso. Você vê "No test files found" ou uma contagem menor do que esperava, **não** um erro apontando o arquivo errado. Se o teste que você acabou de escrever "não falhou nem passou", o problema é o nome ou o lugar do arquivo, não o conteúdo.
+`passWithNoTests` fica fora da config de propósito: uma execução que não coleta **nenhum** teste sai com exit 1. O efeito colateral útil é que um arquivo de teste com nome fora da convenção não passa despercebido — mas o sintoma é enganoso. Você vê "No test files found" ou uma contagem menor do que esperava, **não** um erro apontando o arquivo errado. Se o teste que você acabou de escrever "não falhou nem passou", o problema é o nome ou o lugar do arquivo, não o conteúdo.
 
 ## 3. Nome e localização
 
@@ -48,8 +48,6 @@ Rodar `npm test` puro dentro de um agente trava a sessão até o timeout: o proc
 | `src/routers/Router.tsx`        | `src/routers/test/Router.test.tsx`        |
 | `src/components/SaveButton.tsx` | `src/components/test/SaveButton.test.tsx` |
 | `src/hooks/useCounter.ts`       | `src/hooks/test/useCounter.test.ts`       |
-
-As três primeiras linhas existem no repositório; as duas últimas são só a regra aplicada a arquivos hipotéticos.
 
 Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service. `.test.tsx` só quando o arquivo tem JSX dentro.
 
@@ -93,7 +91,7 @@ Se você encontrar este arquivo e algo nele parecer errado, não está: deixe co
 
 `describe`, `it`, `expect` e `vi` vêm de um `import` explícito de `vitest` — **não** existe `globals: true` na config, então eles não estão no escopo global. Esquecer o import dá `describe is not defined`.
 
-Render direto da página, como em `src/pages/test/Home.page.test.tsx`:
+Render direto da página:
 
 ```tsx
 import { describe, expect, it } from "vitest"
@@ -236,7 +234,7 @@ Componente que usa `<Link>` ou `useNavigate` também precisa de um router em vol
 
 `renderWithStore(ui, { preloadedState })`, de `@/testUtils/renderWithStore`, cria `createStore(preloadedState)` por chamada, envolve o `ui` em `Provider` e devolve o resultado do `render` junto da `store`. Cada chamada tem estado e cache do RTK Query isolados, então um teste não vaza para o outro. Para estado de slice, passe `preloadedState` em vez de despachar actions na mão.
 
-Não há endpoint em `src/`, então o teste injeta o dele com `api.injectEndpoints`, stuba o `fetch` com `vi.stubGlobal` e define `VITE_API_URL` absoluta com `vi.stubEnv` (o `Request` do Node não aceita URL relativa). A constante da URL é lida na carga do módulo: use `vi.resetModules()` e import dinâmico, e restaure no `afterEach`. O endpoint injetado persiste enquanto o módulo vive, então use nome único por arquivo ou `resetModules` por teste. Modelos: `src/store/test/api.test.ts` e `src/testUtils/test/renderWithStore.test.tsx`.
+O teste injeta o próprio endpoint com `api.injectEndpoints`, stuba o `fetch` com `vi.stubGlobal` e define `VITE_API_URL` absoluta com `vi.stubEnv` (o `Request` do Node não aceita URL relativa). A constante da URL é lida na carga do módulo: use `vi.resetModules()` e import dinâmico, e restaure no `afterEach`. O endpoint injetado persiste enquanto o módulo vive, então use nome único por arquivo ou `resetModules` por teste. Modelos: `src/store/test/api.test.ts` e `src/testUtils/test/renderWithStore.test.tsx`.
 
 ```tsx
 import { afterEach, expect, it, vi } from "vitest"
@@ -286,7 +284,7 @@ Todo texto de UI vem de chave (`t()`/`<Trans>`), com valor por idioma em `src/lo
 
 **Afirme o texto em `pt-BR`, nunca a chave.** `pt-BR` é a língua de referência e o idioma do reset — não o fallback `en`. Uma asserção sobre a chave (`getByRole("heading", { name: "heading" })`) passaria mesmo com a tradução vazia ou ausente, porque o i18next devolve a própria chave quando não acha valor. O texto em português é o que prova que a tradução existe e chegou à tela.
 
-**Para testar outro idioma, troque dentro do `it` com `await setLanguage(...)`**, antes do `render`, como no cenário `es` de `src/pages/test/Home.page.test.tsx`:
+**Para testar outro idioma, troque dentro do `it` com `await setLanguage(...)`**, antes do `render`:
 
 ```tsx
 import { describe, expect, it } from "vitest"
@@ -371,7 +369,7 @@ Ordem de preferência: **`getByRole` com `name`** > `getByLabelText` / `getByTex
 - **`fireEvent`** para disparar um evento cru: `fireEvent.click(element)`, `fireEvent.change(input, { target: { value: "texto" } })`.
 - **`@testing-library/user-event`** quando a interação é uma sequência real de usuário (digitar caractere a caractere, `tab`, `hover`) — ele dispara a cadeia de eventos que o navegador dispararia, e por isso pega bug que o `fireEvent` não pega.
 
-> **Versão instalada: `@testing-library/user-event` v14.** A API é **assíncrona e baseada em instância**: crie `const user = userEvent.setup()` dentro do `it` e use `await user.click(element)`, `await user.type(input, "texto")`. Sem o `await`, a asserção seguinte roda antes do efeito da interação (teste flaky ou falso verde). Chamar `userEvent.click(...)` direto, sem `setup()`, é a forma antiga e não deve ser usada.
+> **`@testing-library/user-event` a partir da v14.** A API é **assíncrona e baseada em instância**: crie `const user = userEvent.setup()` dentro do `it` e use `await user.click(element)`, `await user.type(input, "texto")`. Sem o `await`, a asserção seguinte roda antes do efeito da interação (teste flaky ou falso verde). Chamar `userEvent.click(...)` direto, sem `setup()`, é a forma antiga e não deve ser usada.
 
 ## 10. Erros comuns
 

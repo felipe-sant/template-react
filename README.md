@@ -8,6 +8,9 @@ uma página de erro, um layout com header e footer e um serviço HTTP genérico.
 global, autenticação nem componentes de UI prontos — o projeto que usa o template adiciona isso
 quando precisar, seguindo as convenções abaixo.
 
+O template ainda está em construção e não está estruturado de forma definitiva: pastas, convenções
+e tooling podem mudar entre versões.
+
 ## Stack
 
 - **React 19** — biblioteca de UI, com `StrictMode` habilitado em `src/index.tsx`.
@@ -53,6 +56,25 @@ name="description">` em `index.html`, o heading `# Novo projeto` deste `README.m
 | `.specs/`                 | Planejamento local (`spec.md` e `tasks.md` por feature ou bug), gitignored                                                               |
 
 `docs/` cobre apenas este frontend. O sistema inteiro fica no repositório pai, que reúne backend e frontend como submódulos, e o contrato da API fica no backend. O índice completo está em [`docs/README.md`](docs/README.md).
+
+O padrão de branches, commits e Pull Requests está em [`CONTRIBUTING.md`](CONTRIBUTING.md) e
+também, por extenso, em `.claude/CLAUDE.md`, para que o `.claude/` funcione sozinho num projeto
+derivado. A tabela de tipos de commit com ícone existe nos dois arquivos: ao mudar uma, mude a
+outra junto.
+
+## Arquitetura
+
+O fluxo de render é:
+
+1. `src/index.tsx` chama `createRoot` no `#root` do `index.html` e renderiza o app dentro de
+   `StrictMode`;
+2. `src/App.tsx` envolve tudo no `<Provider store={store}>` do react-redux e importa, por efeito
+   colateral, `@/i18n/i18n` (que inicializa o i18next) e o `global.css`;
+3. `src/routers/Router.tsx` cria o data router com `createBrowserRouter(routes)` e renderiza o
+   `RouterProvider`;
+4. `MainLayout` (`src/layouts/Main.layout.tsx`) é a rota-pai, com header, footer e o único
+   `<Suspense>` em volta do `<Outlet />`;
+5. as páginas são rotas-filhas `lazy`, carregadas sob demanda dentro desse `<Outlet />`.
 
 ## Estrutura de `src/`
 
@@ -115,6 +137,16 @@ espaçamento, forma, movimento) em vez de valores hardcoded.
 > `public/fonts/`, os `@font-face` e os `preload`; para remover, apague `public/fonts/`, os
 > `@font-face` e os `preload` e aponte `--font-heading`/`--font-body`/`--font-mono` para fontes de
 > sistema.
+
+### `public/`
+
+Assets estáticos que o Vite copia como estão para a raiz de `dist/` no build, sem passar pelo
+bundler. Hoje contém `favicon.svg`, referenciado no `index.html` via `<link rel="icon">`, e
+`fonts/` (ver [Design tokens](#design-tokens)).
+
+O template não inclui `manifest.json` nem ícones de PWA, por decisão de projeto: um manifest com
+`name` e ícones placeholder, sem produto definido, seria pior que não ter manifest. Cada projeto
+derivado adiciona isso quando precisar.
 
 ### Exceção de sufixo: arquivos raiz/singulares
 
@@ -395,6 +427,14 @@ As demais props não são verificadas (`ignoreProps: true`), então `type="butto
 entre chaves num atributo restrito (`title={"Dica"}`). Por isso o `alt` vazio de imagem decorativa
 é escrito `alt={""}`: `alt=""` seria acusado.
 
+A configuração do `.oxlintrc.json` foi escrita para o oxlint `1.85.0`. Ela liga as categorias
+`correctness` e `suspicious` e, fora delas, só regras pontuais: `typescript/no-explicit-any`,
+`import/no-namespace` e `import/no-relative-parent-imports` são ligadas individualmente como
+`error` porque as categorias padrão onde vivem (`restriction` e `style`) trariam dezenas de regras
+de estilo genéricas sem relação com as convenções do projeto. Nessa versão, as regras de hooks
+(`react/exhaustive-deps` e `react/hooks`, equivalentes ao `react-hooks` do ESLint) estão embutidas
+no plugin `react`, sem plugin `react-hooks` separado.
+
 ## Comandos
 
 ```bash
@@ -452,10 +492,20 @@ troca o idioma usa `setLanguage` dentro do próprio `it`; `react-i18next` não �
 
 Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service.
 
-Cada formato tem seu jeito: página renderizada direto, árvore de rotas sob um router em memória,
-componente com interação (`user-event`), hook com `renderHook`, função pura e módulo com `fetch`
-stubado via `vi.stubGlobal` (como em `src/services/http/test/get.test.ts`). A skill
-`vitest-specialist` em `.claude/skills/` traz um trecho de cada um.
+Cada formato de teste tem seu jeito, e a skill `vitest-specialist` em `.claude/skills/` traz um
+trecho de cada um. Os testes do template servem de modelo para os formatos que ele já tem:
+
+| Formato                                           | Teste-modelo                                                                 |
+| ------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Página renderizada direto                         | `src/pages/test/Home.page.test.tsx`                                          |
+| Árvore de rotas com `createMemoryRouter`          | `src/routers/test/Router.test.tsx`                                           |
+| Módulo com `fetch` stubado via `vi.stubGlobal`    | `src/services/http/test/get.test.ts`                                         |
+| Layout com `<Outlet />` preenchido por rota-filha | `src/layouts/test/Main.layout.test.tsx`                                      |
+| Store com endpoint injetado                       | `src/store/test/api.test.ts` e `src/testUtils/test/renderWithStore.test.tsx` |
+
+Componente com interação (`user-event`), hook com `renderHook` e função pura não têm teste-modelo
+no template; o trecho de cada um fica na skill. Como não há endpoint em `src/`, os testes de store injetam o
+próprio com `api.injectEndpoints`.
 
 `npm run test:cov` roda a suíte inteira com relatório de cobertura (`@vitest/coverage-v8`),
 gerando os formatos `text`, `json`, `json-summary` e `html` em `coverage/` (fora do controle de

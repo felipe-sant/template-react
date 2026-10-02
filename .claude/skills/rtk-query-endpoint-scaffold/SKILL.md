@@ -1,11 +1,11 @@
 ---
 name: rtk-query-endpoint-scaffold
-description: Como criar endpoints de API neste template React com RTK Query, seguindo a convenção api.injectEndpoints em src/store/api/<dominio>.api.ts + hooks gerados + tagTypes + teste com endpoint injetado e fetch stubado. Use quando for adicionar, alterar ou remover um endpoint, ou consumir dado do servidor numa página.
+description: Como criar endpoints de API neste projeto React com RTK Query, seguindo a convenção api.injectEndpoints em src/store/api/<dominio>.api.ts + hooks gerados + tagTypes + teste com endpoint injetado e fetch stubado. Use quando for adicionar, alterar ou remover um endpoint, ou consumir dado do servidor numa página.
 ---
 
 # RTK Query Endpoint Scaffold
 
-Dado vindo do servidor é **estado de servidor**: vive no cache do RTK Query, não em `useState` nem em slice. A base já existe em `src/store/api.ts` (`createApi` com `reducerPath: "api"`, `baseUrl` de `@/services/http/apiUrl`, `Accept-Language` no `prepareHeaders`, `tagTypes: []` e nenhum endpoint) e está registrada no `rootReducer` e no middleware da store. O template não traz endpoint de exemplo: os trechos abaixo, com um domínio `items` hipotético, ilustram o formato. O `get`/`post` de `src/services/http/` é `fetch` cru para o que não passa pelo RTK Query; o RTK Query não o usa como `baseQuery`.
+Dado vindo do servidor é **estado de servidor**: vive no cache do RTK Query, não em `useState` nem em slice. A base fica em `src/store/api.ts` (`createApi` com `reducerPath: "api"`, `baseUrl` de `@/services/http/apiUrl`, `Accept-Language` no `prepareHeaders`, `tagTypes` e `endpoints: () => ({})`, sem endpoint próprio) e é registrada no `rootReducer` e no middleware da store; endpoint entra por `api.injectEndpoints`, nunca direto em `api.ts`. Os trechos abaixo usam um domínio `items` hipotético para ilustrar o formato. O `get`/`post` de `src/services/http/` é `fetch` cru para o que não passa pelo RTK Query; o RTK Query não o usa como `baseQuery`.
 
 | Peça                        | Caminho                                       | Se faltar                                    |
 | --------------------------- | --------------------------------------------- | -------------------------------------------- |
@@ -50,7 +50,7 @@ Os hooks gerados (`useGetItemsQuery`, `useCreateItemMutation`) são consumidos p
 
 ### 2. Tags — invalidação de cache (quando necessário)
 
-`tagTypes` começa vazio em `src/store/api.ts`; o projeto o preenche quando precisar que uma mutation refaça uma query. Declare o tipo da tag lá e use `providesTags`/`invalidatesTags` no endpoint:
+`tagTypes` fica em `src/store/api.ts` e só recebe um tipo quando o projeto precisa que uma mutation refaça uma query. Declare o tipo da tag lá e use `providesTags`/`invalidatesTags` no endpoint:
 
 ```ts
 const api = createApi({
@@ -115,7 +115,7 @@ Mutation: `const [createItem, { isLoading }] = itemsApi.useCreateItemMutation()`
 
 ### 4. Teste
 
-Não há endpoint em `src/` que sirva de alvo, então o teste usa o endpoint do domínio com o `fetch` stubado e `VITE_API_URL` absoluta (o `Request` do Node não aceita URL relativa), com `vi.resetModules()` e import dinâmico para a constante ser relida. A store vem de `renderWithStore` (skill `vitest-specialist`), com cache isolado por teste.
+O teste usa o endpoint do domínio com o `fetch` stubado e `VITE_API_URL` absoluta (o `Request` do Node não aceita URL relativa), com `vi.resetModules()` e import dinâmico para a constante ser relida. A store vem de `renderWithStore` (skill `vitest-specialist`), com cache isolado por teste.
 
 ```tsx
 import { afterEach, describe, expect, it, vi } from "vitest"

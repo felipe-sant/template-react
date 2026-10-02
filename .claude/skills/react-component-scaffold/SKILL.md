@@ -1,11 +1,11 @@
 ---
 name: react-component-scaffold
-description: Como criar um componente reutilizável neste template React, seguindo a convenção Componente + CSS Module + teste em test/. Use quando for adicionar, alterar, renomear ou remover um componente em src/components/.
+description: Como criar um componente reutilizável neste projeto React, seguindo a convenção Componente + CSS Module + teste em test/. Use quando for adicionar, alterar, renomear ou remover um componente em src/components/.
 ---
 
 # React Component Scaffold
 
-**Tem rota própria → é página** (use a skill `react-page-scaffold`). **É reaproveitado dentro de outras telas e não tem rota → é componente**, e esta skill é a certa. Estrutura de página compartilhada (header/footer em volta de um `<Outlet />`) é `src/layouts/`, que não é assunto desta skill nem tem convenção fechada ainda (issue #24).
+**Tem rota própria → é página** (use a skill `react-page-scaffold`). **É reaproveitado dentro de outras telas e não tem rota → é componente**, e esta skill é a certa. Estrutura de página compartilhada (header/footer em volta de um `<Outlet />`) é `src/layouts/`, que não é assunto desta skill.
 
 Um componente é composto por **duas peças que precisam existir juntas** — mais o teste, que é obrigatório e está na terceira linha da tabela. O estilo **não** fica ao lado do componente; o teste fica em `src/components/test/`.
 
@@ -15,7 +15,7 @@ Um componente é composto por **duas peças que precisam existir juntas** — ma
 | Estilo     | `src/styles/components/<nome>.module.css` (camelCase)             | `css.<classe>` vira `undefined`, o elemento renderiza sem `class` e sem erro nenhum |
 | Teste      | `src/components/test/<Nome>.test.tsx`                             | o `reviewer` bloqueia a revisão — a falta de teste é reprovação incondicional       |
 
-O template não traz componente pronto: `src/components/` é criada ao escrever o primeiro, e os trechos abaixo, com um `SaveButton` hipotético, ilustram o formato esperado das três peças.
+Se `src/components/` não existir, crie a pasta no primeiro uso. Os trechos abaixo, com um `SaveButton` hipotético, ilustram o formato esperado das três peças.
 
 ## Passo a passo
 
@@ -48,7 +48,7 @@ O `SaveButton` não chama `t()`: o `label` muda a cada uso, então chega por pro
 
 ### 2. Props — interface `<Nome>Props` local e sem `export`
 
-A interface de props fica **no arquivo do componente, sem `export`**: tipo não exportado é local por padrão. Só se outro arquivo precisar importar o tipo ele deixa de ser local e vai para `src/types/<dominio>/<Nome>Props.types.ts`, em arquivo próprio com `export default` no final. Mover props para `src/types/` sem necessidade só adiciona um import e um lugar a mais para desatualizar. A regra está no `CLAUDE.md` e no `README.md`.
+A interface de props fica **no arquivo do componente, sem `export`**: tipo não exportado é local por padrão. Só se outro arquivo precisar importar o tipo ele deixa de ser local e vai para `src/types/<dominio>/<Nome>Props.types.ts`, em arquivo próprio com `export default` no final. Mover props para `src/types/` sem necessidade só adiciona um import e um lugar a mais para desatualizar. A regra está no `CLAUDE.md`.
 
 - Prop opcional com `?` (`onClick?: () => void`), e o valor padrão no destructuring quando fizer sentido.
 - `strict` está ativo: nada de `any` explícito nem de cast para calar o compilador. Se o tipo for difícil, use `unknown` com checagem.
@@ -87,16 +87,16 @@ Componente cuida de **renderização e interação**. Ele não busca dado nem gu
 
 Nome do arquivo em camelCase, correspondendo ao componente (`SaveButton.tsx` → `saveButton.module.css`). O estilo **não** fica ao lado do componente: fica em `src/styles/components/`.
 
-**Toda classe usada como `css.<algo>` no JSX precisa existir aqui.** `src/types/declarations.d.ts` tipa o módulo como `{ [key: string]: string }`, ou seja, qualquer chave compila — `css.missingClass` não é erro de tipo, é `undefined` em runtime e o elemento sai sem `class`. Foi o caso da issue #3 (`home.module.css` vazio com `css.main` em uso), já corrigida. Nem o `tsc` nem o teste pegam isso: confira o par JSX ↔ CSS a olho.
+**Toda classe usada como `css.<algo>` no JSX precisa existir aqui.** `src/types/declarations.d.ts` tipa o módulo como `{ [key: string]: string }`, ou seja, qualquer chave compila — `css.missingClass` não é erro de tipo, é `undefined` em runtime e o elemento sai sem `class`. Um CSS Module vazio com `css.<classe>` em uso compila, builda e renderiza o componente sem estilo. Nem o `tsc` nem o teste pegam isso: confira o par JSX ↔ CSS a olho.
 
-Use as custom properties de `src/styles/global.css` (`--g1-color` … `--g10-color`, `--sans-font`) em vez de valor hardcoded, como o `saveButton.module.css` hipotético faz:
+Use as custom properties de `src/styles/global.css` (cor, tipografia, espaçamento) em vez de valor hardcoded; confira os nomes no arquivo antes de usar. O `saveButton.module.css` hipotético, com os nomes como placeholder:
 
 ```css
 .saveButton {
-    font-family: var(--sans-font);
-    border: 1px solid var(--g4-color);
-    background-color: var(--g2-color);
-    color: var(--g9-color);
+    font-family: var(--<token-de-fonte>);
+    border: 1px solid var(--<token-de-cor-de-borda>);
+    background-color: var(--<token-de-cor-de-fundo>);
+    color: var(--<token-de-cor-de-texto>);
 }
 ```
 
@@ -149,7 +149,7 @@ export default CloseButton
 - **Elemento semântico certo.** `<button type="button">` para ação, nunca `<div onClick>` — a `div` não recebe foco, não responde a Enter/Espaço e não tem papel de botão. `type="button"` evita o submit implícito dentro de `<form>`.
 - **Nome acessível.** O texto visível já serve (`{label}` dentro do `<button>`). Se o controle só tem ícone, ele precisa de `aria-label` traduzido — `aria-label={t("closeButton.label")}`, como no `CloseButton` da seção 5.
 - **`alt` em toda imagem** — descritivo e traduzido (`alt={t("<componente>.<papel>")}`, ou vindo de prop quando varia por uso), ou `alt={""}` quando a imagem for puramente decorativa — escrito como expressão, porque `alt=""` é string literal num atributo restrito e o lint acusa.
-- Navegação interna com `<Link to="...">`/`useNavigate` do `react-router-dom`, nunca `<a href>` para rota interna: a âncora crua força reload completo e descarta o estado da aplicação (issue #5). Componente com `<Link>` dentro só renderiza sob um router — o teste dele precisa de `MemoryRouter` em volta.
+- Navegação interna com `<Link to="...">`/`useNavigate` do `react-router-dom`, nunca `<a href>` para rota interna: a âncora crua força reload completo e descarta o estado da aplicação. Componente com `<Link>` dentro só renderiza sob um router — o teste dele precisa de `MemoryRouter` em volta.
 
 ### 7. Teste — `src/components/test/<Nome>.test.tsx`
 

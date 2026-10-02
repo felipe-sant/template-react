@@ -7,7 +7,7 @@ tools: Read, Edit, Write, Grep, Glob, Bash, TodoWrite, Agent
 # Executor
 
 - Trabalhe a partir de uma pasta de spec já existente em `.specs/features/<slug>/` ou `.specs/bugs/<slug>/`. Se não houver `tasks.md`, pare e peça para o agente `sdd` criar um antes de implementar.
-- **Sempre crie e mude para uma branch dedicada antes da primeira tarefa** — nunca implemente/comite direto em `main`. Nomeie a branch seguindo o `CONTRIBUTING.md` (`<tipo>/<número-da-issue>-<descrição-curta>`, ex.: `feat/21-agentes-e-skills`), usando o `**Tipo:**` e a `**Issue:**` do `spec.md` (slug da pasta da spec como descrição, se fizer sentido). Se já existir uma branch para essa spec (retomando trabalho), mude para ela em vez de criar outra.
+- **Sempre crie e mude para uma branch dedicada antes da primeira tarefa** — nunca implemente/comite direto em `main`. Nomeie a branch seguindo a seção "Padrão de branches, commits e PRs" do `CLAUDE.md` (`<tipo>/<número-da-issue>-<descrição-curta>`, ex.: `feat/<número>-agentes-e-skills`), usando o `**Tipo:**` e a `**Issue:**` do `spec.md` (slug da pasta da spec como descrição, se fizer sentido). Se já existir uma branch para essa spec (retomando trabalho), mude para ela em vez de criar outra.
 - **Só implemente specs com `**Status:** aprovada`.** Se o status estiver em `rascunho` ou `em-revisao`, pare e avise que a spec ainda não foi aprovada — não implemente. Ao começar a implementar, atualize o `**Status:**` do `spec.md` para `em-andamento` antes da primeira tarefa. Ao concluir a última tarefa do `tasks.md` (todas marcadas `[x]`), atualize o `**Status:**` para `implementada`.
 - Implemente as tarefas na ordem do `tasks.md`, respeitando a seção "Plano de execução" quando ela existir, e marcando cada item como concluído (`- [x]`) assim que verificado.
 - Mantenha o `spec.md` sincronizado conforme avança: sempre que uma tarefa concluída satisfizer um critério de aceite, marque o checkbox correspondente em "Critérios de aceite" (`- [x]`) no mesmo momento em que marcar a tarefa em `tasks.md` — não deixe para o final, e não deixe critérios já satisfeitos sem marcar.
@@ -22,8 +22,8 @@ Siga as convenções do `CLAUDE.md` deste repositório. Todo código que você e
 - **Estado global** vive em `src/store/` (Redux Toolkit + RTK Query). Antes de criar slice ou endpoint, carregue o skill `redux-store-scaffold` ou `rtk-query-endpoint-scaffold` (via ferramenta `Skill`, se disponível, ou lendo `.claude/skills/<skill>/SKILL.md`). Teste que lê a store usa `renderWithStore`.
 - **Export** sempre no final do arquivo, um símbolo exportado por arquivo (valor ou tipo), sempre `export default`; tipo exportado em `src/types/<dominio>/<Nome>.types.ts`, tipo local sem `export`.
 - **Componentes** seguem `src/components/<Nome>.tsx` (PascalCase, sem sufixo) + `src/styles/components/<nome>.module.css` + teste em `src/components/test/<Nome>.test.tsx`. Antes de criar ou alterar um componente, carregue o skill `react-component-scaffold` (via ferramenta `Skill`, se disponível, ou lendo `.claude/skills/react-component-scaffold/SKILL.md`). Se a convenção real do código contradizer o skill, a convenção real do código sempre vence.
-- **Nunca deixe um CSS Module dessincronizado do componente.** Se o JSX usa `css.algo`, a classe `.algo` precisa existir no módulo importado — como a tipagem em `src/types/declarations.d.ts` é `{ [key: string]: string }`, uma classe inexistente vira `undefined` silenciosamente, sem erro de compilação (é exatamente o bug da issue #3).
-- **Navegação interna usa `<Link to="...">`/`useNavigate` do `react-router-dom`**, nunca `<a href="...">` — âncora crua força reload completo e descarta o estado da aplicação (issue #5).
+- **Nunca deixe um CSS Module dessincronizado do componente.** Se o JSX usa `css.algo`, a classe `.algo` precisa existir no módulo importado — como a tipagem em `src/types/declarations.d.ts` é `{ [key: string]: string }`, uma classe inexistente vira `undefined` silenciosamente, sem erro de compilação.
+- **Navegação interna usa `<Link to="...">`/`useNavigate` do `react-router-dom`**, nunca `<a href="...">` — âncora crua força reload completo e descarta o estado da aplicação.
 - **TypeScript `strict`:** sem `any` explícito e sem cast para silenciar erro de tipo. Se o tipo for difícil de expressar, use `unknown` com checagem, ou modele o tipo corretamente.
 - **Hooks:** array de dependências de `useEffect`/`useMemo`/`useCallback` deve listar tudo que é lido de fora. Não guarde em `useState` valor que dá para derivar do que já existe em render.
 - **Lógica fora do JSX:** componente cuida de renderização e interação; lógica reutilizável vai para hook, acesso a dado externo vai para service.
@@ -33,7 +33,7 @@ Siga as convenções do `CLAUDE.md` deste repositório. Todo código que você e
 
 ## Verificação
 
-Depois de cada tarefa relevante, rode os comandos de verificação que o `package.json` da branch realmente tem, antes de marcar a tarefa como concluída. Hoje:
+Depois de cada tarefa relevante, rode os comandos de verificação que o `package.json` da branch realmente tem, antes de marcar a tarefa como concluída. Os comandos padrão do projeto são:
 
 - `npm run typecheck` — checagem de tipos (`tsc -b`, sempre disponível).
 - `npm run build` — checagem de tipos + build de produção em `dist/` (Vite).
@@ -54,12 +54,12 @@ Escrever/atualizar o teste em `test/` (`<diretório>/test/<arquivo>.test.tsx`, i
 ## Commits e PR
 
 - Não amplie o escopo além do que está no `tasks.md`. Se a spec e o código realmente implementável divergirem, pare e avise em vez de decidir por conta própria.
-- **Sempre** faça commits atômicos, um a cada mudança concluída, seguindo o padrão de commit do `CONTRIBUTING.md` (`<Tipo> <ícone> [#<issue>] <descrição>`) — nunca acumule várias tarefas/concerns num commit só. Commite conforme avança (ao final de cada tarefa do `tasks.md`, ou antes, se uma tarefa naturalmente se dividir em mudanças distintas). Escolha o `<Tipo>`/ícone pela natureza real da mudança (Fix, Feat, Refactor, Style, Docs, Build, etc.), não sempre o mesmo tipo da spec.
+- **Sempre** faça commits atômicos, um a cada mudança concluída, seguindo o padrão de commit da seção "Padrão de branches, commits e PRs" do `CLAUDE.md` (`<Tipo> <ícone> [#<número-da-issue>] <descrição>`) — nunca acumule várias tarefas/concerns num commit só. Commite conforme avança (ao final de cada tarefa do `tasks.md`, ou antes, se uma tarefa naturalmente se dividir em mudanças distintas). Escolha o `<Tipo>`/ícone pela natureza real da mudança (Fix, Feat, Refactor, Style, Docs, Build, etc.), não sempre o mesmo tipo da spec.
 - Nunca commite pastas de spec dentro de `.specs/bugs/<slug>/` ou `.specs/features/<slug>/` — são planejamento local, não fazem parte do histórico do repositório.
 - Como você já rodou `npm run build`, `npm run lint` e `npm test -- --run` a cada tarefa (seção "Verificação"), o `git push` da branch é feito com `--no-verify` — a validação manual já cobre o que um hook rodaria de novo.
-- Ao abrir o PR (após todas as tarefas do `tasks.md` concluídas), preencha a descrição usando a estrutura de `.github/PULL_REQUEST_TEMPLATE.md` (Descrição, Alterações, Decisões técnicas, Como testar, Evidências, Impactos e pontos de atenção) em vez de um corpo livre. O título segue o padrão do `CONTRIBUTING.md` (`<Tipo> <ícone> [#<número>] <descrição>`).
+- Ao abrir o PR (após todas as tarefas do `tasks.md` concluídas), preencha a descrição usando a estrutura de `.github/PULL_REQUEST_TEMPLATE.md` (Descrição, Alterações, Decisões técnicas, Como testar, Evidências, Impactos e pontos de atenção) em vez de um corpo livre. O título segue o padrão do commit principal, descrito na seção "Padrão de branches, commits e PRs" do `CLAUDE.md` (`<Tipo> <ícone> [#<número>] <descrição>`).
 - Ao criar o PR via `gh pr create`, defina o assignee automaticamente para quem está abrindo o PR (`--assignee @me`).
-- Quando a mudança for visual, anexe evidência de tela na seção "Evidências" do PR — num template de frontend, "o build passou" não demonstra que a interface ficou correta.
+- Quando a mudança for visual, anexe evidência de tela na seção "Evidências" do PR — num frontend, "o build passou" não demonstra que a interface ficou correta.
 
 ## Consome
 

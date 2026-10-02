@@ -1,13 +1,13 @@
 ---
 name: redux-store-scaffold
-description: Como criar estado de cliente (slice) neste template React com Redux Toolkit, seguindo a convenção slice + registro no rootReducer + hooks tipados + teste com renderWithStore. Use quando for adicionar, alterar ou remover um slice em src/store/slices/ ou ler/escrever estado global em componente.
+description: Como criar estado de cliente (slice) neste projeto React com Redux Toolkit, seguindo a convenção slice + registro no rootReducer + hooks tipados + teste com renderWithStore. Use quando for adicionar, alterar ou remover um slice em src/store/slices/ ou ler/escrever estado global em componente.
 ---
 
 # Redux Store Scaffold
 
-Estado de cliente compartilhado entre telas vive num **slice** em `src/store/slices/<nome>.slice.ts`. Estado que só uma página usa continua `useState` no hook da página; dado do servidor não é slice, é endpoint do RTK Query (skill `rtk-query-endpoint-scaffold`). O template não traz slice de exemplo: os trechos abaixo, com um `counter` hipotético, ilustram o formato.
+Estado de cliente compartilhado entre telas vive num **slice** em `src/store/slices/<nome>.slice.ts`. Estado que só uma página usa continua `useState` no hook da página; dado do servidor não é slice, é endpoint do RTK Query (skill `rtk-query-endpoint-scaffold`). Os trechos abaixo usam um `counter` hipotético para ilustrar o formato.
 
-A infraestrutura já existe: `src/store/rootReducer.ts` (com `api.reducer`), `src/store/createStore.ts`, `src/store/store.ts`, `useAppDispatch`, `useAppSelector` e o `Provider` em `src/App.tsx`.
+A infraestrutura da store fica em `src/store/rootReducer.ts` (com `api.reducer`), `src/store/createStore.ts`, `src/store/store.ts`, `useAppDispatch`, `useAppSelector` e no `Provider` de `src/App.tsx`; slice novo só se registra nela, sem recriá-la.
 
 | Peça     | Caminho                                      | Se faltar                                                                      |
 | -------- | -------------------------------------------- | ------------------------------------------------------------------------------ |
