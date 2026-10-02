@@ -39,9 +39,9 @@ O template segue versionamento semântico próprio, publicado por tag e GitHub R
 1. Use o botão "Use this template" no GitHub para criar um repositório novo a partir deste
    template (ou clone este repositório, se preferir).
 2. Instale as dependências: `npm install`.
-3. Renomeie o projeto: o campo `name` em `package.json`, o `<title>` e o `<meta
-name="description">` em `index.html`, o heading `# Novo projeto` deste `README.md` e, junto
-   com o `name` do `package.json`, o valor de `LANGUAGE_STORAGE_KEY` em
+3. Renomeie o projeto: o campo `name` em `package.json`, o `<title>` e o
+   `<meta name="description">` em `index.html`, o heading `# Novo projeto` deste `README.md` e,
+   junto com o `name` do `package.json`, o valor de `LANGUAGE_STORAGE_KEY` em
    `src/i18n/languageStorageKey.ts` (`"template-react:language"` → `"<nome-do-projeto>:language"`).
 4. Suba o dev server (`npm run dev`) e confirme em `http://localhost:5173`.
 5. Substitua o conteúdo da `Home` (`src/pages/Home.page.tsx`) e da `NotFound`
@@ -486,7 +486,7 @@ npm run test:cov  # roda vitest run --coverage — suíte inteira + relatório d
 > As regras de formatação em `.prettierrc` (`tabWidth: 4`, `trailingComma: "none"`, sem ponto e
 > vírgula, aspas duplas, etc.) e de lint em `.oxlintrc.json` são escolha pessoal de
 > [@felipe-sant](https://github.com/felipe-sant), não convenção da comunidade React/TypeScript.
-> Quem preferir outra indentação de indentação, ponto e vírgula ou outra convenção pode simplesmente
+> Quem preferir outra indentação, ponto e vírgula ou outra convenção pode simplesmente
 > editar esses dois arquivos — nada no restante do template depende dos valores específicos
 > escolhidos aqui.
 
