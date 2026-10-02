@@ -92,7 +92,7 @@ jobs:
               run: npx vitest run --changed "origin/${{ github.event.pull_request.base.ref }}"
             - name: Upload coverage report
               if: steps.scope.outputs.mode == 'full'
-              uses: actions/upload-artifact@v4
+              uses: actions/upload-artifact@v7
               with:
                   name: coverage-report
                   path: coverage/
