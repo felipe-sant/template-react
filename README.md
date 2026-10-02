@@ -446,7 +446,7 @@ npm test -- --run # execução one-shot (CI)
 npm run typecheck # checagem de tipos (tsc -b) de src/ e vite.config.ts
 npm run lint      # roda o oxlint sobre o projeto, usando a configuração de .oxlintrc.json
 npm run lint:fix  # mesma coisa que npm run lint, mas aplicando automaticamente as correções possíveis (oxlint --fix)
-npm run format    # roda prettier --write em **/*.{ts,tsx,css,json,md,yml}, conforme .prettierrc e .prettierignore
+npm run format    # roda prettier --write em **/*.{ts,tsx,css,json,md,yml,html}, conforme .prettierrc e .prettierignore
 npm run test:cov  # roda vitest run --coverage — suíte inteira + relatório de cobertura
 ```
 
@@ -464,7 +464,7 @@ npm run test:cov  # roda vitest run --coverage — suíte inteira + relatório d
 [Husky](https://typicode.github.io/husky/) que roda `lint-staged` em cada commit — nenhum passo
 manual extra é necessário. `lint-staged` (configurado em `.lintstagedrc.json`) aplica `oxlint --fix`
 e depois `prettier --write` nos arquivos `.ts`/`.tsx` staged, e aplica só `prettier --write` aos
-`.css`/`.json`/`.md`/`.yml` staged — mesmo escopo do script `format`, que deixa de fora
+`.css`/`.json`/`.md`/`.yml`/`.html` staged — mesmo escopo do script `format`, que deixa de fora
 `package-lock.json`, `dist/` e `coverage/` via `.prettierignore` —, corrigindo o que for automático ou
 bloqueando o commit quando sobrar um erro de lint que o `oxlint` não sabe corrigir sozinho. O
 `.editorconfig` na raiz complementa isso para editores compatíveis: padroniza charset, final de
