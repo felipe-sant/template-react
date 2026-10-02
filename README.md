@@ -4,9 +4,10 @@ Template base de frontend em React + TypeScript, ponto de partida para novos pro
 
 Ele serve a quem quer começar um frontend já com toolchain, roteamento, testes, lint e convenções
 de código definidos, sem decidir tudo do zero. Traz só a base mínima: uma `Home`, uma `NotFound`,
-uma página de erro, um layout com header e footer e um serviço HTTP genérico. Não traz estado
-global, autenticação nem componentes de UI prontos — o projeto que usa o template adiciona isso
-quando precisar, seguindo as convenções abaixo.
+uma página de erro, um layout com header e footer, um serviço HTTP genérico, a store com Redux
+Toolkit e RTK Query configurados em `src/store/` (sem slice nem endpoint de exemplo) e a
+internacionalização em `pt-BR`, `en` e `es`. Não traz autenticação nem componentes de UI prontos —
+o projeto que usa o template adiciona isso quando precisar, seguindo as convenções abaixo.
 
 O template ainda está em construção e não está estruturado de forma definitiva: pastas, convenções
 e tooling podem mudar entre versões.
