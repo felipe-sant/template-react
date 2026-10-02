@@ -234,7 +234,9 @@ para editores compatíveis, coerente com o `.prettierrc`.
   verde e quebra o build, ou vice-versa. O Vitest herda o alias do mesmo `vite.config.ts`.
 - **`public/`** — assets estáticos que o Vite copia como estão para a raiz de `dist/` no build, sem
   passar pelo bundler, e são referenciados por caminho absoluto (`/favicon.svg`). Arquivo estático
-  novo (imagem, fonte, dado mock) entra aqui.
+  novo (imagem, fonte, dado mock) entra aqui. Fonte é self-hospedada: `woff2` e licença em
+  `public/fonts/`, `@font-face` em `src/styles/global.css` e `preload` no `index.html`, nunca
+  CDN ou serviço de fonte de terceiros (Google Fonts e afins).
 
 **`src/services/http/`** é o cliente HTTP (fetch cru, usado fora do RTK Query), um símbolo
 por arquivo com `export default`: `apiUrl.ts` (a constante da URL da API, a **única** leitura de
