@@ -52,10 +52,9 @@ O template segue versionamento semântico próprio, publicado por tag e GitHub R
 ## Versionamento
 
 O template segue o [SemVer 2.0.0](https://semver.org/lang/pt-BR/), aplicado a um template. Cada
-versão é uma tag `vX.Y.Z` com uma
-[GitHub Release](https://github.com/felipe-sant/template-react/releases) que traz as notas da
-versão. Não há `CHANGELOG` versionado, para que o projeto derivado não herde o histórico do
-template.
+versão é uma tag `vX.Y.Z` com uma GitHub Release que traz as notas da versão (lista em
+[Releases](https://github.com/felipe-sant/template-react/releases)). Não há `CHANGELOG`
+versionado, para que o projeto derivado não herde o histórico do template.
 
 O critério para classificar uma mudança é o impacto em quem segue as convenções do template ou
 deriva um projeto dele, não o tamanho da mudança:
@@ -76,9 +75,9 @@ mudanças de uma versão nova, leia as notas da release e compare as tags
 (`https://github.com/felipe-sant/template-react/compare/vX.Y.Z...vA.B.C`). Vale anotar no README
 do projeto derivado a tag de origem.
 
-O `version` do `package.json` (`0.1.0`) não é a versão do template: é a versão inicial do projeto
-derivado, que o projeto passa a controlar a partir daí. Por isso ele não sobe a cada release do
-template.
+O `version` do `package.json` (`0.1.0`) não é a versão do template: é a versão inicial do
+projeto derivado, que o projeto passa a controlar a partir daí. Por isso ele não sobe a cada
+release do template.
 
 ## Documentação
 

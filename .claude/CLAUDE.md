@@ -93,8 +93,8 @@ roda `npm run typecheck` (`tsc -b`, que cobre `src/` via `tsconfig.app.json` e `
 `npm install` configura automaticamente (script `prepare`, `"prepare": "husky"`) um hook de
 `pre-commit` do Husky que roda `npx lint-staged` a cada commit — sem passo manual extra.
 `lint-staged` (`.lintstagedrc.json`) aplica `oxlint --fix` e depois `prettier --write` nos
-arquivos `.ts`/`.tsx` staged, e só `prettier --write` nos `.css`/`.json`/`.md`/`.yml`/`.html` staged (mesmo
-escopo do script `format`, com `package-lock.json`, `dist/` e `coverage/` fora via
+arquivos `.ts`/`.tsx` staged, e só `prettier --write` nos `.css`/`.json`/`.md`/`.yml`/`.html`
+staged (mesmo escopo do script `format`, com `package-lock.json`, `dist/` e `coverage/` fora via
 `.prettierignore`); corrige o que for
 automático e bloqueia o commit se sobrar erro de lint não corrigível sozinho. O `.editorconfig` na
 raiz (`root = true`) padroniza charset, final de linha, quebra de linha final, remoção de trailing
