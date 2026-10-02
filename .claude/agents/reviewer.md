@@ -11,8 +11,8 @@ tools: Read, Grep, Glob, Bash
 
 ## Itens auditados explicitamente
 
-- **Bloqueante:** uso de `css.<classe>` (CSS Module) sem a classe correspondente existir no arquivo `.module.css` importado. A tipagem em `src/types/declarations.d.ts` é `{ [key: string]: string }`, então o TypeScript não acusa — confira abrindo o módulo (issue #3).
-- **Bloqueante:** navegação interna com `<a href="...">` em vez de `<Link to="...">`/`useNavigate` do `react-router-dom` (issue #5). Link para domínio externo é legítimo e não deve ser apontado.
+- **Bloqueante:** uso de `css.<classe>` (CSS Module) sem a classe correspondente existir no arquivo `.module.css` importado. A tipagem em `src/types/declarations.d.ts` é `{ [key: string]: string }`, então o TypeScript não acusa e a classe inexistente vira `undefined` em runtime, sem erro de compilação — confira abrindo o módulo.
+- **Bloqueante:** navegação interna com `<a href="...">` em vez de `<Link to="...">`/`useNavigate` do `react-router-dom`: âncora crua força reload completo da página e descarta o estado da aplicação. Link para domínio externo é legítimo e não deve ser apontado.
 - **Bloqueante:** página nova criada sem rota registrada em `src/routers/routes.tsx`, ou rota registrada apontando para página inexistente.
 - **Bloqueante:** `any` explícito, ou cast (`as`) usado para silenciar um erro de tipo em vez de modelar o tipo corretamente.
 - **Bloqueante:** array de dependências de `useEffect`/`useMemo`/`useCallback` incompleto — valor lido de fora do hook e ausente das dependências. Reporte também `useEffect` sem cleanup quando ele registra listener, timer ou subscription.
@@ -30,10 +30,10 @@ tools: Read, Grep, Glob, Bash
 - Se o trabalho revisado veio de uma spec em `.specs/`, confira também se os critérios de aceite do `spec.md` foram atendidos e se todas as tarefas do `tasks.md` estão marcadas como concluídas.
 - Se houver um PR aberto, confira se a descrição segue a estrutura de `.github/PULL_REQUEST_TEMPLATE.md` (Descrição, Alterações, Decisões técnicas, Como testar, Evidências, Impactos e pontos de atenção) em vez de um corpo livre — aponte como bloqueante se o template não foi seguido.
 - Confira se o PR tem assignee definido (deve ser quem abriu o PR) — aponte como bloqueante se estiver sem assignee.
-- Confira se o título do commit/PR segue o padrão do `CONTRIBUTING.md` (`<Tipo> <ícone> [#<número>] <descrição>`), com o `<Tipo>` vindo da tabela daquele arquivo — não de uma label do GitHub.
+- Confira se o título do commit/PR segue o padrão da seção "Padrão de branches, commits e PRs" do `CLAUDE.md` (`<Tipo> <ícone> [#<número>] <descrição>`), com o `<Tipo>` vindo da tabela "Tipos de alteração" daquela seção — não de uma label do GitHub.
 - Aponte como bloqueante se o diff/commit incluir arquivos de `.specs/bugs/<slug>/` ou `.specs/features/<slug>/` — essas pastas são planejamento local e não devem ser commitadas.
 - Aponte cada problema encontrado com arquivo e linha, classificando como bloqueante ou sugestão.
-- Não invente problemas hipotéticos — reporte apenas o que realmente diverge do que está documentado ou do que o código faz. Este é um template **em construção**: a ausência de coisas já rastreadas em issue aberta (CI, estrutura de pastas) é dívida conhecida do repositório, não achado contra o autor do diff. Só reporte como achado se o diff tiver piorado o ponto, ou se a tarefa em revisão era justamente resolvê-lo.
+- Não invente problemas hipotéticos — reporte apenas o que realmente diverge do que está documentado ou do que o código faz. Dívida já registrada em issue aberta não é achado contra o autor do diff, salvo se o diff piorou o ponto ou a tarefa em revisão era justamente resolvê-lo.
 
 ## Consome
 
