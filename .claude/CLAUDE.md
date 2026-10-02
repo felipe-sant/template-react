@@ -273,8 +273,8 @@ JSON correspondente.
 
 Duas exceções ao "texto vem de chave". Mensagem de `Error` lançada no código do cliente
 (`src/services/http/parseResponse.ts`, `src/index.tsx`) é literal em português, como diagnóstico. Mensagem de erro
-de API vem traduzida pelo backend, que recebe o idioma ativo (`getLanguage()`) via
-`Accept-Language` (#63). A descrição de `describe`/`it` nos testes é escrita em português.
+de API vem traduzida pelo backend: `get`/`post` de `src/services/http/` e o `prepareHeaders` do RTK
+Query enviam o idioma ativo (`getLanguage()`) no header `Accept-Language` de toda requisição. A descrição de `describe`/`it` nos testes é escrita em português.
 
 **Export no final e um símbolo exportado por arquivo.** Cinco regras:
 
@@ -310,29 +310,23 @@ comentário explicativo.
 
 ### O que o oxlint verifica automaticamente
 
-`npm run lint` (oxlint 1.85.0, configurado em `.oxlintrc.json`) cobre uma parte das convenções
+`npm run lint` (oxlint, configurado em `.oxlintrc.json`) cobre uma parte das convenções
 acima mecanicamente; o restante continua sendo revisão manual do agente `reviewer`.
 
 Verificado automaticamente pelo oxlint:
 
-- `any` explícito → regra `typescript/no-explicit-any`, ligada individualmente como `error` — a
-  categoria onde ela vive por padrão, `restriction`, traria também dezenas de regras de estilo
-  genéricas do core não relacionadas a esta convenção.
+- `any` explícito → regra `typescript/no-explicit-any`.
 - Array de dependências de hook incompleto → regra `react/exhaustive-deps` (equivalente ao
-  `react-hooks/exhaustive-deps` do ecossistema ESLint clássico; nesta versão do oxlint o
-  `react-hooks` não é um plugin separado, está embutido no plugin `react`). A regra de que hooks
+  `react-hooks/exhaustive-deps` do ecossistema ESLint clássico). A regra de que hooks
   só podem ser chamados incondicionalmente (rules-of-hooks) também é verificada, pela regra
   `react/hooks`.
-- Import de namespace em vez de nomeado → regra `import/no-namespace`, ligada individualmente
-  como `error` pelo mesmo motivo do `no-explicit-any`: a categoria padrão dela, `style`, traria
-  ruído não relacionado.
+- Import de namespace em vez de nomeado → regra `import/no-namespace`.
 - Acessibilidade básica (`alt` em imagem, rótulo associado a campo de formulário, elemento
   clicável com suporte a teclado) → regras do plugin `jsx-a11y` (`jsx-a11y/alt-text`,
   `jsx-a11y/label-has-associated-control`, `jsx-a11y/click-events-have-key-events`, entre outras
   do conjunto padrão do plugin), ativas sempre que o plugin `jsx-a11y` está habilitado,
   independente da categoria de severidade configurada.
-- Import interno usar o alias `@/` em vez de `../` → regra `import/no-relative-parent-imports`,
-  ligada individualmente como `error` pelo mesmo motivo das demais regras pontuais desta lista.
+- Import interno usar o alias `@/` em vez de `../` → regra `import/no-relative-parent-imports`.
 - Texto de UI literal em vez de chave de tradução → regra `react/jsx-no-literals`, ligada como
   `error` com `noStrings: true`, `ignoreProps: true` e `restrictedAttributes` com `title`, `alt`,
   `placeholder`, `aria-label`, `aria-description`, `label` e `content`. Acusa texto solto como
@@ -429,12 +423,57 @@ empacotados.
 
 ## Padrão de branches, commits e PRs
 
-Toda branch, commit e PR segue o padrão de `CONTRIBUTING.md`: branches como
-`<tipo>/<número-da-issue>-<descrição-curta>` (ex.: `feat/21-agentes-e-skills`) e commits como
-`<Tipo> <ícone> [#<número-da-issue>] <descrição>` (ex.: `Fix :bug: [#5] ...`), com o `<Tipo>`
-vindo da tabela daquele arquivo (Fix, Feat, Hotfix, Refactor, Test, Perf, Style, Docs, Build,
-Chore, Revert) — nunca uma label do GitHub (`enhancement`, etc.) no lugar do tipo. A descrição do
-PR segue a estrutura de `.github/PULL_REQUEST_TEMPLATE.md`, não um corpo livre.
+### Tipos de alteração
+
+O `<Tipo>` de branch, commit e título de PR vem sempre desta tabela:
+
+| Tipo     |     Ícone     | Descrição                                                                   |
+| -------- | :-----------: | --------------------------------------------------------------------------- |
+| Fix      |     :bug:     | Correção de bugs.                                                           |
+| Feat     |  :sparkles:   | Desenvolvimento de novas funcionalidades (features).                        |
+| Hotfix   |  :ambulance:  | Correção de bugs a partir da branch de produção (main).                     |
+| Refactor |   :recycle:   | Melhorias no código (ex.: reestruturações; melhorias no código).            |
+| Test     |  :test_tube:  | Criação ou alteração de arquivos de teste.                                  |
+| Perf     |     :zap:     | Mudanças a fim de melhorar a performance.                                   |
+| Style    |     :art:     | Mudanças apenas em estilo de código (ex.: formatação; clean code).          |
+| Docs     |    :bulb:     | Mudanças relacionadas à documentação.                                       |
+| Build    |   :rocket:    | Mudanças em arquivos de build (ex.: Vite; `package.json`).                  |
+| Chore    | :see_no_evil: | Mudanças sem impacto direto na aplicação (ex.: alterações no `.gitignore`). |
+| Revert   |   :rewind:    | Reverter algum commit.                                                      |
+
+Nunca use uma label do GitHub (`enhancement`, `bug` como label, etc.) no lugar do tipo: a label
+classifica a issue, o tipo classifica a mudança.
+
+### Branches
+
+```
+<tipo>/<número-da-issue>-<descrição-curta>
+```
+
+Tipo em minúsculas (`feat/<número>-agentes-e-skills`). Sem issue aberta, o número é omitido
+(`chore/update-gitignore`).
+
+### Commits
+
+```
+<Tipo> <ícone> [#<número-da-issue>] <descrição>
+```
+
+Exemplo: `Fix :bug: [#<número>] Troca <a href> por <Link> na página NotFound`. Sem issue
+relacionada, o `[#...]` é omitido (`Chore :see_no_evil: Atualiza .gitignore`).
+
+Commits são atômicos: uma mudança concluída por commit, nunca várias tarefas acumuladas.
+
+### Pull Requests
+
+- Toda alteração passa por PR para a `main`, sem push direto.
+- O autor se atribui já na criação (`gh pr create --assignee @me`) e aplica labels que já existem
+  no repositório (`bug`, `enhancement`, `documentation`, etc.).
+- A descrição referencia a issue relacionada (`Closes #<número>`), para que ela feche no merge.
+- O título segue o padrão do commit principal (`<Tipo> <ícone> [#<número>] <descrição>`).
+- A descrição segue a estrutura de `.github/PULL_REQUEST_TEMPLATE.md`, não um corpo livre, com as
+  seções Descrição, Alterações, Decisões técnicas, Como testar, Evidências e Impactos e pontos de
+  atenção.
 
 Quando `npm run build`, `npm run lint` e `npm test -- --run` já rodaram localmente (verificação
 que o agente `executor` faz a cada tarefa, ver `.claude/agents/executor.md`) antes do `git push`,
