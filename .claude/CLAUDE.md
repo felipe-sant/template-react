@@ -16,7 +16,7 @@ código".
 
 Texto de UI não é escrito no código: é referenciado por chave de tradução (`t("heading")`,
 `<Trans>`), e o valor de cada idioma fica em `src/locales/<idioma>/` (i18next + react-i18next,
-ver "Arquitetura"). Os idiomas suportados são `pt-BR`, `en` e `es`. **`pt-BR` é a língua de
+ver "Onde fica cada coisa"). Os idiomas suportados são `pt-BR`, `en` e `es`. **`pt-BR` é a língua de
 referência**: texto novo nasce primeiro em `src/locales/pt-BR/`, os JSON de `pt-BR` são a fonte
 do tipo das chaves e os testes de tela afirmam o texto em português. **O fallback de runtime é
 `en`**, o que o usuário vê quando nenhuma fonte de detecção dá um idioma suportado. As duas coisas
@@ -102,19 +102,17 @@ raiz (`root = true`) padroniza charset, final de linha, quebra de linha final, r
 whitespace e indentação (`indent_size = 4` para todos os tipos, exceto `package.json` e `package-lock.json`, em `2`)
 para editores compatíveis, coerente com o `.prettierrc`.
 
-## Arquitetura
-
-Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` (`Provider` da store) → `src/routers/Router.tsx` → páginas.
+## Onde fica cada coisa
 
 - **`App.tsx`** renderiza o `Router` dentro do `<Provider store={store}>` do react-redux e importa, por efeito colateral, `@/i18n/i18n` (que
   inicializa a instância do i18next) e o `global.css`; `@/i18n/i18n` está no `allow` de
   `import/no-unassigned-import` no `.oxlintrc.json`. Metadados (`<title>`, `<meta>`) são
-  declarados por cada página com as tags nativas do React 19, que sobem sozinhas para o `<head>`
-  (ver `NotFound.page.tsx`), sem biblioteca nem wrapper, e com valor vindo de chave:
+  declarados por cada página com as tags nativas do React 19, escritas dentro do JSX da própria
+  página, que sobem sozinhas para o `<head>`, sem biblioteca nem wrapper, e com valor vindo de chave:
   `<title>{t("meta.title")}</title>` e
   `<meta name="description" content={t("meta.description")} />`.
-- **`src/i18n/`** — configuração de idioma (i18next 26, react-i18next 17,
-  i18next-browser-languagedetector 8), um símbolo público por arquivo com `export default`.
+- **`src/i18n/`** — configuração de idioma (i18next, react-i18next e
+  i18next-browser-languagedetector), um símbolo público por arquivo com `export default`.
   `i18n.ts` cria a instância com `createInstance()` (import nomeado de `i18next`; `i18next.use(...)`
   no export default cai em `import/no-named-as-default-member`), registra `LanguageDetector` e
   `initReactI18next` — que torna a instância global, sem provider nem wrapper de render — e inicia
@@ -123,7 +121,8 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` (`P
   `fallbackLng: FALLBACK_LANGUAGE` (`fallbackLanguage.ts`, valor `en`). Não existe constante de
   "idioma padrão" nem de língua de referência: `pt-BR` é referência pelo tipo de `resources.ts`,
   não pelo runtime. A detecção segue `["querystring", "localStorage", "navigator"]`, com
-  `?lng=` e `LANGUAGE_STORAGE_KEY` (`languageStorageKey.ts`, `"template-react:language"`), e
+  `?lng=` e `LANGUAGE_STORAGE_KEY` (`languageStorageKey.ts`, único lugar onde o valor da chave
+  aparece), e
   `convertDetectedLanguage` passa todo código por `resolveSupportedLanguage`
   (`resolveSupportedLanguage.ts`: código exato, ou `es-*` → `es`, `en-*` → `en`, `pt`/`pt-*` →
   `pt-BR`, ou `undefined`). A ordem efetiva é escolha salva (por `setLanguage` ou por um `?lng=`
@@ -145,8 +144,8 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` (`P
       `typeof` de `pt-BR` em `resources.ts`, então namespace ou chave faltando também não compila.
 - **`src/locales/`** — tradução é dado, separado da configuração em `src/i18n/`:
   `src/locales/<idioma>/<namespace>.json`, JSON com 4 espaços, os mesmos namespaces e chaves nos
-  três idiomas. Um namespace por dono do texto, com o nome do CSS Module correspondente (`home`,
-  `notFound`, `error`, `mainLayout`); `common` guarda texto compartilhado (`backHome`, `loading`)
+  três idiomas. Um namespace por dono do texto, com o nome do CSS Module correspondente (ex.:
+  `home`, `notFound`, `mainLayout`); `common` guarda texto compartilhado (`backHome`, `loading`)
   e texto fixo de componente de `src/components/`. Chave em inglês, lowerCamelCase, hierárquica por
   papel (`meta.title`, `meta.description`, `heading`, `showcase.status.success`). Página com
   namespace próprio chama `useTranslation("home")`; quem também usa chave de `common` carrega os
@@ -163,13 +162,16 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` (`P
   `routes` com `createMemoryRouter(routes, { initialEntries })` e `RouterProvider`.
   As rotas-filhas de `MainLayout` são `lazy` e o único `<Suspense>` fica em volta do `<Outlet />`
   de `src/layouts/Main.layout.tsx`: página nova não precisa (nem deve) ter o próprio `<Suspense>`.
+  Navegação interna usa `<Link to="...">`/`useNavigate` do `react-router-dom` com o path de
+  `ROUTES`, nunca `<a href="...">`: âncora crua força reload completo da página e descarta o estado
+  da aplicação.
 - **`src/store/`** — estado global: **Redux Toolkit + react-redux** para estado de cliente e
   **RTK Query** (`@reduxjs/toolkit/query/react`, sem dependência extra) para estado de servidor.
   Um símbolo público por arquivo, `export default` no final:
     - `api.ts`: `createApi` com `reducerPath: "api"`, `baseQuery` com
       `fetchBaseQuery({ baseUrl: API_URL, prepareHeaders })` (`API_URL` de `@/services/http/apiUrl`,
-      `Accept-Language` com `getLanguage()`), `tagTypes: []` e `endpoints: () => ({})`. Sem endpoint
-      de exemplo: o template não tem chamada de API real. Não importa a store. O RTK Query não usa o
+      `Accept-Language` com `getLanguage()`), `tagTypes` e `endpoints: () => ({})`; endpoint nunca
+      é declarado em `api.ts`, sempre injetado por domínio. Não importa a store. O RTK Query não usa o
       `http` como `baseQuery` (o `fetchBaseQuery` já entrega o contrato que ele espera); os dois
       clientes compartilham `apiUrl.ts` e o idioma.
     - `api/<dominio>.api.ts`: endpoints de um domínio via `api.injectEndpoints`, com tipos de
@@ -218,24 +220,23 @@ Fluxo de render: `src/index.tsx` (createRoot + StrictMode) → `src/App.tsx` (`P
 
     Isso é distinto de `src/hooks/`, que é reservado a hooks reutilizáveis entre páginas e
     componentes, não específicos de uma única página (por exemplo, um `useDebounce` ou `useMediaQuery`).
-    Nenhuma das duas pastas existe ainda: `src/pages/hooks/` e `src/hooks/` são criadas no primeiro uso.
+    Se `src/pages/hooks/` ou `src/hooks/` não existir, crie a pasta no primeiro uso.
 
-- **`src/styles/`** — `global.css` guarda os CSS custom properties (escala de cinza `--g1-color`
-  … `--g10-color`, `--sans-font`) e o reset. Estilos de página ficam em
-  `src/styles/pages/<nome>.module.css` (CSS Modules), importados como `import css from "..."`.
-  A tipagem dos módulos vem de `src/types/declarations.d.ts`.
+- **`src/styles/`** — `global.css` guarda as CSS custom properties (cor, tipografia, espaçamento e
+  afins) e o reset. CSS Module usa essas custom properties em vez de valor hardcoded; confira os
+  nomes em `src/styles/global.css` antes de usar, e token global novo entra lá. Estilos de página
+  ficam em `src/styles/pages/<nome>.module.css` e de componente em
+  `src/styles/components/<nome>.module.css` (CSS Modules), importados como `import css from "..."`.
+  A tipagem dos módulos vem de `src/types/declarations.d.ts` (`{ [key: string]: string }`): toda
+  classe usada como `css.<algo>` precisa existir no módulo importado, porque uma classe inexistente
+  vira `undefined` em runtime, sem erro de compilação.
 - **Alias de import `@/`** — `@/*` resolve para `src/*`. Configurado em dois lugares que precisam
   continuar concordando: `paths` no `tsconfig.app.json` (para o `tsc` e o editor) e `resolve.alias` no
   `vite.config.ts` (para o dev server e o build). Mexer em um sem o outro deixa o `tsc -b`
   verde e quebra o build, ou vice-versa. O Vitest herda o alias do mesmo `vite.config.ts`.
 - **`public/`** — assets estáticos que o Vite copia como estão para a raiz de `dist/` no build, sem
-  passar pelo bundler. Hoje contém `favicon.svg`, referenciado em `index.html` via
-  `<link rel="icon">`, e `fonts/` (`woff2` latin e licenças OFL das três famílias, referenciados
-  pelos `@font-face` de `global.css` e por dois `preload` do `index.html`, sem fonte de terceiros);
-  arquivo estático novo (imagem, dado mock) entra aqui. O template não inclui
-  `manifest.json` nem ícones de PWA por decisão de projeto: um manifest com `name`/ícones
-  placeholder, sem produto definido, seria pior que não ter manifest — cada projeto derivado
-  adiciona isso quando precisar.
+  passar pelo bundler, e são referenciados por caminho absoluto (`/favicon.svg`). Arquivo estático
+  novo (imagem, fonte, dado mock) entra aqui.
 
 **`src/services/http/`** é o cliente HTTP (fetch cru, usado fora do RTK Query), um símbolo
 por arquivo com `export default`: `apiUrl.ts` (a constante da URL da API, a **única** leitura de
@@ -248,8 +249,8 @@ não-ok vira `Error` literal em português com o status e, quando há, o corpo).
 o caminho relativo. Timeout próprio não existe: quem quiser usa `AbortSignal.timeout(ms)`.
 
 A convenção de variáveis de ambiente é a do Vite: só variáveis com prefixo `VITE_`
-são expostas ao código do cliente, e a leitura é `import.meta.env.VITE_ALGO` — não
-`process.env.REACT_APP_ALGO`, que era a convenção do Create React App e não existe mais aqui —
+são expostas ao código do cliente, e a leitura é `import.meta.env.VITE_ALGO`, nunca
+`process.env.REACT_APP_ALGO`. A convenção é
 materializada em `.env.example` (na raiz, com `VITE_API_URL` como exemplo) e na augmentação de
 `ImportMetaEnv`/`ImportMeta` em `src/vite-env.d.ts`.
 
