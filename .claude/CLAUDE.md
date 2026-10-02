@@ -4,10 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Contexto
 
-Template base de frontend React + TypeScript, usado como ponto de partida para novos projetos.
-Ainda está em construção e **não** está estruturado de forma definitiva. A migração de Create
-React App (`react-scripts`) para **Vite** já foi feita: o toolchain de dev server, build e teste
-é Vite + Vitest.
+Projeto frontend em React 19 + TypeScript (`strict`), com Vite (dev server e build), Redux Toolkit
+
+- RTK Query (estado global), i18next + react-i18next (internacionalização), CSS Modules (estilo) e
+  Vitest + Testing Library (teste). As seções abaixo são as convenções do projeto: onde cada coisa
+  fica, como é escrita e como é testada.
 
 O conteúdo de documentação (`README.md`, specs, mensagens de commit, descrição de PR) está em
 **português**. Mantenha esse padrão. **Identificadores no código são em inglês** — ver "Estilo de
@@ -57,18 +58,17 @@ simular uma nova carga de página (detecção do zero e persistência do `?lng=`
 como em `src/i18n/test/i18n.test.ts`; restaure URL e stubs no fim.
 Teste de componente ou hook que lê a store usa `renderWithStore(ui, { preloadedState })` de
 `src/testUtils/renderWithStore.tsx`, que cria `createStore(preloadedState)` por chamada (estado e
-cache do RTK Query isolados) e devolve o `render` junto da `store`. Como não há endpoint em `src/`,
-o teste injeta um com `api.injectEndpoints`, stuba o `fetch` com `vi.stubGlobal` e define
+cache do RTK Query isolados) e devolve o `render` junto da `store`. O teste de store injeta o
+próprio endpoint com `api.injectEndpoints`, stuba o `fetch` com `vi.stubGlobal` e define
 `VITE_API_URL` absoluta com `vi.stubEnv` (o `Request` do Node não aceita URL relativa), com
 `vi.resetModules()` e import dinâmico para a constante ser relida; o endpoint injetado persiste
 enquanto o módulo vive, então o nome é único por arquivo (ver `src/store/test/api.test.ts` e
 `src/testUtils/test/renderWithStore.test.tsx`).
-Os testes existentes servem de modelo para os formatos que o template já tem: render direto da
-página (`src/pages/test/Home.page.test.tsx`), árvore de rotas em `createMemoryRouter` para verificar a rota `*`
-(`src/routers/test/Router.test.tsx`), módulo com `fetch` stubado via `vi.stubGlobal` (`src/services/http/test/get.test.ts`) e
-layout com `<Outlet />` preenchido por rota-filha (`src/layouts/test/Main.layout.test.tsx`). Componente com
-interação, hook com `renderHook` e função pura não têm teste-modelo no repositório: a skill
-`vitest-specialist` traz um trecho de cada formato.
+Cada formato de teste tem seu jeito: página renderizada direto, árvore de rotas em
+`createMemoryRouter` (para verificar a rota `*`, por exemplo), layout com `<Outlet />` preenchido
+por rota-filha, módulo com `fetch` stubado via `vi.stubGlobal`, componente com interação
+(`user-event`), hook com `renderHook` e função pura. A skill `vitest-specialist` traz um trecho de
+cada formato.
 
 Ficam sem teste `src/index.tsx`, que só chama `createRoot` num `#root` que não existe fora do
 `index.html`, e a pasta `src/types/`, que só declara tipo e não tem runtime.
@@ -79,26 +79,14 @@ Ficam sem teste `src/index.tsx`, que só chama `createRoot` num `#root` que não
 e lines — abaixo disso o comando termina com erro. `exclude` cobre os arquivos sem runtime
 relevante já citados acima, mais `vite.config.ts`, `src/setupTests.ts` e o glob `src/types/**`.
 
-O bloco `test` usa `pool: "vmThreads"` (o `jsdom` é criado uma vez por worker e cada arquivo roda
-num contexto de VM isolado). Média de 5 execuções, primeira descartada: 11,06 s no padrão, 3,88 s
-com `vmThreads` (-65%) e 4,05 s com `isolate: false` (-63%, mas falhou sob `--sequence.shuffle` e
-foi descartado); cobertura idêntica nas três. O custo é memória (cerca de 1,4 GB de pico no
-`test:cov` contra cerca de 225 MB). Teste que stuba com `vi.stubGlobal`/`vi.stubEnv` restaura no
-`afterEach` com `vi.unstubAllGlobals()`/`vi.unstubAllEnvs()`.
+O bloco `test` usa `pool: "vmThreads"`: o `jsdom` é criado uma vez por worker e cada arquivo roda
+num contexto de VM isolado. Não troque por `isolate: false`, que compartilha o estado entre
+arquivos e faz o resultado depender da ordem de execução. Como o worker é reaproveitado, teste que
+stuba com `vi.stubGlobal`/`vi.stubEnv` restaura no `afterEach` com
+`vi.unstubAllGlobals()`/`vi.unstubAllEnvs()`.
 
-`.github/workflows/ci.yml` roda em push para `main` e em todo Pull Request, com três jobs:
-`build` (`npm run build`) e `lint` (`npm run lint`) sempre completos, e `test`, cujo escopo
-depende do contexto — suíte completa + `npm run test:cov` (com o threshold de 80% acima) quando o
-evento é push (sempre em `main`) ou o PR mira `main`, ou quando o diff toca um arquivo
-"suite-wide" (`package.json`, `package-lock.json`, `vite.config.ts`, `tsconfig*.json`,
-`src/setupTests.ts`); nos demais PRs, roda só `vitest --changed` (sem coverage), cobrindo apenas
-os testes afetados pelo diff. Em `mode=full`, o diretório `coverage/` é publicado como artifact do
-workflow.
-
-Cada push num PR cancela o run anterior da mesma ref (`concurrency`, `cancel-in-progress` só para
-`pull_request`; `main` nunca é cancelada). O `.github/dependabot.yml` atualiza `npm` e
-`github-actions` mensalmente, com `minor`/`patch` agrupados num PR por ecossistema e `major` em PR
-próprio; como mira `main`, esses PRs rodam a suíte completa.
+O CI (`.github/workflows/`) roda `npm run build`, `npm run lint` e a suíte de testes, os mesmos
+comandos da verificação local.
 
 `vite build` sozinho não checa tipos (usa esbuild, que só transpila); por isso o script `build`
 roda `npm run typecheck` (`tsc -b`, que cobre `src/` via `tsconfig.app.json` e `vite.config.ts` via `tsconfig.node.json`) antes.
@@ -112,9 +100,7 @@ escopo do script `format`, com `package-lock.json`, `dist/` e `coverage/` fora v
 automático e bloqueia o commit se sobrar erro de lint não corrigível sozinho. O `.editorconfig` na
 raiz (`root = true`) padroniza charset, final de linha, quebra de linha final, remoção de trailing
 whitespace e indentação (`indent_size = 4` para todos os tipos, exceto `package.json` e `package-lock.json`, em `2`)
-para editores compatíveis, coerente com o `.prettierrc`. O stylelint foi avaliado e recusado
-(superfície de CSS pequena, conflito com escolhas pessoais de estilo, dependências extras); pode ser
-reavaliado se o CSS crescer.
+para editores compatíveis, coerente com o `.prettierrc`.
 
 ## Arquitetura
 
