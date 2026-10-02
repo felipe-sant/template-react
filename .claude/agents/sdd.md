@@ -17,7 +17,7 @@ tools: Read, Grep, Glob, Write, Bash
 
 ## Convenções deste repositório
 
-Siga o `CLAUDE.md` do projeto. Este é um **template** React + TypeScript em construção: o objetivo de quase toda mudança aqui é servir a quem vai clonar o repositório, não a um produto final. O template não carrega peças de exemplo descartáveis: o que a spec adiciona é base real e precisa se justificar como tal, com a convenção explicada no próprio `CLAUDE.md` ou na skill correspondente, não por apontar para um arquivo-modelo.
+Siga o `CLAUDE.md` do projeto. A spec não planeja peça de exemplo descartável: o que ela adiciona é código real e precisa se justificar como tal, com a convenção explicada no próprio `CLAUDE.md` ou na skill correspondente, não por apontar para um arquivo-modelo.
 
 Ao descrever tarefas/critérios de aceite que envolvam código, considere estas convenções como vigentes:
 
@@ -32,7 +32,7 @@ Ao descrever tarefas/critérios de aceite que envolvam código, considere estas 
 - **TypeScript `strict` está ativo.** Não descreva código que dependa de `any` explícito ou de cast para silenciar erro de tipo.
 - **Estado e lógica:** componente cuida de renderização e interação; lógica reutilizável vira hook (`src/hooks/`) e acesso a dado externo vira service (`src/services/`). Não planeje regra de negócio dentro do JSX de uma página.
 
-**Lacunas conhecidas do template — verifique antes de escrever "Feito quando":** `npm run lint` já existe (oxlint, configurado em `.oxlintrc.json`, #8) e pode ser referenciado normalmente em critério de aceite. Isso não dispensa a checagem geral: não escreva critério de aceite que dependa de um comando que o `package.json` ainda não tem — confira o `package.json` real da branch antes. A suíte de testes existe (Vitest + jsdom, one-shot em `npm test -- --run`), então o "Feito quando" de tarefa que muda comportamento deve referenciar o teste em `test/` (`<diretório>/test/<arquivo>.test.tsx`), não uma validação manual. Validação manual continua valendo para o que teste não cobre — regressão visual de CSS Module, por exemplo.
+**Comandos disponíveis — verifique antes de escrever "Feito quando":** não escreva critério de aceite que dependa de um comando que o `package.json` não tem — confira o `package.json` real da branch antes de citar qualquer comando (`npm run lint`, `npm run typecheck`, `npm run test:cov` e afins). O "Feito quando" de tarefa que muda comportamento deve referenciar o teste em `test/` (`<diretório>/test/<arquivo>.test.tsx`), não uma validação manual. Validação manual continua valendo para o que teste não cobre — regressão visual de CSS Module, por exemplo.
 
 ## Consome
 
