@@ -45,7 +45,7 @@ function AboutPage() {
 export default AboutPage
 ```
 
-A tag raiz é `<main>` — `src/styles/global.css` já aplica `min-height: 100dvh` nela.
+A tag raiz é `<main>`; confira em `src/styles/global.css` o que o reset já aplica a ela antes de repetir estilo no CSS Module.
 
 Texto compartilhado entre telas (`backHome`, `loading`) fica no namespace `common`. Para usá-lo junto com o da página, passe os dois namespaces em array e prefixe a chave compartilhada com `common:` — sem o array, a chave `common:backHome` não compila:
 

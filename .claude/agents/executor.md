@@ -33,7 +33,7 @@ Siga as convenções do `CLAUDE.md` deste repositório. Todo código que você e
 
 ## Verificação
 
-Depois de cada tarefa relevante, rode os comandos de verificação que o `package.json` da branch realmente tem, antes de marcar a tarefa como concluída. Hoje:
+Depois de cada tarefa relevante, rode os comandos de verificação que o `package.json` da branch realmente tem, antes de marcar a tarefa como concluída. Os comandos padrão do projeto são:
 
 - `npm run typecheck` — checagem de tipos (`tsc -b`, sempre disponível).
 - `npm run build` — checagem de tipos + build de produção em `dist/` (Vite).
