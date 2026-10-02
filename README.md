@@ -492,12 +492,8 @@ troca o idioma usa `setLanguage` dentro do próprio `it`; `react-i18next` não �
 
 Use `.test.ts` (sem `x`) para o que não renderiza JSX — hook, util, service.
 
-Cada formato tem seu jeito: página renderizada direto, árvore de rotas sob um router em memória,
-componente com interação (`user-event`), hook com `renderHook`, função pura e módulo com `fetch`
-stubado via `vi.stubGlobal` (como em `src/services/http/test/get.test.ts`). A skill
-`vitest-specialist` em `.claude/skills/` traz um trecho de cada um.
-
-Os testes do template servem de modelo para os formatos que ele já tem:
+Cada formato de teste tem seu jeito, e a skill `vitest-specialist` em `.claude/skills/` traz um
+trecho de cada um. Os testes do template servem de modelo para os formatos que ele já tem:
 
 | Formato                                           | Teste-modelo                                                                 |
 | ------------------------------------------------- | ---------------------------------------------------------------------------- |
@@ -507,8 +503,8 @@ Os testes do template servem de modelo para os formatos que ele já tem:
 | Layout com `<Outlet />` preenchido por rota-filha | `src/layouts/test/Main.layout.test.tsx`                                      |
 | Store com endpoint injetado                       | `src/store/test/api.test.ts` e `src/testUtils/test/renderWithStore.test.tsx` |
 
-Componente com interação, hook com `renderHook` e função pura não têm teste-modelo no template; o
-trecho de cada um fica na skill. Como não há endpoint em `src/`, os testes de store injetam o
+Componente com interação (`user-event`), hook com `renderHook` e função pura não têm teste-modelo
+no template; o trecho de cada um fica na skill. Como não há endpoint em `src/`, os testes de store injetam o
 próprio com `api.injectEndpoints`.
 
 `npm run test:cov` roda a suíte inteira com relatório de cobertura (`@vitest/coverage-v8`),

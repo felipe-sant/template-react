@@ -4,11 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Contexto
 
-Projeto frontend em React 19 + TypeScript (`strict`), com Vite (dev server e build), Redux Toolkit
-
-- RTK Query (estado global), i18next + react-i18next (internacionalização), CSS Modules (estilo) e
-  Vitest + Testing Library (teste). As seções abaixo são as convenções do projeto: onde cada coisa
-  fica, como é escrita e como é testada.
+Projeto frontend em React 19 e TypeScript (`strict`), com Vite (dev server e build), Redux
+Toolkit com RTK Query (estado global), i18next com react-i18next (internacionalização), CSS
+Modules (estilo) e Vitest com Testing Library (teste). As seções abaixo são as convenções do
+projeto: onde cada coisa fica, como é escrita e como é testada.
 
 O conteúdo de documentação (`README.md`, specs, mensagens de commit, descrição de PR) está em
 **português**. Mantenha esse padrão. **Identificadores no código são em inglês** — ver "Estilo de
@@ -122,8 +121,7 @@ para editores compatíveis, coerente com o `.prettierrc`.
   "idioma padrão" nem de língua de referência: `pt-BR` é referência pelo tipo de `resources.ts`,
   não pelo runtime. A detecção segue `["querystring", "localStorage", "navigator"]`, com
   `?lng=` e `LANGUAGE_STORAGE_KEY` (`languageStorageKey.ts`, único lugar onde o valor da chave
-  aparece), e
-  `convertDetectedLanguage` passa todo código por `resolveSupportedLanguage`
+  aparece), e `convertDetectedLanguage` passa todo código por `resolveSupportedLanguage`
   (`resolveSupportedLanguage.ts`: código exato, ou `es-*` → `es`, `en-*` → `en`, `pt`/`pt-*` →
   `pt-BR`, ou `undefined`). A ordem efetiva é escolha salva (por `setLanguage` ou por um `?lng=`
   válido) → idioma do navegador → `en`; navegador em `fr` abre em `en`.
@@ -272,9 +270,10 @@ linguagem do produto — `<SaveButton label={t("profile.saveChanges")} />` está
 JSON correspondente.
 
 Duas exceções ao "texto vem de chave". Mensagem de `Error` lançada no código do cliente
-(`src/services/http/parseResponse.ts`, `src/index.tsx`) é literal em português, como diagnóstico. Mensagem de erro
-de API vem traduzida pelo backend: `get`/`post` de `src/services/http/` e o `prepareHeaders` do RTK
-Query enviam o idioma ativo (`getLanguage()`) no header `Accept-Language` de toda requisição. A descrição de `describe`/`it` nos testes é escrita em português.
+(`src/services/http/parseResponse.ts`, `src/index.tsx`) é literal em português, como diagnóstico.
+Mensagem de erro de API vem traduzida pelo backend: `get`/`post` de `src/services/http/` e o
+`prepareHeaders` do RTK Query enviam o idioma ativo (`getLanguage()`) no header `Accept-Language`
+de toda requisição. A descrição de `describe`/`it` nos testes é escrita em português.
 
 **Export no final e um símbolo exportado por arquivo.** Cinco regras:
 
